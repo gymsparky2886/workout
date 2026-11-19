@@ -411,7 +411,8 @@ function getDay(d,create){if(!days[d]){if(!create)return null;days[d]=normDay()}
 function weekItems(d){const w=plan.week[parse(d).getDay()];return w&&!w.rest?w.items.filter(i=>ex(i.ex)&&!ex(i.ex).archived):[]}
 function dayPlan(d){const x=days[d];return x&&x.plan?x.plan.filter(i=>ex(i.ex)):weekItems(d)}
 function snap(d){const x=getDay(d,true);if(!x.plan){x.plan=clone(weekItems(d));x.title=plan.week[parse(d).getDay()].name||''}return x}
-function plannedItems(d){const x=days[d],p=dayPlan(d),extra=x?x.extra.filter(e=>ex(e.ex)&&!p.some(i=>i.ex===e.ex)):[];return p.concat(extra)}
+function plannedItems(d){const x=days[d],p=dayPlan(d),extra=x?x.extra.filter(e=>ex(e.ex)&&!p.some(i=>i.ex===e.ex)):[],t0=today();
+  return p.concat(extra).filter(i=>!(ex(i.ex).archived&&d>=t0&&!doneSets(d,i.ex).length))}
 function visibleItems(d){const x=days[d],sk=x?x.skip:[];return plannedItems(d).filter(i=>!sk.includes(i.ex))}
 function rowsFor(d,it){const x=days[d],s=(x&&x.sets[it.ex])||[];return (x&&x.rows[it.ex])||Math.max(s.length,it.sets||3)}
 function valid(t,s){if(!s||!s.done)return false;if(t==='time')return s.t!=null;if(t==='reps')return s.r!=null;return s.w!=null&&s.r!=null}
@@ -444,7 +445,7 @@ function targets(id,it,d,rows){
   if(t==='weight'){
     const tp=top(t,last),hit=last.length>=n&&last.every(s=>s.r>=goal&&s.w>=tp.w-1e-9);
     for(let i=0;i<rows;i++){const s=L(i);list.push(hit?{w:tp.w+exStep(id),r:goal}:{w:s.w,r:s.r>=goal?goal:s.r+1})}
-    why=hit?'You hit every rep last time, so add weight.':'Same weight. One more rep where you fell short.';
+    why=hit?'+'+fw(exStep(id))+' '+plan.unit+' today: you hit every rep last time.':'Same weight: one more rep where you fell short.';
   }else if(t==='reps'){
     const hit=last.length>=n&&last.every(s=>s.r>=goal);
     for(let i=0;i<rows;i++){const s=L(i);list.push({r:hit?s.r+1:(s.r>=goal?s.r:s.r+1),w:s.w||null})}
@@ -566,7 +567,6 @@ function weekScore(){
   weekDates(0).forEach(k=>{if(k>t0||!started(k))return;const s=stats(k);p+=s.p;n+=s.n;if(needsWork(k)){if(k<t0||complete(k))wp++;if(complete(k))wd++;else if(k<t0)missed.push(dname(k))}});
   const flat=Object.keys(plan.library).filter(id=>!plan.library[id].archived&&plateau(id,t0));
   let b=wp?'<p>Workouts counted: '+wd+' of '+wp+'. A day counts when at least half its planned sets are done.</p>':'<p>No workout days yet this week.</p>';
-  if(missed.length)b+='<p>Missed: '+missed.join(', ')+'.</p>';
   b+='<p>'+(flat.length?'No progress in 3 weeks: '+flat.map(id=>esc(exName(id))).join(', ')+'.':'Nothing stuck right now.')+'</p>';
   b+='<p>Skipped sets count as missed. Mark a day as rest to keep your streak.</p>';
   return '<details class="wscore"><summary>'+(p?n+'/'+p+' sets this week':'No workouts yet this week')+'</summary><div>'+b+'</div></details>';
@@ -580,7 +580,7 @@ function cardHtml(d,it,items){
   const id=it.ex,t=exType(id),x=days[d],sets=(x&&x.sets[id])||[],rows=rowsFor(d,it),tg=rowTargets(d,id,it,rows),e=ex(id);
   let first=-1;for(let i=0;i<rows;i++){if(!valid(t,sets[i])){first=i;break}}
   let h='<section class="card" data-card="'+id+'" aria-label="'+esc(exName(id))+'"><div class="card-head"><h2 class="h2d">'+esc(exName(id))+'</h2><span class="goal">Goal '+goalTxt(t,it)+'</span></div>';
-  h+='<div class="chips">'+(tg.has?'<span class="chip next">Next '+esc(listTxt(t,tg.list))+'</span><span class="chip">Last '+esc(dname(tg.lastDate))+': '+esc(listTxt(t,tg.last))+'</span>':'<span class="chip">First time. This sets the bar.</span>')+'</div>';
+  h+='<div class="chips">'+(tg.has?'<span class="chip">Last '+esc(dname(tg.lastDate))+': '+esc(listTxt(t,tg.last))+'</span>':'<span class="chip">First time. This sets the bar.</span>')+'</div>';
   if(tg.has)h+='<div class="why">'+esc(tg.why)+'</div>';
   if(plateau(id,d))h+='<span class="flag">No progress in 3 weeks</span>';
   if(noteOpen===id)h+='<div class="field"><label for="noteIn">Note</label><input class="inp" id="noteIn" data-note="'+id+'" value="'+esc(e.note)+'" placeholder="Seat 4, close grip" maxlength="200"></div>';
