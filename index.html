@@ -199,6 +199,8 @@ details.wscore p{margin:4px 0}
 .exopen{background:var(--surface);border-radius:12px;padding:12px;margin-bottom:6px;box-shadow:inset 0 0 0 2px var(--accent);display:flex;flex-direction:column;gap:10px}
 .exhead{all:unset;display:flex;justify-content:space-between;align-items:center;cursor:pointer;min-height:36px}
 .exhead b{font-weight:600}
+.exr .acts{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.exr .sep{color:var(--faint)}
 .exgrp{font-size:13px;color:var(--muted);margin:14px 0 6px}
 .chev{color:var(--faint)}
 .exrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--hair)}
@@ -276,7 +278,7 @@ details.wscore p{margin:4px 0}
 <script>
 (function(){
 'use strict';
-const APP_VERSION=18, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=19, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const SESSION_MS=3*60*60*1000, AWAY_MS=30*60*1000;
@@ -650,11 +652,15 @@ function exListHtml(editing){
       (t==='time'?'':'<div><span class="flabel">Next adds</span>'+segB('exstep',id,cur,opts.map((o,i)=>[o[0],o[1],i===bi]))+'<p class="help">'+plan.unit+', when you hit every rep</p></div>')+
       '<div class="btns"><button class="btn" data-act="archive" data-ex="'+id+'">Archive</button><button class="btn danger" data-act="delex" data-ex="'+id+'">Delete</button><button class="btn primary" data-act="exopen" data-ex="'+id+'">Done</button></div><p class="help">Archive keeps its history in Progress. Delete removes it and its history for good.</p></div>';
   };
-  let h='<div class="card"><strong>Your exercises</strong><p class="help">'+(editing?'Tap one to rename, change type or step, or archive. Rename to an existing name to merge them, history included.':'Tap one to change it.')+'</p>';
+  let h='<div class="card"><strong>Your exercises</strong><p class="help">'+(editing?'Tap one to rename, change type or step, or archive. Rename to an existing name to merge them, history included.':(act.length?'Tap one to change it.':''))+'</p>';
   if(!act.length&&!arc.length)h+='<p class="help">None yet. Add one to a day first.</p>';
+  if(!act.length&&arc.length&&!editing)h+='<p class="help">No active exercises. Tap Edit week to add some.</p>';
   if(inW.length)h+='<div class="exgrp">In your week</div>'+inW.map(row).join('');
   if(notW.length)h+='<div class="exgrp">Not in your week</div>'+notW.map(row).join('');
-  if(arc.length)h+='<div class="exgrp">Archived (history kept)</div>'+arc.map(id=>'<div class="exr"><span><b>'+esc(exName(id))+'</b><small>'+TYPES[exType(id)]+'</small></span><span><button class="link" data-act="restore" data-ex="'+id+'">Restore</button>'+(editing?' <button class="link" style="color:var(--warn)" data-act="delex" data-ex="'+id+'">Delete</button>':'')+'</span></div>').join('');
+  if(arc.length){
+    if(!editing)h+='<p class="help" style="margin-top:12px">Archived: '+arc.map(id=>esc(exName(id))).join(', ')+'. Restore or delete them in Edit week.</p>';
+    else h+='<div class="exgrp">Archived (history kept)</div>'+arc.map(id=>'<div class="exr"><span><b>'+esc(exName(id))+'</b><small>'+TYPES[exType(id)]+'</small></span><span class="acts"><button class="link" data-act="restore" data-ex="'+id+'">Restore</button><span class="sep" aria-hidden="true">|</span><button class="link" style="color:var(--warn)" data-act="delex" data-ex="'+id+'">Delete</button></span></div>').join('');
+  }
   return h+'</div>';
 }
 function planEditHtml(){
