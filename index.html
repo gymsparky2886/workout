@@ -272,7 +272,7 @@ details.wscore p{margin:4px 0}
 <div id="sheetRoot"></div>
 <div id="toast" role="status" aria-live="polite"></div>
 <datalist id="exlist"></datalist>
-<input type="file" id="impfile" accept=".json,application/json" hidden>
+<input type="file" id="impfile" accept=".json,.txt,application/json,text/plain" hidden>
 <script>
 (function(){
 'use strict';
@@ -687,7 +687,7 @@ function settingsHtml(){
     '<div class="card sec"><h3>Theme</h3>'+seg('theme',plan.theme,[['auto','Auto'],['light','Light'],['dark','Dark']],'Theme')+'<p class="help">Auto follows your device.</p></div>'+
     '<div class="card sec"><h3>Weight unit</h3>'+seg('unit',plan.unit,[['kg','kg'],['lb','lb']],'Weight unit')+'<p class="help">Switching converts all your numbers.</p></div>'+
     '<div class="card sec"><h3>Automatic backups</h3>'+bkHtml()+'</div>'+
-    '<div class="card sec"><h3>Backup file</h3><button class="listbtn" data-act="export">Save backup file'+I.chev+'</button><button class="listbtn" data-act="import">Load backup file'+I.chev+'</button><p class="help">A file you keep yourself, for example in Google Drive.</p></div></div>';
+    '<div class="card sec"><h3>Backup file</h3><button class="listbtn" data-act="export">Save backup file'+I.chev+'</button>'+(canShareFile()?'<button class="listbtn" data-act="share">Share backup file (Drive, email…)'+I.chev+'</button>':'')+'<button class="listbtn" data-act="import">Load backup file'+I.chev+'</button><p class="help">Save puts the file in your Downloads folder. Share sends it to Google Drive or another app.</p></div></div>';
 }
 function progressHtml(){
   const lastOf=id=>{const ss=sessions(id);return ss.length?ss[ss.length-1].d:''};
@@ -831,6 +831,7 @@ function act(a,b){
       ask({title:'Sign out?',msg:'Your workouts stay safe in your account either way.',buttons:[{v:'keep',label:'Sign out, keep workouts on this device',style:'primary'},{v:'wipe',label:'Sign out and remove them from this device',style:'danger'},{v:'cancel',label:'Cancel'}]}).then(v=>{if(v==='cancel')return;const wipe=v==='wipe';
         fb.auth().signOut().then(()=>{if(wipe){['plan','days','pending','synced','session','bk','bkCloud'].forEach(k=>localStorage.removeItem('wt3:'+k));plan=normPlan();days={};dirtyDays.clear();replaceDays.clear();planDirty=false;active={};viewKey=today();bkCloudList=null;toast('Signed out. This device is clear.')}else toast('Signed out. Your workouts stay on this device.');bkCloudList=null;render()})});return;
     case 'export':exportData();return;
+    case 'share':shareData();return;
     case 'bkrestore':restoreBackup(b.dataset.src,b.dataset.d);return;
     case 'import':$('#impfile').click();return;
     default:return;
@@ -840,11 +841,16 @@ function act(a,b){
 }
 
 /* ---------------- backup ---------------- */
+function backupJson(){return JSON.stringify({app:'workout-tracker',v:3,saved:new Date().toISOString(),plan,days})}
 function exportData(){
-  const data=JSON.stringify({app:'workout-tracker',v:3,saved:new Date().toISOString(),plan,days}),f='workout-backup-'+today()+'.json',blob=new Blob([data],{type:'application/json'});
-  try{const file=new File([blob],f,{type:'application/json'});if(navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:f}).catch(()=>{});return}}catch(e){}
-  const u=URL.createObjectURL(blob),l=document.createElement('a');l.href=u;l.download=f;document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),3000);
+  const f='workout-backup-'+today()+'.json';
+  try{const u=URL.createObjectURL(new Blob([backupJson()],{type:'application/json'})),l=document.createElement('a');l.href=u;l.download=f;document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),5000);
+    toast('Saved to your Downloads folder: '+f)}catch(e){toast('Could not save the file. Try Share backup file instead.')}
 }
+function shareFile(){const f='workout-backup-'+today()+'.txt';try{return new File([backupJson()],f,{type:'text/plain'})}catch(e){return null}}
+function canShareFile(){try{const x=shareFile();return !!(x&&navigator.canShare&&navigator.canShare({files:[x]}))}catch(e){return false}}
+function shareData(){const x=shareFile();if(!x||!canShareFile()){toast('Sharing files isn’t available here. Use Save backup file.');return}
+  navigator.share({files:[x],title:x.name}).then(()=>toast('Backup shared.')).catch(e=>{if(e&&e.name==='AbortError')toast('Sharing cancelled.');else toast('Could not share. Use Save backup file.')})}
 function importData(d){
   if(!d||d.app!=='workout-tracker')throw 0;
   confirmAsk('Load this backup?','Everything goes back to the backup from '+String(d.saved||'').slice(0,10)+', on this device and online. You can undo right after.','Load backup').then(ok=>{if(!ok)return;
