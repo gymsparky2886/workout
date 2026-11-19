@@ -276,7 +276,7 @@ details.wscore p{margin:4px 0}
 <script>
 (function(){
 'use strict';
-const APP_VERSION=17, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=18, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const SESSION_MS=3*60*60*1000, AWAY_MS=30*60*1000;
@@ -518,7 +518,7 @@ function setView(v){view=v;try{history.replaceState(null,'',v==='today'?location
 function render(){
   const now=today();if(viewKey>now)viewKey=now;
   document.querySelectorAll('.tabbar button').forEach(b=>{if(b.dataset.view===view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
-  $('#exlist').innerHTML=Object.values(plan.library).map(v=>'<option value="'+esc(v.name)+'">').join('');
+  $('#exlist').innerHTML=Object.values(plan.library).filter(v=>!v.archived).map(v=>'<option value="'+esc(v.name)+'">').join('');
   const v=$('#view');
   if(view==='today')v.innerHTML=todayHtml();else if(view==='plan')v.innerHTML=planHtml();else if(view==='settings')v.innerHTML=settingsHtml();else v.innerHTML=progressHtml();
 }
@@ -615,7 +615,7 @@ function editorHtml(t,s,tv,i){
   return h;
 }
 function addForm(d){return '<div class="card"><strong>Add an exercise for '+(d===today()?'today':esc(fmtDate(d)))+'</strong><div class="formgrid"><div class="field wide"><label for="addName">Exercise</label><input class="inp" id="addName" list="exlist" autocomplete="off" placeholder="Incline press"></div><div class="field"><label for="addType">Type</label>'+typeSelect('id="addType"','weight')+'</div><div class="field"><label for="addSets">Sets</label><input class="inp" id="addSets" inputmode="numeric" value="3"></div><div class="field"><label for="addReps">Reps or seconds</label><input class="inp" id="addReps" inputmode="numeric" value="10"></div><p class="help wide">'+TYPE_HELP+'</p></div><div class="btns"><button class="btn primary" data-act="addday">Add</button><button class="btn" data-act="closeadd">Cancel</button></div></div>'}
-function skippedLine(d){const x=days[d];if(!x||!x.skip.length)return '';const sk=x.skip.filter(i=>ex(i));if(!sk.length)return '';return '<p class="help">Skipped: '+sk.map(i=>esc(exName(i))+' <button class="link" data-act="unskip" data-ex="'+i+'">Put back</button>').join(', ')+'</p>'}
+function skippedLine(d){const x=days[d];if(!x||!x.skip.length)return '';const sk=x.skip.filter(i=>ex(i)&&!(ex(i).archived&&d>=today()));if(!sk.length)return '';return '<p class="help">Skipped: '+sk.map(i=>esc(exName(i))+' <button class="link" data-act="unskip" data-ex="'+i+'">Put back</button>').join(', ')+'</p>'}
 function stepSelect(id){const opts=plan.unit==='lb'?STEPS_LB.map(v=>[v/KG_LB,v]):STEPS_KG.map(v=>[v,v]),cur=exStep(id);let bi=0;opts.forEach((o,i)=>{if(Math.abs(o[0]-cur)<Math.abs(opts[bi][0]-cur))bi=i});
   return '<select class="inp" aria-label="Weight step for '+esc(exName(id))+'" data-step="'+id+'">'+opts.map((o,i)=>'<option value="'+o[0]+'"'+(i===bi?' selected':'')+'>+'+o[1]+' '+plan.unit+' step</option>').join('')+'</select>'}
 function typeSelect(attr,sel){return '<select class="inp" '+attr+'>'+Object.entries(TYPES).map(([k,v])=>'<option value="'+k+'"'+(k===sel?' selected':'')+'>'+v+'</option>').join('')+'</select>'}
