@@ -276,7 +276,7 @@ details.wscore p{margin:4px 0}
 <script>
 (function(){
 'use strict';
-const KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=14, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const SESSION_MS=3*60*60*1000, AWAY_MS=30*60*1000;
@@ -687,7 +687,7 @@ function settingsHtml(){
     '<div class="card sec"><h3>Theme</h3>'+seg('theme',plan.theme,[['auto','Auto'],['light','Light'],['dark','Dark']],'Theme')+'<p class="help">Auto follows your device.</p></div>'+
     '<div class="card sec"><h3>Weight unit</h3>'+seg('unit',plan.unit,[['kg','kg'],['lb','lb']],'Weight unit')+'<p class="help">Switching converts all your numbers.</p></div>'+
     '<div class="card sec"><h3>Automatic backups</h3>'+bkHtml()+'</div>'+
-    '<div class="card sec"><h3>Backup file</h3><button class="listbtn" data-act="export">Save backup file'+I.chev+'</button>'+(canShareFile()?'<button class="listbtn" data-act="share">Share backup file (Drive, email…)'+I.chev+'</button>':'')+'<button class="listbtn" data-act="import">Load backup file'+I.chev+'</button><p class="help">Save puts the file in your Downloads folder. Share sends it to Google Drive or another app.</p></div></div>';
+    '<div class="card sec"><h3>Backup file</h3><button class="listbtn" data-act="export">Save backup file'+I.chev+'</button>'+(canShareFile()?'<button class="listbtn" data-act="share">Share backup file (Drive, email…)'+I.chev+'</button>':'')+'<button class="listbtn" data-act="import">Load backup file'+I.chev+'</button><p class="help">Save puts the file in your Downloads folder. Share sends it to Google Drive or another app.</p></div><p class="help small-center">Version '+APP_VERSION+'</p></div>';
 }
 function progressHtml(){
   const lastOf=id=>{const ss=sessions(id);return ss.length?ss[ss.length-1].d:''};
