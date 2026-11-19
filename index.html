@@ -22,7 +22,7 @@
   --done:#1F7A4A;--done-ink:#FFFFFF;--done-tint:#E4F2EA;--done-text:#14512F;
   --pr:#F2C230;--pr-tint:#FFF1C2;--pr-text:#5C4000;--warn:#A3361A;--warn-tint:#FBE6DF;--warn-text:#8A2C14;
   --hero:#161B26;--hero-ink:#F2F3F0;--hero-muted:#B9C0CB;--hero-bar:#3A4252;
-  --pill:#161B26;--pill-ink:#F2F3F0;--scrim:rgba(22,27,38,.45);
+  --pill:#161B26;--pill-ink:#F2F3F0;--scrim:rgba(22,27,38,.45);--danger:#B3261E;--danger-ink:#FFFFFF;
   --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;--body:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   color-scheme:light;
 }
@@ -31,13 +31,13 @@
   --accent:#6F95EC;--accent-ink:#0D1420;--accent-tint:#1E2A45;--accent-text:#A9C1F5;
   --done:#2E9E62;--done-ink:#06140C;--done-tint:#16301F;--done-text:#8FE0B0;
   --pr:#F2C230;--pr-tint:#3A3015;--pr-text:#F5D77A;--warn:#F08A6A;--warn-tint:#3A1E16;--warn-text:#F5B49E;
-  --hero:#232935;--hero-ink:#EEF1F5;--hero-muted:#A3ACBA;--hero-bar:#3A4252;--pill:#EEF1F5;--pill-ink:#12151B;--scrim:rgba(0,0,0,.6);color-scheme:dark}}
+  --hero:#232935;--hero-ink:#EEF1F5;--hero-muted:#A3ACBA;--hero-bar:#3A4252;--pill:#EEF1F5;--pill-ink:#12151B;--scrim:rgba(0,0,0,.6);--danger:#F2B8B5;--danger-ink:#601410;color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#12151B;--surface:#1B2029;--sunk:#232935;--seg-on:#39404D;--ink:#EEF1F5;--muted:#A3ACBA;--faint:#7C8696;--line:#2C3340;--hair:#262C37;
   --accent:#6F95EC;--accent-ink:#0D1420;--accent-tint:#1E2A45;--accent-text:#A9C1F5;
   --done:#2E9E62;--done-ink:#06140C;--done-tint:#16301F;--done-text:#8FE0B0;
   --pr:#F2C230;--pr-tint:#3A3015;--pr-text:#F5D77A;--warn:#F08A6A;--warn-tint:#3A1E16;--warn-text:#F5B49E;
-  --hero:#232935;--hero-ink:#EEF1F5;--hero-muted:#A3ACBA;--hero-bar:#3A4252;--pill:#EEF1F5;--pill-ink:#12151B;--scrim:rgba(0,0,0,.6);color-scheme:dark}
+  --hero:#232935;--hero-ink:#EEF1F5;--hero-muted:#A3ACBA;--hero-bar:#3A4252;--pill:#EEF1F5;--pill-ink:#12151B;--scrim:rgba(0,0,0,.6);--danger:#F2B8B5;--danger-ink:#601410;color-scheme:dark}
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;overflow-y:scroll}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
@@ -91,6 +91,8 @@ details.wscore p{margin:4px 0}
 .banner b{display:block;font-size:15px}
 .banner span{font-size:13px}
 .tgrid{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+.acc{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.acc .card{scroll-margin-top:12px}
 .focus{order:1}
 .donebox{background:var(--done-tint);color:var(--done-text);border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .donebox b{font-weight:600}
@@ -134,6 +136,22 @@ details.wscore p{margin:4px 0}
 .btns{display:flex;gap:8px;flex-wrap:wrap}
 .btn{border:1px solid var(--line);border-radius:12px;padding:0 16px;min-height:44px;font-weight:600;background:var(--surface);color:var(--ink)}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.danger{background:var(--danger);color:var(--danger-ink);border-color:var(--danger)}
+.askbox{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:41;background:var(--surface);border-radius:20px;padding:20px;width:min(420px,calc(100vw - 32px));max-height:86vh;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.askbox p{margin:0;color:var(--muted);white-space:pre-line}
+.askbtns{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.askbtns .btn{width:100%;min-height:48px}
+.editbar{position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--accent-tint);color:var(--accent-text);border-radius:14px;padding:8px 12px;margin:12px 0;font-weight:600}
+.editbar .btns .btn{min-height:40px}
+.ro{display:flex;flex-direction:column}
+.rorow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--hair)}
+.rorow:last-child{border-bottom:0}
+.rorow b{display:block;font-weight:600}
+.rorow small{display:block;font-size:12px;color:var(--muted)}
+.rorow .g{font-family:var(--display);font-weight:600;font-size:20px;white-space:nowrap}
+.bkrow{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:48px;border-bottom:1px solid var(--hair)}
+.bkrow:last-child{border-bottom:0}
+.bkrow small{color:var(--muted);font-size:13px}
 .row{all:unset;box-sizing:border-box;background:var(--surface);border-radius:16px;padding:11px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer;min-height:62px}
 .row .nm{display:block;font-weight:600}
 .row .sub{display:block;font-size:13px;color:var(--muted)}
@@ -174,6 +192,15 @@ details.wscore p{margin:4px 0}
 .handle{touch-action:none;border:0;background:none;color:var(--faint);padding:8px 0;cursor:grab;display:grid;place-items:center;user-select:none;-webkit-user-select:none}
 .prow.dragging{background:var(--sunk);border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,.18);position:relative;z-index:2}
 .prow.dragging .handle{cursor:grabbing;color:var(--accent)}
+.exr{all:unset;box-sizing:border-box;display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;padding:10px 12px;background:var(--sunk);border-radius:12px;margin-bottom:6px;cursor:pointer;min-height:56px}
+.exr b{display:block;font-weight:600}
+.exr small{display:block;font-size:12px;color:var(--muted)}
+.exr:focus-visible,.exhead:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.exopen{background:var(--surface);border-radius:12px;padding:12px;margin-bottom:6px;box-shadow:inset 0 0 0 2px var(--accent);display:flex;flex-direction:column;gap:10px}
+.exhead{all:unset;display:flex;justify-content:space-between;align-items:center;cursor:pointer;min-height:36px}
+.exhead b{font-weight:600}
+.exgrp{font-size:13px;color:var(--muted);margin:14px 0 6px}
+.chev{color:var(--faint)}
 .exrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--hair)}
 .exrow .nmi{grid-column:1/-1}
 .exrow .nostep{font-size:13px;color:var(--faint);text-align:center}
@@ -201,6 +228,8 @@ details.wscore p{margin:4px 0}
 .sess:last-child{border-bottom:0}
 .sess-h{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline}
 .sess-h b{font-weight:600}
+.sess-f{display:flex;justify-content:flex-end;margin-top:-6px}
+.sess-f .link{min-height:36px;font-size:13px}
 .sess-h span{font-size:13px;color:var(--muted)}
 .sess-h .up{color:var(--done-text)}
 .sess-h .down{color:var(--warn)}
@@ -252,7 +281,8 @@ const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const SESSION_MS=3*60*60*1000, AWAY_MS=30*60*1000;
 const STEPS_KG=[1,1.25,2,2.5,5], STEPS_LB=[2.5,5,10];
-const TYPES={weight:'Weight × reps',reps:'Reps (+ weight)',time:'Time (sec)'};
+const TYPES={weight:'Weights',reps:'Bodyweight',time:'Timed'};
+const TYPE_HELP='Weights: kg × reps (barbell, dumbbell, machine). Bodyweight: reps, extra weight optional (pull-ups, dips). Timed: seconds (plank).';
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad=n=>String(n).padStart(2,'0');
@@ -276,7 +306,7 @@ const I={
 /* ---------------- state ---------------- */
 let plan, days={};
 let view='today', viewKey=today(), weekOff=0, active={}, editor=null, addOpen=false, noteOpen=null, sheet=false;
-let planDay=new Date().getDay(), progEx=null, pendingRender=false;
+let planDay=new Date().getDay(), progEx=null, pendingRender=false, planEditing=false, editSnap=null, exOpen=null, askState=null, bkCloudList=null;
 function emptyWeek(){const w={};for(let i=0;i<7;i++)w[i]={name:'',rest:false,items:[]};return w}
 function normPlan(p){
   p=p||{};const o={v:3,unit:p.unit==='lb'?'lb':'kg',theme:(p.theme==='light'||p.theme==='dark')?p.theme:'auto',startedOn:p.startedOn||null,library:{},week:emptyWeek()};
@@ -346,7 +376,7 @@ async function startSync(){
   try{
     const [ps,ds]=await Promise.all([pRef.get(),dCol.get()]);
     const prevUid=LS.get('synced'),first=prevUid!==user.uid;
-    if(prevUid&&first&&(hasContent(plan)||Object.keys(days).length)&&!confirm('This device has workouts from another account.\nOK: copy them into this account.\nCancel: start clean on this device.')){
+    if(prevUid&&first&&(hasContent(plan)||Object.keys(days).length)&&(await ask({title:'Workouts from another account',msg:'This device has workouts from a different Google account.',buttons:[{v:'copy',label:'Copy them into this account',style:'primary'},{v:'clean',label:'Start clean on this device'}]}))!=='copy'){
       plan=normPlan();days={};dirtyDays.clear();replaceDays.clear();planDirty=false;replaceAll=false;LS.set('session',null)}
     const cloud={};ds.forEach(doc=>{cloud[doc.id]=normDay(doc.data())});
     if(replaceAll){
@@ -357,7 +387,7 @@ async function startSync(){
     if(ps.exists){
       const cp=normPlan(ps.data());
       if(planDirty&&!first){/* local plan edits made while signed out win */}
-      else if(first&&hasContent(plan)&&JSON.stringify(cp)!==JSON.stringify(plan)&&!confirm('Your account already has a plan.\nOK: use the plan from your account.\nCancel: keep the plan on this device.')){planDirty=true}
+      else if(first&&hasContent(plan)&&JSON.stringify(cp)!==JSON.stringify(plan)&&(await ask({title:'Two different plans',msg:'Your account already has a plan, and this device has another one.',buttons:[{v:'account',label:'Use the plan from my account',style:'primary'},{v:'device',label:'Keep this device’s plan'}]}))==='device'){planDirty=true}
       else{plan=cp;planDirty=false}
     }else if(hasContent(plan))planDirty=true;
     Object.keys(days).forEach(d=>{if(!cloud[d])dirtyDays.add(d)});
@@ -366,7 +396,7 @@ async function startSync(){
       if(first&&days[d]&&doneCount(days[d])>doneCount(v)){dirtyDays.add(d);return}
       days[d]=v;
     });
-    LS.set('synced',user.uid);applyTheme(plan.theme);saveLocal();flush();render();
+    LS.set('synced',user.uid);applyTheme(plan.theme);saveLocal();flush();autoBackup();render();
     }
   }catch(e){toast('Could not reach your account. Working offline.')}
   unsubs.push(pRef.onSnapshot(s=>{if(s.metadata.hasPendingWrites||!s.exists||planDirty||Date.now()-planEditAt<4000)return;plan=normPlan(s.data());applyTheme(plan.theme);saveLocal();softRender()},()=>{}));
@@ -460,7 +490,21 @@ function mergeEx(from,to){
 }
 
 /* ---------------- ui helpers ---------------- */
-let tt=null,undoFn=null;function toast(m,undo){const t=$('#toast');t.innerHTML='<span>'+esc(m)+'</span>'+(undo?'<button class="tbtn" data-act="undo">Undo</button>':'');undoFn=undo||null;t.classList.toggle('act',!!undo);t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>{t.classList.remove('show','act');undoFn=null},undo?5000:3200)}
+function ask(o){return new Promise(res=>{askState=Object.assign({},o,{res});renderAsk();setTimeout(()=>{const b=document.querySelector('#askBox [data-askv="cancel"]')||document.querySelector('#askBox [data-askv]');b&&b.focus()},30)})}
+function confirmAsk(title,msg,yes,style){return ask({title,msg,buttons:[{v:'yes',label:yes,style:style||'danger'},{v:'cancel',label:'Cancel'}]}).then(v=>v==='yes')}
+function renderAsk(){const r=$('#sheetRoot');if(!askState){r.innerHTML='';return}const a=askState;
+  r.innerHTML='<div class="scrim" data-askv="cancel"></div><div class="askbox" id="askBox" role="alertdialog" aria-modal="true" aria-labelledby="askT"'+(a.msg?' aria-describedby="askM"':'')+'><h2 id="askT" class="h2d" style="font-size:26px">'+esc(a.title)+'</h2>'+(a.msg?'<p id="askM">'+esc(a.msg)+'</p>':'')+'<div class="askbtns">'+a.buttons.map(b=>'<button class="btn'+(b.style?' '+b.style:'')+'" data-askv="'+b.v+'">'+esc(b.label)+'</button>').join('')+'</div></div>'}
+function closeAsk(v){if(!askState)return;const r=askState.res;askState=null;renderAsk();r(v)}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-askv]');if(!b||!askState)return;e.stopPropagation();e.preventDefault();closeAsk(b.dataset.askv)},true);
+const takeSnap=()=>({plan:clone(plan),days:clone(days)});
+function restoreSnap(sn){
+  const keys=new Set(Object.keys(days).concat(Object.keys(sn.days)));
+  keys.forEach(d=>{if(JSON.stringify(days[d]||null)!==JSON.stringify(sn.days[d]||null)){days[d]=normDay(sn.days[d]||null);touchDay(d,true)}});
+  if(JSON.stringify(plan)!==JSON.stringify(sn.plan)){plan=normPlan(sn.plan);applyTheme(plan.theme);savePlan()}
+  render();
+}
+function withUndo(msg,fn){const sn=takeSnap();fn();render();toast(msg,()=>restoreSnap(sn))}
+let tt=null,undoFn=null;function toast(m,undo){const t=$('#toast');t.innerHTML='<span>'+esc(m)+'</span>'+(undo?'<button class="tbtn" data-act="undo">Undo</button>':'');undoFn=undo||null;t.classList.toggle('act',!!undo);t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>{t.classList.remove('show','act');undoFn=null},undo?7000:3200)}
 function hideToast(){const t=$('#toast');t.classList.remove('show','act');undoFn=null}
 function softRender(){const a=document.activeElement;if(a&&a.matches&&a.matches('input,select')&&a.id!=='impfile'){pendingRender=true;return}render()}
 document.addEventListener('focusout',()=>setTimeout(()=>{if(!pendingRender)return;const a=document.activeElement;if(!(a&&a.matches&&a.matches('input,select'))){pendingRender=false;render()}},60));
@@ -491,19 +535,23 @@ function todayHtml(){
   if(x&&x.off)return h+'<div class="restcard"><p>Marked as rest. Your streak is safe.</p>'+(isT?'<button class="btn primary" data-act="unoff">Train today anyway</button>':'')+'</div>';
   prs(d).forEach(p=>{h+='<div class="banner">'+I.trophy+'<div><b>New PR on '+esc(exName(p.id))+'</b><span>'+esc(fmtSet(p.t,p.tp))+', '+esc(p.diff)+'</span></div></div>'});
   if(!items.length){
-    h+='<div class="restcard"><p>Nothing planned '+(isT?'today':'this day')+'.</p>'+(addOpen?'':'<button class="btn primary" data-act="openadd">Add an exercise</button>')+'</div>';
+    h+='<div class="restcard"><p>Nothing planned '+(isT?'today':'this day')+'. Add an exercise, or enjoy the rest.</p>'+(addOpen?'':'<button class="btn primary" data-act="openadd">Add an exercise</button>')+'</div>';
     if(addOpen)h+=addForm(d);
     return h+skippedLine(d);
   }
   const act=activeFor(d,items);
-  h+='<div class="tgrid"><div class="focus">'+cardHtml(d,act,items)+'</div><div class="list">'+items.map(it=>rowHtml(d,it,it.ex===act.ex)).join('');
+  if(isWide())h+='<div class="tgrid"><div class="focus">'+cardHtml(d,act,items)+'</div><div class="list">'+items.map(it=>rowHtml(d,it,it.ex===act.ex)).join('');
+  else h+='<div class="acc">'+items.map(it=>it.ex===act.ex?cardHtml(d,it,items):rowHtml(d,it,false)).join('');
   h+=skippedLine(d);
   h+=addOpen?addForm(d):'<button class="ghost" data-act="openadd">+ Add an exercise</button>';
   if(sessionActive(d)&&d!==sessionDay())h+='<div class="small-center"><button class="link" data-act="finish">Finish workout</button></div>';
   if(isT&&!st.n)h+='<div class="small-center"><button class="link muted" data-act="off">Gym closed or packed? Mark today as rest</button></div>';
-  h+='</div></div>';
+  h+=isWide()?'</div></div>':'</div>';
   return h;
 }
+const wideMQ=window.matchMedia?window.matchMedia('(min-width:900px)'):null;
+function isWide(){return !!(wideMQ&&wideMQ.matches)}
+if(wideMQ&&wideMQ.addEventListener)wideMQ.addEventListener('change',()=>{if(view==='today')softRender()});
 function activeFor(d,items){const a=active[d];const f=a&&items.find(i=>i.ex===a);if(f)return f;return items.find(it=>doneSets(d,it.ex).length<rowsFor(d,it))||items[items.length-1]}
 function weekStrip(){
   const wk=weekDates(weekOff),t0=today();
@@ -531,7 +579,7 @@ function rowHtml(d,it,isAct){
 function cardHtml(d,it,items){
   const id=it.ex,t=exType(id),x=days[d],sets=(x&&x.sets[id])||[],rows=rowsFor(d,it),tg=rowTargets(d,id,it,rows),e=ex(id);
   let first=-1;for(let i=0;i<rows;i++){if(!valid(t,sets[i])){first=i;break}}
-  let h='<section class="card" aria-label="'+esc(exName(id))+'"><div class="card-head"><h2 class="h2d">'+esc(exName(id))+'</h2><span class="goal">Goal '+goalTxt(t,it)+'</span></div>';
+  let h='<section class="card" data-card="'+id+'" aria-label="'+esc(exName(id))+'"><div class="card-head"><h2 class="h2d">'+esc(exName(id))+'</h2><span class="goal">Goal '+goalTxt(t,it)+'</span></div>';
   h+='<div class="chips">'+(tg.has?'<span class="chip next">Next '+esc(listTxt(t,tg.list))+'</span><span class="chip">Last '+esc(dname(tg.lastDate))+': '+esc(listTxt(t,tg.last))+'</span>':'<span class="chip">First time. This sets the bar.</span>')+'</div>';
   if(tg.has)h+='<div class="why">'+esc(tg.why)+'</div>';
   if(plateau(id,d))h+='<span class="flag">No progress in 3 weeks</span>';
@@ -564,33 +612,68 @@ function editorHtml(t,s,tv,i){
   h+='<div class="btns"><button class="btn primary" data-act="edsave">Save as done</button>'+(s.done?'<button class="btn" data-act="edundo">Not done</button>':'')+'<button class="btn" data-act="edcancel">Cancel</button></div></div>';
   return h;
 }
-function addForm(d){return '<div class="card"><strong>Add an exercise for '+(d===today()?'today':esc(fmtDate(d)))+'</strong><div class="formgrid"><div class="field wide"><label for="addName">Exercise</label><input class="inp" id="addName" list="exlist" autocomplete="off" placeholder="Incline press"></div><div class="field"><label for="addType">Type</label>'+typeSelect('id="addType"','weight')+'</div><div class="field"><label for="addSets">Sets</label><input class="inp" id="addSets" inputmode="numeric" value="3"></div><div class="field"><label for="addReps">Reps or seconds</label><input class="inp" id="addReps" inputmode="numeric" value="10"></div></div><div class="btns"><button class="btn primary" data-act="addday">Add</button><button class="btn" data-act="closeadd">Cancel</button></div></div>'}
+function addForm(d){return '<div class="card"><strong>Add an exercise for '+(d===today()?'today':esc(fmtDate(d)))+'</strong><div class="formgrid"><div class="field wide"><label for="addName">Exercise</label><input class="inp" id="addName" list="exlist" autocomplete="off" placeholder="Incline press"></div><div class="field"><label for="addType">Type</label>'+typeSelect('id="addType"','weight')+'</div><div class="field"><label for="addSets">Sets</label><input class="inp" id="addSets" inputmode="numeric" value="3"></div><div class="field"><label for="addReps">Reps or seconds</label><input class="inp" id="addReps" inputmode="numeric" value="10"></div><p class="help wide">'+TYPE_HELP+'</p></div><div class="btns"><button class="btn primary" data-act="addday">Add</button><button class="btn" data-act="closeadd">Cancel</button></div></div>'}
 function skippedLine(d){const x=days[d];if(!x||!x.skip.length)return '';const sk=x.skip.filter(i=>ex(i));if(!sk.length)return '';return '<p class="help">Skipped: '+sk.map(i=>esc(exName(i))+' <button class="link" data-act="unskip" data-ex="'+i+'">Put back</button>').join(', ')+'</p>'}
 function stepSelect(id){const opts=plan.unit==='lb'?STEPS_LB.map(v=>[v/KG_LB,v]):STEPS_KG.map(v=>[v,v]),cur=exStep(id);let bi=0;opts.forEach((o,i)=>{if(Math.abs(o[0]-cur)<Math.abs(opts[bi][0]-cur))bi=i});
   return '<select class="inp" aria-label="Weight step for '+esc(exName(id))+'" data-step="'+id+'">'+opts.map((o,i)=>'<option value="'+o[0]+'"'+(i===bi?' selected':'')+'>+'+o[1]+' '+plan.unit+' step</option>').join('')+'</select>'}
 function typeSelect(attr,sel){return '<select class="inp" '+attr+'>'+Object.entries(TYPES).map(([k,v])=>'<option value="'+k+'"'+(k===sel?' selected':'')+'>'+v+'</option>').join('')+'</select>'}
 
 function planHtml(){
-  const w=plan.week[planDay];
+  if(planEditing)return planEditHtml();
+  const w=plan.week[planDay],items=w.items.filter(i=>ex(i.ex));
   let h=signinBar()+'<h1 class="big sm">Your week</h1>';
+  if(!hasContent(plan))return h+'<div class="empty"><p>Your week is empty. Tap Edit week, pick a day, name it, and add its exercises.</p><button class="btn primary" data-act="editweek">Edit week</button></div>';
+  h+='<div class="daypills">'+ORDER.map(i=>{const x=plan.week[i];return '<button class="dp" data-act="pday" data-d="'+i+'" aria-pressed="'+(i===planDay)+'">'+DAYS[i]+'<small>'+esc(x.rest?'Rest':(x.name||(x.items.length?'Workout':'Empty')))+'</small></button>'}).join('')+'</div>';
+  h+='<div class="pgrid"><div class="card"><div class="card-head"><h2 class="h2d">'+esc(w.rest?'Rest day':(w.name||'No name'))+'</h2><span class="goal">'+DAYS[planDay]+'</span></div>';
+  if(w.rest)h+='<p class="help">Nothing planned. Rest days keep your streak.</p>';
+  else if(!items.length)h+='<p class="help">No exercises on '+DAYS[planDay]+'. Tap Edit week to add some, or leave it empty as a rest day.</p>';
+  else h+='<div class="ro">'+items.map(it=>{const t=exType(it.ex);return '<div class="rorow"><span><b>'+esc(exName(it.ex))+'</b><small>'+TYPES[t]+'</small></span><span class="g">'+goalTxt(t,it)+'</span></div>'}).join('')+'</div>';
+  h+='<button class="btn primary" data-act="editweek">Edit week</button></div>';
+  h+=exListHtml(false);
+  return h+'</div>';
+}
+function exDays(id){return ORDER.filter(i=>!plan.week[i].rest&&plan.week[i].items.some(x=>x.ex===id)).map(i=>DAYS[i])}
+function exSub(id){const t=exType(id),dd=exDays(id);return TYPES[t]+(t==='time'?'':', +'+stepU(id)+' '+plan.unit+' step')+(dd.length?', '+dd.join(' '):'')}
+function exListHtml(editing){
+  const by=(a,b)=>exName(a).localeCompare(exName(b)),all=Object.keys(plan.library);
+  const act=all.filter(id=>!plan.library[id].archived).sort(by),inW=act.filter(id=>exDays(id).length),notW=act.filter(id=>!exDays(id).length),arc=all.filter(id=>plan.library[id].archived).sort(by);
+  const segB=(a,id,cur,opts)=>'<div class="seg" role="radiogroup">'+opts.map(([v,l,on])=>'<button role="radio" data-act="'+a+'" data-ex="'+id+'" data-v="'+v+'" aria-checked="'+on+'">'+l+'</button>').join('')+'</div>';
+  const row=id=>{
+    if(!editing)return '<button class="exr" data-act="exedit" data-ex="'+id+'"><span><b>'+esc(exName(id))+'</b><small>'+esc(exSub(id))+'</small></span><span class="chev" aria-hidden="true">›</span></button>';
+    if(exOpen!==id)return '<button class="exr" data-act="exopen" data-ex="'+id+'" aria-expanded="false"><span><b>'+esc(exName(id))+'</b><small>'+esc(exSub(id))+'</small></span><span class="chev" aria-hidden="true">›</span></button>';
+    const t=exType(id),opts=plan.unit==='lb'?STEPS_LB.map(v=>[v/KG_LB,v]):STEPS_KG.map(v=>[v,v]),cur=exStep(id);let bi=0;opts.forEach((o,i)=>{if(Math.abs(o[0]-cur)<Math.abs(opts[bi][0]-cur))bi=i});
+    return '<div class="exopen" data-exbox="'+id+'"><button class="exhead" data-act="exopen" data-ex="'+id+'" aria-expanded="true"><b>'+esc(exName(id))+'</b><span class="chev" aria-hidden="true">⌄</span></button>'+
+      '<div class="field"><label for="exn-'+id+'">Name</label><input class="inp" id="exn-'+id+'" data-ren="'+id+'" value="'+esc(exName(id))+'" autocomplete="off"></div>'+
+      '<div><span class="flabel">Type</span>'+segB('extype',id,t,Object.entries(TYPES).map(([k,v])=>[k,v,k===t]))+'</div>'+
+      (t==='time'?'':'<div><span class="flabel">Next adds</span>'+segB('exstep',id,cur,opts.map((o,i)=>[o[0],o[1],i===bi]))+'<p class="help">'+plan.unit+', when you hit every rep</p></div>')+
+      '<div class="btns"><button class="btn danger" data-act="archive" data-ex="'+id+'">Archive</button><button class="btn primary" data-act="exopen" data-ex="'+id+'">Done</button></div></div>';
+  };
+  let h='<div class="card"><strong>Your exercises</strong><p class="help">'+(editing?'Tap one to rename, change type or step, or archive. Rename to an existing name to merge them, history included.':'Tap one to change it.')+'</p>';
+  if(!act.length&&!arc.length)h+='<p class="help">None yet. Add one to a day first.</p>';
+  if(inW.length)h+='<div class="exgrp">In your week</div>'+inW.map(row).join('');
+  if(notW.length)h+='<div class="exgrp">Not in your week</div>'+notW.map(row).join('');
+  if(arc.length)h+='<div class="exgrp">Archived (history kept)</div>'+arc.map(id=>'<div class="exr"><span><b>'+esc(exName(id))+'</b><small>'+TYPES[exType(id)]+'</small></span><button class="link" data-act="restore" data-ex="'+id+'">Restore</button></div>').join('');
+  return h+'</div>';
+}
+function planEditHtml(){
+  const w=plan.week[planDay];
+  let h='<h1 class="big sm">Your week</h1><div class="editbar"><span>Editing your week</span><span class="btns"><button class="btn" data-act="canceledit">Cancel</button><button class="btn primary" data-act="doneedit">Done editing</button></span></div>';
   h+='<div class="daypills">'+ORDER.map(i=>{const x=plan.week[i];return '<button class="dp" data-act="pday" data-d="'+i+'" aria-pressed="'+(i===planDay)+'">'+DAYS[i]+'<small>'+esc(x.rest?'Rest':(x.name||(x.items.length?'Workout':'Empty')))+'</small></button>'}).join('')+'</div>';
   h+='<div class="pgrid"><div class="card"><div class="field"><label for="dname">Name for '+DAYS[planDay]+'</label><input class="inp" id="dname" value="'+esc(w.name)+'" placeholder="Push, Pull, Legs…"></div>';
   h+='<label class="toggle-row"><span>Rest day</span><input type="checkbox" class="sw" id="drest"'+(w.rest?' checked':'')+'></label>';
   if(!w.rest){
     const items=w.items.filter(i=>ex(i.ex));
-    if(!items.length)h+='<p class="help">No exercises yet.</p>';
+    if(!items.length)h+='<p class="help">No exercises yet. Add one below.</p>';
     else h+='<div class="plist">'+w.items.map((it,idx)=>{if(!ex(it.ex))return '';const t=exType(it.ex);return '<div class="prow" data-row="'+idx+'"><button class="handle" data-i="'+idx+'" aria-label="Drag to reorder, or use arrow keys">'+I.grip+'</button><span class="nm">'+esc(exName(it.ex))+'<small>'+TYPES[t]+'</small></span><input inputmode="numeric" aria-label="Sets" data-pi="'+idx+'" data-pf="sets" value="'+(it.sets||3)+'"><span class="x">×</span><input inputmode="numeric" aria-label="'+(t==='time'?'Seconds':'Reps')+'" data-pi="'+idx+'" data-pf="reps" value="'+(it.reps||10)+'"><button class="rm" data-act="rm" data-i="'+idx+'" aria-label="Remove from '+DAYS[planDay]+'">✕</button></div>'}).join('')+'</div>';
-    h+='<div class="formgrid" style="margin-top:6px"><div class="field wide"><label for="pName">Add exercise to '+DAYS[planDay]+'</label><input class="inp" id="pName" list="exlist" autocomplete="off" placeholder="Bench press"></div><div class="field"><label for="pType">Type</label>'+typeSelect('id="pType"','weight')+'</div><div class="field"><label for="pSets">Sets</label><input class="inp" id="pSets" inputmode="numeric" value="3"></div><div class="field"><label for="pReps">Reps or seconds</label><input class="inp" id="pReps" inputmode="numeric" value="10"></div><div class="field" style="display:flex;align-items:flex-end"><button class="btn primary" data-act="padd" style="width:100%">Add</button></div></div>';
+    h+='<div class="formgrid" style="margin-top:6px"><div class="field wide"><label for="pName">Add exercise to '+DAYS[planDay]+'</label><input class="inp" id="pName" list="exlist" autocomplete="off" placeholder="Bench press"></div><div class="field"><label for="pType">Type</label>'+typeSelect('id="pType"','weight')+'</div><div class="field"><label for="pSets">Sets</label><input class="inp" id="pSets" inputmode="numeric" value="3"></div><div class="field"><label for="pReps">Reps or seconds</label><input class="inp" id="pReps" inputmode="numeric" value="10"></div><div class="field" style="display:flex;align-items:flex-end"><button class="btn primary" data-act="padd" style="width:100%">Add</button></div><p class="help wide">'+TYPE_HELP+'</p></div>';
   }
   h+='</div>';
-  const act=Object.keys(plan.library).filter(id=>!plan.library[id].archived).sort((a,b)=>exName(a).localeCompare(exName(b)));
-  const arc=Object.keys(plan.library).filter(id=>plan.library[id].archived).sort((a,b)=>exName(a).localeCompare(exName(b)));
-  h+='<div class="card"><strong>Your exercises</strong><p class="help">Rename to fix a typo. Use an existing name to merge them, history included. The +step is how much Next adds when you hit every rep.</p>';
-  if(!act.length)h+='<p class="help">None yet.</p>';
-  act.forEach(id=>{h+='<div class="exrow"><input class="inp nmi" aria-label="Exercise name" data-ren="'+id+'" value="'+esc(exName(id))+'">'+typeSelect('aria-label="Type" data-type="'+id+'"',exType(id))+(exType(id)==='time'?'<span class="nostep">No weight</span>':stepSelect(id))+'<button class="link muted" data-act="archive" data-ex="'+id+'">Archive</button></div>'});
-  if(arc.length)h+='<p class="help" style="margin-top:12px">Archived (history kept): '+arc.map(id=>esc(exName(id))+' <button class="link" data-act="restore" data-ex="'+id+'">Restore</button>').join(', ')+'</p>';
-  return h+'</div></div>';
+  h+=exListHtml(true);
+  return h+'</div><div class="btns" style="margin-top:14px"><button class="btn" data-act="canceledit">Cancel</button><button class="btn primary" data-act="doneedit">Done editing</button></div>';
 }
+function bkHtml(){loadCloudBackups();const l=backupList();
+  if(!l.length)return '<p class="help">No automatic backups yet. One is saved each day you open the app, and the last 7 are kept.</p>';
+  return l.map(b=>'<div class="bkrow"><span>'+esc(fmtDate(b.date))+' <small>'+b.sets+(b.sets===1?' set':' sets')+'</small></span><button class="link" data-act="bkrestore" data-src="'+b.src+'" data-d="'+b.date+'">Restore</button></div>').join('')+'<p class="help">Saved when you first open the app each day. Last 7 kept'+(user?', online too':'')+'.</p>'}
 function settingsHtml(){
   const seg=(act,cur,opts,label)=>'<div class="seg" role="radiogroup" aria-label="'+label+'">'+opts.map(([v,l])=>'<button role="radio" data-act="'+act+'" data-v="'+v+'" aria-checked="'+(v===cur)+'">'+l+'</button>').join('')+'</div>';
   let acct;
@@ -603,7 +686,8 @@ function settingsHtml(){
     '<div class="card sec"><h3>Account and sync</h3>'+acct+'</div>'+
     '<div class="card sec"><h3>Theme</h3>'+seg('theme',plan.theme,[['auto','Auto'],['light','Light'],['dark','Dark']],'Theme')+'<p class="help">Auto follows your device.</p></div>'+
     '<div class="card sec"><h3>Weight unit</h3>'+seg('unit',plan.unit,[['kg','kg'],['lb','lb']],'Weight unit')+'<p class="help">Switching converts all your numbers.</p></div>'+
-    '<div class="card sec"><h3>Backup</h3><button class="listbtn" data-act="export">Save backup file'+I.chev+'</button><button class="listbtn" data-act="import">Load backup file'+I.chev+'</button><p class="help">Save a copy now and then. Load one to restore or move your workouts.</p></div></div>';
+    '<div class="card sec"><h3>Automatic backups</h3>'+bkHtml()+'</div>'+
+    '<div class="card sec"><h3>Backup file</h3><button class="listbtn" data-act="export">Save backup file'+I.chev+'</button><button class="listbtn" data-act="import">Load backup file'+I.chev+'</button><p class="help">A file you keep yourself, for example in Google Drive.</p></div></div>';
 }
 function progressHtml(){
   const lastOf=id=>{const ss=sessions(id);return ss.length?ss[ss.length-1].d:''};
@@ -625,13 +709,13 @@ function progressHtml(){
   let list='<div class="card"><strong>Every set, last '+recent.length+' session'+(recent.length===1?'':'s')+'</strong>';
   recent.forEach((x,k)=>{const tp=top(t,x.sets),ti=x.sets.indexOf(tp);let meta=x.sets.length+(x.sets.length===1?' set':' sets'),cls='';
     if(t==='weight'){const vol=x.sets.reduce((a,s)=>a+toU(s.w)*s.r,0),p=recent[k+1];meta='Volume '+Math.round(vol)+' '+plan.unit;if(p){const dv=Math.round(vol-p.sets.reduce((a,s)=>a+toU(s.w)*s.r,0));meta+=dv>0?', up '+dv:dv<0?', down '+(-dv):', same';cls=dv>0?'up':dv<0?'down':''}}
-    list+='<div class="sess"><div class="sess-h"><b>'+esc(fmtDate(x.d))+'</b><span class="'+cls+'">'+meta+'</span></div><div class="scs">'+x.sets.map((s,i)=>{const short=goal&&(t==='time'?s.t<goal:s.r<goal);return '<span class="sc'+(i===ti?' best':short?' short':'')+'">'+esc(t==='weight'?fw(s.w)+' × '+s.r:fmtSet(t,s))+'</span>'}).join('')+'</div></div>'});
+    list+='<div class="sess"><div class="sess-h"><b>'+esc(fmtDate(x.d))+'</b><span class="'+cls+'">'+meta+'</span></div><div class="scs">'+x.sets.map((s,i)=>{const short=goal&&(t==='time'?s.t<goal:s.r<goal);return '<span class="sc'+(i===ti?' best':short?' short':'')+'">'+esc(t==='weight'?fw(s.w)+' × '+s.r:fmtSet(t,s))+'</span>'}).join('')+'</div><div class="sess-f"><button class="link muted" data-act="delsess" data-d="'+x.d+'" data-ex="'+progEx+'">Delete this session</button></div></div>'});
   list+='<p class="help">Yellow: best set that day. Orange: short of your goal.</p></div>';
   return h+'<div class="pgrid">'+hero+list+'</div>';
 }
 
 /* ---------------- events ---------------- */
-document.querySelector('.tabbar').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;view=b.dataset.view;addOpen=false;noteOpen=null;editor=null;render();window.scrollTo(0,0)});
+document.querySelector('.tabbar').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(view==='plan'&&b.dataset.view!=='plan')finishEdit();view=b.dataset.view;addOpen=false;noteOpen=null;editor=null;render();window.scrollTo(0,0)});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.disabled)return;act(b.dataset.act,b)});
 document.addEventListener('input',e=>{
   const t=e.target;
@@ -643,29 +727,37 @@ document.addEventListener('change',e=>{
   const t=e.target;
   if(t.id==='drest'){plan.week[planDay].rest=t.checked;savePlan();render();return}
   if(t.dataset.type){const id=t.dataset.type,n=sessions(id).reduce((a,x)=>a+x.sets.length,0);
-    if(n&&!confirm(exName(id)+' has '+n+' logged sets. Changing the type changes how they read. Change anyway?')){t.value=exType(id);return}
-    plan.library[id].type=t.value;savePlan();pendingRender=false;render();return}
+    const want=t.value;
+    if(n){t.value=exType(id);confirmAsk('Change the type?',exName(id)+' has '+n+' logged sets. Changing the type changes how they show.','Change type','primary').then(ok=>{if(ok)withUndo('Type changed.',()=>{plan.library[id].type=want;savePlan()})});return}
+    plan.library[id].type=want;savePlan();pendingRender=false;render();return}
   if(t.dataset.step){plan.library[t.dataset.step].step=num(t.value);savePlan();return}
   if(t.dataset.ren){const id=t.dataset.ren,nn=t.value.trim();if(!nn){t.value=exName(id);return}
     const other=findEx(nn);
-    if(other&&other!==id){if(confirm('"'+exName(other)+'" already exists. Merge "'+exName(id)+'" into it, history included?')){mergeEx(id,other);toast('Merged into '+exName(other)+'.')}else t.value=exName(id)}
+    if(other&&other!==id){t.value=exName(id);confirmAsk('Merge exercises?','"'+exName(other)+'" already exists. Merge "'+exName(id)+'" into it, history included?','Merge','primary').then(ok=>{if(ok)withUndo('Merged into '+exName(other)+'.',()=>mergeEx(id,other))});return}
     else{plan.library[id].name=nn;savePlan()}
     pendingRender=false;render();return}
   if(t.id==='impfile'&&t.files[0]){const r=new FileReader();r.onload=()=>{try{importData(JSON.parse(r.result))}catch(x){toast('That file is not a workout backup.')}};r.readAsText(t.files[0]);t.value=''}
 });
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){if(editor){editor=null;render();return}}
+  if(e.key==='Escape'){if(askState){closeAsk('cancel');return}if(editor){editor=null;render();return}}
   if(e.key!=='Enter')return;const id=e.target.id;
   if(['addName','addSets','addReps'].includes(id)){e.preventDefault();act('addday')}
   else if(['pName','pSets','pReps'].includes(id)){e.preventDefault();act('padd')}
   else if(id==='noteIn'){e.preventDefault();act('noteclose')}
   else if(id&&id.startsWith('ed-')){e.preventDefault();act('edsave')}
 });
+function startEdit(){if(planEditing)return;editSnap=takeSnap();planEditing=true;exOpen=null}
+function finishEdit(){if(!planEditing)return;const sn=editSnap;planEditing=false;editSnap=null;if(sn&&(JSON.stringify(sn.plan)!==JSON.stringify(plan)||JSON.stringify(sn.days)!==JSON.stringify(days)))toast('Week saved.',()=>restoreSnap(sn))}
 function readEd(f){const el=$('#ed-'+f);return el?num(el.value):null}
+const UNDO_MSG={exstep:'Step changed.',addset:'Set added.',dropset:'Set removed.',unskip:'Put back.',addday:'Exercise added.',off:'Marked as rest.',unoff:'Back to training.',edundo:'Set marked not done.',rm:'Removed from this day.',restore:'Restored.',unit:'Unit changed.',padd:'Exercise added.'};
 function act(a,b){
-  const d=viewKey,id=b&&b.dataset.ex;
+  const d=viewKey,id=b&&b.dataset.ex,snap0=UNDO_MSG[a]?takeSnap():null;
   switch(a){
-    case 'focus':active[d]=id;editor=null;noteOpen=null;render();if(window.innerWidth<900){const f=$('.focus');f&&f.scrollIntoView({behavior:'smooth',block:'start'})}return;
+    case 'focus':{const y=b.getBoundingClientRect().top,fromRow=b.classList.contains('row');active[d]=id;editor=null;noteOpen=null;render();
+      if(!isWide()){const c=document.querySelector('.card[data-card="'+id+'"]');if(c){
+        if(fromRow)window.scrollBy(0,c.getBoundingClientRect().top-y);
+        else if(c.getBoundingClientRect().top<0||c.getBoundingClientRect().top>window.innerHeight*0.6)c.scrollIntoView({block:'start'})}}
+      return}
     case 'done':{const i=+b.dataset.i,it=visibleItems(d).find(x=>x.ex===id);if(!it)return;const rows=rowsFor(d,it),tv=rowTargets(d,id,it,rows).rowList[i];if(!tv)return;
       const before=days[d]?clone(days[d]):null;
       const s=setRow(d,id,i);s.w=tv.w!=null?tv.w:null;s.r=tv.r!=null?tv.r:null;s.t=tv.t!=null?tv.t:null;s.done=true;editor=null;
@@ -689,8 +781,11 @@ function act(a,b){
     case 'edcancel':editor=null;break;
     case 'addset':{const x=snap(d);x.rows[id]=+b.dataset.rows+1;touchDay(d);break}
     case 'dropset':{const x=snap(d),n=+b.dataset.rows-1;x.rows[id]=n;x.sets[id]=(x.sets[id]||[]).slice(0,n);if(editor&&editor.i>=n)editor=null;touchDay(d);break}
-    case 'skip':{const nDone=doneSets(d,id).length;if(nDone&&!confirm('You logged '+nDone+(nDone===1?' set':' sets')+' of '+exName(id)+' on this day. Skipping deletes '+(nDone===1?'it':'them')+'. Skip anyway?'))return;
-      const x=snap(d),inPlan=(x.plan||[]).some(i=>i.ex===id),k=x.extra.findIndex(e=>e.ex===id);delete x.sets[id];delete x.rows[id];if(!inPlan&&k>-1)x.extra.splice(k,1);else if(!x.skip.includes(id))x.skip.push(id);delete active[d];if(editor&&editor.ex===id)editor=null;touchDay(d,true);break}
+    case 'skip':{const nDone=doneSets(d,id).length,nm=exName(id);
+      const doSkip=()=>withUndo('Skipped '+nm+'.',()=>{const x=snap(d),inPlan=(x.plan||[]).some(i=>i.ex===id),k=x.extra.findIndex(e=>e.ex===id);delete x.sets[id];delete x.rows[id];
+        if(!inPlan&&k>-1)x.extra.splice(k,1);else if(!x.skip.includes(id))x.skip.push(id);delete active[d];if(editor&&editor.ex===id)editor=null;touchDay(d,true)});
+      if(nDone)confirmAsk('Skip '+nm+'?','You logged '+nDone+(nDone===1?' set':' sets')+' of '+nm+' on this day. Skipping deletes '+(nDone===1?'it':'them')+'.','Skip and delete sets').then(ok=>{if(ok)doSkip()});
+      else doSkip();return}
     case 'unskip':{const x=snap(d);x.skip=x.skip.filter(i=>i!==id);touchDay(d);break}
     case 'note':noteOpen=id;render();{const n=$('#noteIn');n&&n.focus()}return;
     case 'noteclose':noteOpen=null;break;
@@ -707,28 +802,41 @@ function act(a,b){
     case 'today':viewKey=today();weekOff=0;editor=null;addOpen=false;break;
     case 'wkprev':weekOff--;break;
     case 'wknext':if(weekOff<0)weekOff++;break;
-    case 'goplan':view='plan';planDay=new Date().getDay();break;
+    case 'goplan':view='plan';planDay=new Date().getDay();startEdit();break;
+    case 'editweek':startEdit();window.scrollTo(0,0);break;
+    case 'exedit':startEdit();exOpen=id;render();{const el=document.querySelector('[data-exbox="'+id+'"]');el&&el.scrollIntoView({block:'center'})}return;
+    case 'exopen':{const y=b.getBoundingClientRect().top;exOpen=exOpen===id?null:id;render();const el=document.querySelector('[data-exbox="'+id+'"]')||document.querySelector('.exr[data-ex="'+id+'"]');if(el)window.scrollBy(0,el.getBoundingClientRect().top-y);return}
+    case 'extype':{const want=b.dataset.v;if(want===exType(id))return;const n=sessions(id).reduce((a,x)=>a+x.sets.length,0);
+      const go=()=>withUndo('Type changed.',()=>{plan.library[id].type=want;savePlan()});
+      if(n)confirmAsk('Change the type?',exName(id)+' has '+n+' logged sets. Changing the type changes how they show.','Change type','primary').then(ok=>{if(ok)go()});else go();return}
+    case 'exstep':plan.library[id].step=num(b.dataset.v);savePlan();break;
+    case 'doneedit':finishEdit();window.scrollTo(0,0);break;
+    case 'canceledit':{const sn=editSnap;planEditing=false;editSnap=null;if(sn&&(JSON.stringify(sn.plan)!==JSON.stringify(plan)||JSON.stringify(sn.days)!==JSON.stringify(days))){restoreSnap(sn);toast('Changes discarded.')}window.scrollTo(0,0);break}
     case 'pday':planDay=+b.dataset.d;break;
     case 'padd':{const nid=ensureEx($('#pName').value,$('#pType').value);if(!nid){$('#pName').focus();return}
       if(!plan.startedOn)plan.startedOn=today();const w=plan.week[planDay];
       if(w.items.some(i=>i.ex===nid)){toast(exName(nid)+' is already on '+DAYS[planDay]+'.');return}
       w.items.push({ex:nid,sets:Math.max(1,Math.round(num($('#pSets').value)||3)),reps:Math.max(1,Math.round(num($('#pReps').value)||10))});
-      savePlan();render();{const p=$('#pName');p&&p.focus()}return}
+      savePlan();render();{const p=$('#pName');p&&p.focus()}toast(exName(nid)+' added to '+DAYS[planDay]+'.',()=>restoreSnap(snap0));return}
     case 'rm':plan.week[planDay].items.splice(+b.dataset.i,1);savePlan();break;
-    case 'archive':if(!confirm('Archive "'+exName(id)+'"? It leaves your plan. Its history stays in Progress, and you can restore it.'))return;
-      Object.values(plan.week).forEach(w=>{w.items=w.items.filter(i=>i.ex!==id)});plan.library[id].archived=true;savePlan();break;
+    case 'archive':confirmAsk('Archive '+exName(id)+'?','It leaves your plan. Its history stays in Progress, and you can restore it.','Archive').then(ok=>{if(ok)withUndo('Archived '+exName(id)+'.',()=>{Object.values(plan.week).forEach(w=>{w.items=w.items.filter(i=>i.ex!==id)});plan.library[id].archived=true;savePlan()})});return;
     case 'restore':plan.library[id].archived=false;savePlan();toast(exName(id)+' restored. Add it to a day in your plan.');break;
     case 'pex':progEx=id;break;
+    case 'delsess':{const dd=b.dataset.d,x=days[dd];if(!x||!x.sets[id])return;const n=doneSets(dd,id).length;
+      confirmAsk('Delete this session?',exName(id)+' on '+fmtDate(dd)+', '+n+(n===1?' set':' sets')+'. Your plan and other exercises stay.','Delete session').then(ok=>{if(ok)withUndo('Session deleted.',()=>{delete x.sets[id];delete x.rows[id];touchDay(dd,true)})});return}
     case 'theme':plan.theme=b.dataset.v;applyTheme(plan.theme);savePlan();break;
     case 'unit':plan.unit=b.dataset.v;savePlan();break;
     case 'signin':signIn();return;
-    case 'signout':if(!fb)return;{const wipe=confirm('Also remove your workouts from this device?\nThey stay safe in your account.\nOK: remove from this device. Cancel: keep them here.');
-      fb.auth().signOut().then(()=>{if(wipe){['plan','days','pending','synced','session'].forEach(k=>localStorage.removeItem('wt3:'+k));plan=normPlan();days={};dirtyDays.clear();replaceDays.clear();planDirty=false;active={};viewKey=today();toast('Signed out. This device is clear.')}else toast('Signed out. Your workouts stay on this device.');sheet=false;render()})}return;
+    case 'signout':if(!fb)return;
+      ask({title:'Sign out?',msg:'Your workouts stay safe in your account either way.',buttons:[{v:'keep',label:'Sign out, keep workouts on this device',style:'primary'},{v:'wipe',label:'Sign out and remove them from this device',style:'danger'},{v:'cancel',label:'Cancel'}]}).then(v=>{if(v==='cancel')return;const wipe=v==='wipe';
+        fb.auth().signOut().then(()=>{if(wipe){['plan','days','pending','synced','session','bk','bkCloud'].forEach(k=>localStorage.removeItem('wt3:'+k));plan=normPlan();days={};dirtyDays.clear();replaceDays.clear();planDirty=false;active={};viewKey=today();bkCloudList=null;toast('Signed out. This device is clear.')}else toast('Signed out. Your workouts stay on this device.');bkCloudList=null;render()})});return;
     case 'export':exportData();return;
+    case 'bkrestore':restoreBackup(b.dataset.src,b.dataset.d);return;
     case 'import':$('#impfile').click();return;
     default:return;
   }
   render();
+  if(snap0&&JSON.stringify(snap0)!==JSON.stringify(takeSnap()))toast(UNDO_MSG[a],()=>restoreSnap(snap0));
 }
 
 /* ---------------- backup ---------------- */
@@ -739,25 +847,47 @@ function exportData(){
 }
 function importData(d){
   if(!d||d.app!=='workout-tracker')throw 0;
-  if(!confirm('Replace everything here with the backup from '+String(d.saved||'').slice(0,10)+'?'))return;
-  if(d.v===3&&d.plan&&d.days){plan=normPlan(d.plan);days={};Object.entries(d.days).forEach(([k,v])=>{days[k]=normDay(v)})}
+  confirmAsk('Load this backup?','Everything goes back to the backup from '+String(d.saved||'').slice(0,10)+', on this device and online. You can undo right after.','Load backup').then(ok=>{if(!ok)return;
+    try{withUndo('Backup loaded.',()=>applyData(d));view='today'}catch(x){toast('That file is not a workout backup.')}render()});
+}
+function applyData(d){
+  let np,nd={};
+  if(d.v===3&&d.plan&&d.days){np=normPlan(d.plan);Object.entries(d.days).forEach(([k,v])=>{nd[k]=normDay(v)})}
   else if(d.plan&&d.logs){
     const op=d.plan,lb=op.unit==='lb',p={unit:op.unit,theme:op.theme,library:{},week:op.week};
     Object.entries(op.library||{}).forEach(([k,name])=>{p.library[k]={name:String(name),type:(op.types||{})[k]||'weight',note:(op.notes||{})[k]||''}});
-    plan=normPlan(p);days={};
+    np=normPlan(p);
     Object.values(d.logs||{}).forEach(m=>Object.entries(m||{}).forEach(([k,v])=>{const x=normDay(v);x.plan=null;
       Object.keys(x.sets).forEach(id=>{x.sets[id]=(x.sets[id]||[]).filter(s=>s&&typeof s==='object').map(s=>({w:s.w==null?null:(lb?s.w/KG_LB:s.w),r:s.r==null?null:s.r,t:s.t==null?null:s.t,done:!!s.done}))});
-      days[k]=x}));
-    Object.keys(days).forEach(k=>{days[k].plan=clone(weekItems(k))});
+      nd[k]=x}));
   }else throw 0;
+  const old=Object.keys(days);plan=np;days=nd;
+  if(d.logs)Object.keys(days).forEach(k=>{days[k].plan=clone(weekItems(k))});
   const ds=Object.keys(days).sort();if(!plan.startedOn)plan.startedOn=ds[0]||(hasContent(plan)?today():null);
-  applyTheme(plan.theme);LS.set('session',null);
-  if(user&&fdb){const dCol=fdb.collection('users/'+user.uid+'/days');dCol.get().then(q=>{const b=fdb.batch();let n=0;q.forEach(doc=>{if(!days[doc.id]){b.delete(doc.ref);n++}});return n?b.commit():null}).catch(syncErr)}
-  else replaceAll=true;
-  savePlan();Object.keys(days).forEach(k=>{dirtyDays.add(k);replaceDays.add(k)});saveLocal();flush();
-  sheet=false;view='today';viewKey=today();render();toast('Backup loaded.');
+  old.forEach(k=>{if(!days[k])days[k]=normDay()});
+  applyTheme(plan.theme);LS.set('session',null);savePlan();Object.keys(days).forEach(k=>{dirtyDays.add(k);replaceDays.add(k)});saveLocal();flush();viewKey=today();
 }
-
+/* ---------------- automatic backups ---------------- */
+const BK_KEEP=7;
+function setsCount(dd){let n=0;Object.values(dd||{}).forEach(x=>Object.values((x&&x.sets)||{}).forEach(a=>(a||[]).forEach(s=>{if(s&&s.done)n++})));return n}
+function autoBackup(){
+  if(!hasContent(plan))return;const t=today(),list=LS.get('bk')||[];
+  if(!list.length||list[0].date!==t){
+    list.unshift({date:t,sets:setsCount(days),data:{app:'workout-tracker',v:3,saved:new Date().toISOString(),plan:clone(plan),days:clone(days)}});
+    while(list.length>BK_KEEP)list.pop();while(list.length>1&&JSON.stringify(list).length>2000000)list.pop();LS.set('bk',list);
+  }
+  if(user&&fdb&&LS.get('bkCloud')!==list[0].date)cloudBackup(list[0]);
+}
+function cloudBackup(b){const js=JSON.stringify(b.data);if(js.length>900000)return;const col=fdb.collection('users/'+user.uid+'/backups');
+  col.doc(b.date).set({date:b.date,sets:b.sets,json:js}).then(()=>{LS.set('bkCloud',b.date);bkCloudList=null;return col.orderBy('date','desc').get()}).then(q=>{if(q)q.docs.slice(BK_KEEP).forEach(x=>x.ref.delete())}).catch(()=>{})}
+function loadCloudBackups(){if(!user||!fdb||bkCloudList)return;bkCloudList='loading';
+  fdb.collection('users/'+user.uid+'/backups').orderBy('date','desc').limit(BK_KEEP).get().then(q=>{bkCloudList=q.docs.map(x=>x.data());if(view==='settings')softRender()}).catch(()=>{bkCloudList=[]})}
+function backupList(){if(user&&Array.isArray(bkCloudList)&&bkCloudList.length)return bkCloudList.map(b=>({date:b.date,sets:b.sets,src:'cloud'}));return (LS.get('bk')||[]).map(b=>({date:b.date,sets:b.sets,src:'local'}))}
+function restoreBackup(src,date){
+  const go=data=>confirmAsk('Restore '+fmtDate(date)+'?','Everything goes back to how it was when you opened the app that day, on this device and online. You can undo right after.','Restore').then(ok=>{if(ok)withUndo('Backup restored.',()=>applyData(data))});
+  if(src==='local'){const b=(LS.get('bk')||[]).find(x=>x.date===date);if(b)go(b.data);return}
+  const b=(bkCloudList||[]).find(x=>x.date===date);if(b){try{go(JSON.parse(b.json))}catch(e){toast('That backup could not be read.')}}
+}
 /* ---------------- drag to reorder ---------------- */
 let drag=null;
 document.addEventListener('pointerdown',e=>{const h=e.target.closest('.handle');if(!h)return;e.preventDefault();const row=h.closest('.prow');drag={row,list:row.parentElement};row.classList.add('dragging');try{h.setPointerCapture(e.pointerId)}catch(x){}});
@@ -772,11 +902,11 @@ document.addEventListener('keydown',e=>{const h=e.target.closest&&e.target.close
 /* ---------------- start ---------------- */
 plan=normPlan(LS.get('plan'));
 Object.entries(LS.get('days')||{}).forEach(([k,v])=>{days[k]=normDay(v)});
-viewKey=homeDay();applyTheme(plan.theme);render();initFirebase();
+viewKey=homeDay();applyTheme(plan.theme);autoBackup();render();initFirebase();
 let lastDay=today(),hiddenAt=0;
 setInterval(()=>{const t=today();if(t!==lastDay){if(viewKey===lastDay&&!sessionActive(lastDay))viewKey=t;lastDay=t;softRender()}},60000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){hiddenAt=Date.now();return}
-  const t=today();if(hiddenAt&&Date.now()-hiddenAt>AWAY_MS){viewKey=homeDay();weekOff=0;editor=null;addOpen=false;noteOpen=null}else if(t!==lastDay&&viewKey===lastDay&&!sessionActive(lastDay))viewKey=t;lastDay=t;softRender()});
+  autoBackup();const t=today();if(hiddenAt&&Date.now()-hiddenAt>AWAY_MS){viewKey=homeDay();weekOff=0;editor=null;addOpen=false;noteOpen=null}else if(t!==lastDay&&viewKey===lastDay&&!sessionActive(lastDay))viewKey=t;lastDay=t;softRender()});
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 })();
 </script>
