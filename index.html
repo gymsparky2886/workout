@@ -276,7 +276,7 @@ details.wscore p{margin:4px 0}
 <script>
 (function(){
 'use strict';
-const APP_VERSION=16, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=17, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const SESSION_MS=3*60*60*1000, AWAY_MS=30*60*1000;
@@ -413,7 +413,7 @@ function weekItems(d){const w=plan.week[parse(d).getDay()];return w&&!w.rest?w.i
 function dayPlan(d){const x=days[d];return x&&x.plan?x.plan.filter(i=>ex(i.ex)):weekItems(d)}
 function snap(d){const x=getDay(d,true);if(!x.plan){x.plan=clone(weekItems(d));x.title=plan.week[parse(d).getDay()].name||''}return x}
 function plannedItems(d){const x=days[d],p=dayPlan(d),extra=x?x.extra.filter(e=>ex(e.ex)&&!p.some(i=>i.ex===e.ex)):[],t0=today();
-  return p.concat(extra).filter(i=>!(ex(i.ex).archived&&d>=t0&&!doneSets(d,i.ex).length))}
+  return p.concat(extra).filter(i=>!(ex(i.ex).archived&&d>=t0))}
 function visibleItems(d){const x=days[d],sk=x?x.skip:[];return plannedItems(d).filter(i=>!sk.includes(i.ex))}
 function rowsFor(d,it){const x=days[d],s=(x&&x.sets[it.ex])||[];return (x&&x.rows[it.ex])||Math.max(s.length,it.sets||3)}
 function valid(t,s){if(!s||!s.done)return false;if(t==='time')return s.t!=null;if(t==='reps')return s.r!=null;return s.w!=null&&s.r!=null}
@@ -648,13 +648,13 @@ function exListHtml(editing){
       '<div class="field"><label for="exn-'+id+'">Name</label><input class="inp" id="exn-'+id+'" data-ren="'+id+'" value="'+esc(exName(id))+'" autocomplete="off"></div>'+
       '<div><span class="flabel">Type</span>'+segB('extype',id,t,Object.entries(TYPES).map(([k,v])=>[k,v,k===t]))+'</div>'+
       (t==='time'?'':'<div><span class="flabel">Next adds</span>'+segB('exstep',id,cur,opts.map((o,i)=>[o[0],o[1],i===bi]))+'<p class="help">'+plan.unit+', when you hit every rep</p></div>')+
-      '<div class="btns"><button class="btn danger" data-act="archive" data-ex="'+id+'">Archive</button><button class="btn primary" data-act="exopen" data-ex="'+id+'">Done</button></div></div>';
+      '<div class="btns"><button class="btn" data-act="archive" data-ex="'+id+'">Archive</button><button class="btn danger" data-act="delex" data-ex="'+id+'">Delete</button><button class="btn primary" data-act="exopen" data-ex="'+id+'">Done</button></div><p class="help">Archive keeps its history in Progress. Delete removes it and its history for good.</p></div>';
   };
   let h='<div class="card"><strong>Your exercises</strong><p class="help">'+(editing?'Tap one to rename, change type or step, or archive. Rename to an existing name to merge them, history included.':'Tap one to change it.')+'</p>';
   if(!act.length&&!arc.length)h+='<p class="help">None yet. Add one to a day first.</p>';
   if(inW.length)h+='<div class="exgrp">In your week</div>'+inW.map(row).join('');
   if(notW.length)h+='<div class="exgrp">Not in your week</div>'+notW.map(row).join('');
-  if(arc.length)h+='<div class="exgrp">Archived (history kept)</div>'+arc.map(id=>'<div class="exr"><span><b>'+esc(exName(id))+'</b><small>'+TYPES[exType(id)]+'</small></span><button class="link" data-act="restore" data-ex="'+id+'">Restore</button></div>').join('');
+  if(arc.length)h+='<div class="exgrp">Archived (history kept)</div>'+arc.map(id=>'<div class="exr"><span><b>'+esc(exName(id))+'</b><small>'+TYPES[exType(id)]+'</small></span><span><button class="link" data-act="restore" data-ex="'+id+'">Restore</button>'+(editing?' <button class="link" style="color:var(--warn)" data-act="delex" data-ex="'+id+'">Delete</button>':'')+'</span></div>').join('');
   return h+'</div>';
 }
 function planEditHtml(){
@@ -811,6 +811,15 @@ function act(a,b){
     case 'extype':{const want=b.dataset.v;if(want===exType(id))return;const n=sessions(id).reduce((a,x)=>a+x.sets.length,0);
       const go=()=>withUndo('Type changed.',()=>{plan.library[id].type=want;savePlan()});
       if(n)confirmAsk('Change the type?',exName(id)+' has '+n+' logged sets. Changing the type changes how they show.','Change type','primary').then(ok=>{if(ok)go()});else go();return}
+    case 'delex':{const nm=exName(id),n=sessions(id).reduce((a,x)=>a+x.sets.length,0);
+      confirmAsk('Delete '+nm+' for good?',(n?'It leaves your plan and Progress, with all '+n+(n===1?' logged set':' logged sets')+'. ':'It leaves your plan. ')+'Archive instead if you want to keep the history.','Delete for good').then(ok=>{if(!ok)return;
+        withUndo('Deleted '+nm+'.',()=>{Object.entries(days).forEach(([d,x])=>{let ch=false;
+          if(x.sets[id]){delete x.sets[id];ch=true}if(x.rows[id]!=null){delete x.rows[id];ch=true}
+          if(x.skip.includes(id)){x.skip=x.skip.filter(i=>i!==id);ch=true}
+          ['extra','plan'].forEach(k=>{if(Array.isArray(x[k])&&x[k].some(i=>i.ex===id)){x[k]=x[k].filter(i=>i.ex!==id);ch=true}});
+          if(ch)touchDay(d,true)});
+          Object.values(plan.week).forEach(w=>{w.items=w.items.filter(i=>i.ex!==id)});delete plan.library[id];
+          if(progEx===id)progEx=null;if(exOpen===id)exOpen=null;Object.keys(active).forEach(k=>{if(active[k]===id)delete active[k]});savePlan()})});return}
     case 'exstep':plan.library[id].step=num(b.dataset.v);savePlan();break;
     case 'doneedit':finishEdit();window.scrollTo(0,0);break;
     case 'canceledit':{const sn=editSnap;planEditing=false;editSnap=null;if(sn&&(JSON.stringify(sn.plan)!==JSON.stringify(plan)||JSON.stringify(sn.days)!==JSON.stringify(days))){restoreSnap(sn);toast('Changes discarded.')}window.scrollTo(0,0);break}
