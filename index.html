@@ -77,7 +77,7 @@ main{max-width:1180px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 
 .barrow span{font-size:13px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
 .weekpanel{background:var(--surface);border-radius:16px;padding:10px 12px;margin-top:12px}
 .weekpanel .wk{margin-top:6px}
-.wp-top{display:flex;justify-content:space-between;align-items:center}
+.wp-top{display:flex;justify-content:flex-end;align-items:center}
 @media (min-width:900px){.weekpanel{background:none;padding:0}.weekpanel .date{margin-top:4px}}
 .rest{padding:30px 22px}
 .rest-ic{font-size:30px;line-height:1;color:var(--accent-text)}
@@ -241,6 +241,7 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 .exr{all:unset;box-sizing:border-box;display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;padding:10px 12px;background:var(--sunk);border-radius:12px;margin-bottom:6px;cursor:pointer;min-height:56px}
 .exr b{display:block;font-weight:600}
 .exr small{display:block;font-size:12px;color:var(--muted)}
+.exr small.nomus{color:var(--pr-text)}
 .exr:focus-visible,.exhead:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .exopen{background:var(--surface);border-radius:12px;padding:12px;margin-bottom:6px;box-shadow:inset 0 0 0 2px var(--accent);display:flex;flex-direction:column;gap:10px}
 .exhead{all:unset;display:flex;justify-content:space-between;align-items:center;cursor:pointer;min-height:36px}
@@ -259,6 +260,7 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 .pills{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin:16px 0 12px;scrollbar-width:none}
 .pills::-webkit-scrollbar{display:none}
 .pills.fade{-webkit-mask-image:linear-gradient(to right,#000 82%,transparent);mask-image:linear-gradient(to right,#000 82%,transparent)}
+.pills .pdiv{flex:0 0 1px;background:var(--line);margin:6px 4px}
 .pills button{border:0;background:var(--surface);border-radius:999px;padding:8px 14px;white-space:nowrap;min-height:40px}
 .pills button[aria-pressed="true"]{background:var(--pill);color:var(--pill-ink);font-weight:600}
 .hero{background:var(--hero);color:var(--hero-ink);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px}
@@ -414,7 +416,9 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 .mstar.on{color:var(--pr)}
 .mstar.off{display:inline-block}
 .btn.off{background:var(--sunk);color:var(--faint);border-color:var(--line)}
-.mcheck{margin:12px 0}
+.mcheck{margin:10px 0 4px;background:var(--pr-tint);border-radius:12px;padding:10px 12px}
+.mcheck b{font-weight:600}
+.mcheck .rrb{border-color:var(--line)}
 .mcheck .pickl{color:var(--accent-text);font-weight:600}
 .bodywrap{position:relative}
 .body{width:100%;max-width:460px;display:block;margin:6px auto 0}
@@ -490,7 +494,7 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 <script>
 (function(){
 'use strict';
-const APP_VERSION=41, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=42, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Chest','Shoulders','Traps','Back','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs']],['Legs',['Glutes','Inner thighs','Quads','Hamstrings','Calves']]];
 const MUSCLES=MGROUPS.flatMap(g=>g[1]);
@@ -861,11 +865,11 @@ function todayHtml(){
   const title=rest?'Rest day':((x&&x.plan&&x.title!=null)?(x.title||'Workout'):(w.name||'Workout'));
   const pillH='<span class="pill'+(sk?' on':'')+'">'+(sk?sk+(sk===1?' day':' days')+' streak':'Start a streak')+'</span>',wide=isWide();
   h+='<div class="th"><h1 class="big tbig">'+esc(title)+'</h1>'+(wide?pillH:'<button class="datebtn" data-act="weekpanel" aria-expanded="'+wpOpen+'">'+esc(dname(d)+' '+parse(d).getDate()+' '+MONTHS[parse(d).getMonth()])+' <span class="chev" aria-hidden="true">'+(wpOpen?'⌃':'⌄')+'</span></button>')+'</div>';
+  if(wide)h+='<div class="weekpanel"><div class="date">'+esc(fmtDate(d))+'</div>'+weekStrip()+weekScore()+'</div>';
+  if(wide){}else if(wpOpen)h+='<div class="weekpanel enter"><div class="wp-top">'+pillH+'</div>'+weekStrip()+weekScore()+'</div>';
   if(st.p)h+='<div class="barrow"><div class="bar" role="progressbar" aria-label="Sets done" aria-valuemin="0" aria-valuemax="'+st.p+'" aria-valuenow="'+st.n+'"><i style="width:'+Math.round(st.n/st.p*100)+'%"></i></div><span>'+st.n+'/'+st.p+' sets</span></div>';
   h+=raceHtml(d);
   h+=protRow(d);
-  if(wide)h+='<div class="weekpanel"><div class="date">'+esc(fmtDate(d))+'</div>'+weekStrip()+weekScore()+'</div>';
-  if(wide){}else if(wpOpen)h+='<div class="weekpanel enter"><div class="wp-top"><span class="date">'+esc(fmtDate(d))+'</span>'+pillH+'</div>'+weekStrip()+weekScore()+'</div>';
   h+=bn;
   if(parse(d).getDay()===0&&hasContent(plan))h+=recapHtml(ymd(addDays(parse(d),-6)));
   if(isT&&parse(d).getDate()<=3&&hasContent(plan)){const pm=ymd(addDays(parse(d.slice(0,8)+'01'),-1)).slice(0,7);if(LS.get('wrapSeen')!==pm&&plan.startedOn&&plan.startedOn.slice(0,7)<=pm)h+=wrapHtml(pm,true)}
@@ -1028,14 +1032,14 @@ function planHtml(){
   return h+'</div>';
 }
 function exDays(id){return ORDER.filter(i=>!plan.week[i].rest&&plan.week[i].items.some(x=>x.ex===id)).map(i=>DAYS[i])}
-function exSub(id){const t=exType(id),dd=exDays(id);return TYPES[t]+(t==='weight'?', +'+stepU(id)+' '+plan.unit+' step':'')+(dd.length?', '+dd.join(' '):'')}
+function exSub(id){const ms=exMuscles(id),mn=exMain(id),dd=exDays(id);const m=ms.length?[mn].concat(ms.filter(x=>x!==mn)).map(x=>x===mn?x+' ★':x).join(', '):'No muscles yet, tap to pick';return m+(dd.length?' · '+dd.join(' '):'')}
 function exListHtml(editing){
   const by=(a,b)=>exName(a).localeCompare(exName(b)),all=Object.keys(plan.library);
   const act=all.filter(id=>!plan.library[id].archived).sort(by),inW=act.filter(id=>exDays(id).length),notW=act.filter(id=>!exDays(id).length),arc=all.filter(id=>plan.library[id].archived).sort(by);
   const segB=(a,id,cur,opts)=>'<div class="seg" role="radiogroup">'+opts.map(([v,l,on])=>'<button role="radio" data-act="'+a+'" data-ex="'+id+'" data-v="'+v+'" aria-checked="'+on+'">'+l+'</button>').join('')+'</div>';
   const row=id=>{
-    if(!editing)return '<button class="exr" data-act="exedit" data-ex="'+id+'"><span><b>'+esc(exName(id))+'</b><small>'+esc(exSub(id))+'</small></span><span class="chev" aria-hidden="true">›</span></button>';
-    if(exOpen!==id)return '<button class="exr" data-act="exopen" data-ex="'+id+'" aria-expanded="false"><span><b>'+esc(exName(id))+'</b><small>'+esc(exSub(id))+'</small></span><span class="chev" aria-hidden="true">›</span></button>';
+    if(!editing)return '<button class="exr" data-act="exedit" data-ex="'+id+'"><span><b>'+esc(exName(id))+'</b><small'+(exMuscles(id).length?'':' class="nomus"')+'>'+esc(exSub(id))+'</small></span><span class="chev" aria-hidden="true">›</span></button>';
+    if(exOpen!==id)return '<button class="exr" data-act="exopen" data-ex="'+id+'" aria-expanded="false"><span><b>'+esc(exName(id))+'</b><small'+(exMuscles(id).length?'':' class="nomus"')+'>'+esc(exSub(id))+'</small></span><span class="chev" aria-hidden="true">›</span></button>';
     const t=exType(id),opts=plan.unit==='lb'?STEPS_LB.map(v=>[v/KG_LB,v]):STEPS_KG.map(v=>[v,v]),cur=exStep(id);let bi=0;opts.forEach((o,i)=>{if(Math.abs(o[0]-cur)<Math.abs(opts[bi][0]-cur))bi=i});
     const isNewEx=lastOpen['ex']!==id;lastOpen['ex']=id;
     return '<div class="exopen'+(isNewEx?' enter':'')+'" data-exbox="'+id+'"><button class="exhead" data-act="exopen" data-ex="'+id+'" aria-expanded="true"><b>'+esc(exName(id))+'</b><span class="chev" aria-hidden="true">⌄</span></button>'+
@@ -1046,7 +1050,8 @@ function exListHtml(editing){
       (t==='weight'?'<div><span class="flabel">Warm-up sets</span>'+segB('exwarm',id,'',[['on','Show',plan.library[id].warm!==false],['off','Hide',plan.library[id].warm===false]])+'</div>':'')+
       '<div class="btns"><button class="btn" data-act="archive" data-ex="'+id+'">Archive</button><button class="btn danger" data-act="delex" data-ex="'+id+'">Delete</button><button class="btn" data-act="exopen" data-ex="'+id+'">Close</button></div><p class="help">Archive keeps its history in Progress. Delete removes it and its history for good.</p></div>';
   };
-  let h='<div class="card" data-sec="ex"><strong>Your exercises</strong><p class="help">'+(editing?'Tap one to rename, change type or step, or archive. Rename to an existing name to merge them, history included.':(act.length?'Tap one to change it.':''))+'</p>';
+  const untag=editing?act.filter(id=>!exMuscles(id).length).sort(by):[];
+  let h='<div class="card" data-sec="ex"><strong>Your exercises</strong>'+(untag.length?'<div class="mcheck"><b>Pick muscles for '+untag.length+(untag.length===1?' exercise':' exercises')+'</b><p class="help" style="margin:2px 0 0">They don\'t show on the body map until you do.</p>'+untag.map(id=>'<button class="rrb" data-act="musopen" data-t="'+id+'"><span>'+esc(exName(id))+'</span><span class="pickl">Pick ›</span></button>').join('')+'</div>':'')+'<p class="help">'+(editing?'Tap one to rename, change type or step, or archive. Rename to an existing name to merge them, history included.':(act.length?'Tap one to change it.':''))+'</p>';
   if(!act.length&&!arc.length)h+='<p class="help">None yet. Add one to a day first.</p>';
   if(!act.length&&arc.length&&!editing)h+='<p class="help">No active exercises. Tap Edit week to add some.</p>';
   if(inW.length)h+='<div class="exgrp">In your week</div>'+inW.map(row).join('');
@@ -1059,7 +1064,7 @@ function exListHtml(editing){
 }
 function planEditHtml(){
   const w=plan.week[planDay];const untag=Object.keys(plan.library).filter(id=>!plan.library[id].archived&&!exMuscles(id).length);
-  let h='<h1 class="big sm">Your week</h1>'+(untag.length?'<div class="card mcheck"><strong>Pick muscles for '+untag.length+(untag.length===1?' exercise':' exercises')+'</strong><p class="help" style="margin:0">They don\'t show on the body map until you do.</p>'+untag.map(id=>'<button class="rrb" data-act="musopen" data-t="'+id+'"><span>'+esc(exName(id))+'</span><span class="pickl">Pick ›</span></button>').join('')+'</div>':'')+'<div class="editbar"><span class="eb-l">Editing your week</span><span class="eb-b"><button class="btn" data-act="canceledit">Cancel</button><button class="btn primary" data-act="doneedit">Done editing</button></span></div>';
+  let h='<h1 class="big sm">Your week</h1>'+'<div class="editbar"><span class="eb-l">Editing your week</span><span class="eb-b"><button class="btn" data-act="canceledit">Cancel</button><button class="btn primary" data-act="doneedit">Done editing</button></span></div>';
   h+='<div class="daypills">'+ORDER.map(i=>{const x=plan.week[i];return '<button class="dp" data-act="pday" data-d="'+i+'" aria-pressed="'+(i===planDay)+'">'+DAYS[i]+'<small>'+esc(x.rest?'Rest':(x.name||(x.items.length?'Workout':'Empty')))+'</small></button>'}).join('')+'</div>';
   h+='<div class="pgrid"><div class="card" data-sec="day"><div class="field"><label for="dname">Name for '+DAYS[planDay]+'</label><input class="inp" id="dname" value="'+esc(w.name)+'" placeholder="Push, Pull, Legs…"></div>';
   h+='<label class="toggle-row"><span>Rest day</span><input type="checkbox" class="sw" id="drest"'+(w.rest?' checked':'')+'></label>';
@@ -1067,7 +1072,7 @@ function planEditHtml(){
     const items=w.items.filter(i=>ex(i.ex));
     if(!items.length)h+='<p class="help">No exercises yet. Add one below.</p>';
     else h+='<div class="plist">'+w.items.map((it,idx)=>{if(!ex(it.ex))return '';const t=exType(it.ex);return '<div class="prow" data-row="'+idx+'"><button class="handle" data-i="'+idx+'" aria-label="Drag to reorder, or use arrow keys">'+I.grip+'</button><span class="nm">'+esc(exName(it.ex))+'<small>'+TYPES[t]+'</small></span><input inputmode="numeric" aria-label="Sets" data-pi="'+idx+'" data-pf="sets" value="'+(it.sets||3)+'"><span class="x">×</span><input inputmode="numeric" aria-label="'+(t==='time'?'Seconds':'Reps')+'" data-pi="'+idx+'" data-pf="reps" value="'+(it.reps||10)+'"><span class="x">'+(t==='time'?'s':'')+'</span><button class="rm" data-act="rm" data-i="'+idx+'" aria-label="Remove from '+DAYS[planDay]+'">✕</button></div>'}).join('')+'</div>';
-    h+='<div class="formgrid" style="margin-top:6px"><div class="field wide"><label for="pName">Add exercise to '+DAYS[planDay]+'</label>'+comboHtml('pName','Exercise name')+'</div><div class="field wide"><span class="flabel">Type, for a new exercise</span>'+typeSeg()+'</div><div class="field wide"><span class="flabel">Muscles, for a new exercise</span>'+musField('new')+'</div><div class="field"><label for="pSets">Sets</label><input class="inp" id="pSets" inputmode="numeric" value="3"></div><div class="field"><label for="pReps">Reps or seconds</label><input class="inp" id="pReps" inputmode="numeric" value="10"></div><div class="field" style="display:flex;align-items:flex-end"><button class="btn primary" data-act="padd" style="width:100%">Add</button></div><p class="help wide">'+typeHelp()+'</p></div>';
+    h+='<div class="formgrid" style="margin-top:6px"><div class="field wide"><label for="pName">Add exercise to '+DAYS[planDay]+'</label>'+comboHtml('pName','Exercise name')+'</div><div class="field wide"><span class="flabel">Type, for a new exercise</span>'+typeSeg()+'<p class="help">'+typeHelp()+'</p></div><div class="field wide"><span class="flabel">Muscles, for a new exercise</span>'+musField('new')+'</div><div class="field"><label for="pSets">Sets</label><input class="inp" id="pSets" inputmode="numeric" value="3"></div><div class="field"><label for="pReps">Reps or seconds</label><input class="inp" id="pReps" inputmode="numeric" value="10"></div><div class="field" style="display:flex;align-items:flex-end"><button class="btn primary" data-act="padd" style="width:100%">Add</button></div></div>';
   }
   h+='</div>';
   h+=exListHtml(true);
@@ -1089,8 +1094,8 @@ function settingsHtml(){
     '<div class="card sec"><h3>Protein</h3><div class="field"><label for="pgoal">Daily goal (grams)</label><input class="inp" id="pgoal" inputmode="numeric" value="'+(plan.protein.goal||'')+'" placeholder="150"></div><span class="flabel">Your foods (one-tap add on Today)</span>'+
       plan.protein.foods.map(f=>'<div class="foodrow"><input class="inp" data-fname="'+f.id+'" value="'+esc(f.name)+'" aria-label="Food name"><input class="inp" data-fg="'+f.id+'" inputmode="numeric" value="'+f.g+'" aria-label="Grams of protein"><span class="x">g</span><button class="rm" data-act="fooddel" data-f="'+f.id+'" aria-label="Delete '+esc(f.name)+'">✕</button></div>').join('')+
       '<div class="foodrow"><input class="inp" id="nfName" placeholder="e.g. Protein shake" aria-label="New food name"><input class="inp" id="nfG" inputmode="numeric" placeholder="25" aria-label="Grams of protein"><span class="x">g</span><button class="btn primary" data-act="foodadd">Add</button></div></div>'+
-    '<div class="card sec"><h3>Theme</h3>'+seg('theme',plan.theme,[['auto','Auto'],['light','Light'],['dark','Dark']],'Theme')+'<p class="help">Auto follows your device.</p></div>'+
     '<div class="card sec"><h3>Weight unit</h3>'+seg('unit',plan.unit,[['kg','kg'],['lb','lb']],'Weight unit')+'<p class="help">Switching converts all your numbers.</p></div>'+
+    '<div class="card sec"><h3>Theme</h3>'+seg('theme',plan.theme,[['auto','Auto'],['light','Light'],['dark','Dark']],'Theme')+'<p class="help">Auto follows your device.</p></div>'+
     '<div class="card sec"><h3>Automatic backups</h3>'+bkHtml()+'</div>'+
     '<div class="card sec"><h3>Backup file</h3><button class="listbtn" data-act="export">Save backup file'+I.chev+'</button>'+(canShareFile()?'<button class="listbtn" data-act="share">Share backup file (Drive, email…)'+I.chev+'</button>':'')+'<button class="listbtn" data-act="import">Load backup file'+I.chev+'</button><p class="help">Save puts the file in your Downloads folder. Share sends it to Google Drive or another app.</p></div><p class="help small-center">Version '+APP_VERSION+'</p></div>';
 }
@@ -1136,10 +1141,10 @@ function progressHtml(){
   const ids=Object.keys(plan.library).filter(id=>sessions(id).length).sort((a,b)=>lastOf(b).localeCompare(lastOf(a))||exName(a).localeCompare(exName(b)));
   let h=signinBar()+'<h1 class="big sm">Progress</h1>';
   const hasProt=!!(plan.protein.goal||Object.values(days).some(x=>x.protein&&x.protein.length)),special=[];
-  if(hasProt)special.push(['__protein','Protein']);if(hasContent(plan)&&plan.startedOn)special.push(['__weeks','Weeks'],['__months','Months'],['__year','Year'],['__muscles','Muscles']);
+  if(hasContent(plan)&&plan.startedOn)special.push(['__muscles','Muscles'],['__weeks','Weeks'],['__months','Months'],['__year','Year']);if(hasProt)special.push(['__protein','Protein']);
   if(!ids.length&&!special.length)return h+'<div class="empty"><p>Finish some sets and your progress shows up here.</p></div>';
   const allP=special.map(x=>x[0]).concat(ids);if(!progEx||!allP.includes(progEx))progEx=ids[0]||special[0][0];
-  h+='<div class="pills" role="group" aria-label="Exercise">'+special.map(([k,l])=>'<button data-act="pex" data-ex="'+k+'" aria-pressed="'+(k===progEx)+'">'+l+'</button>').join('')+ids.map(id=>'<button data-act="pex" data-ex="'+id+'" aria-pressed="'+(id===progEx)+'">'+esc(exName(id))+'</button>').join('')+'</div>';
+  h+='<div class="pills" role="group" aria-label="Exercise">'+special.map(([k,l])=>'<button data-act="pex" data-ex="'+k+'" aria-pressed="'+(k===progEx)+'">'+l+'</button>').join('')+(special.length&&ids.length?'<span class="pdiv" aria-hidden="true"></span>':'')+ids.map(id=>'<button data-act="pex" data-ex="'+id+'" aria-pressed="'+(id===progEx)+'">'+esc(exName(id))+'</button>').join('')+'</div>';
   if(progEx==='__protein')return h+proteinProgress();
   if(progEx==='__weeks')return h+weeksProgress();
   if(progEx==='__months')return h+monthsProgress();
