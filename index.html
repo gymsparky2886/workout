@@ -9,9 +9,10 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Workout">
-<link rel="manifest" href="manifest.json?v=37">
-<link rel="icon" href="icon2-192.png">
-<link rel="apple-touch-icon" href="icon2-180.png">
+<script>try{var t=(JSON.parse(localStorage.getItem('wt3:plan')||'{}')||{}).theme;var dk=t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);document.documentElement.style.background=dk?'#12151B':'#F2F3F0'}catch(e){}</script>
+<link rel="manifest" href="manifest.json?v=38">
+<link rel="icon" href="icon3-192.png">
+<link rel="apple-touch-icon" href="icon3-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -457,7 +458,7 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 <script>
 (function(){
 'use strict';
-const APP_VERSION=37, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=38, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MUSCLES=['Chest','Back','Shoulders','Biceps','Triceps','Core','Quads','Hamstrings','Glutes','Calves'];
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
