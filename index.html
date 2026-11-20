@@ -494,7 +494,8 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 <script>
 (function(){
 'use strict';
-const APP_VERSION=42, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+try{history.scrollRestoration='manual'}catch(e){}
+const APP_VERSION=43, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Chest','Shoulders','Traps','Back','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs']],['Legs',['Glutes','Inner thighs','Quads','Hamstrings','Calves']]];
 const MUSCLES=MGROUPS.flatMap(g=>g[1]);
@@ -838,7 +839,10 @@ window.addEventListener('popstate',()=>{
   if(protOpen){protOpen=false;rearm();render();return}
   if(musOpen){const t=musOpen;musOpen=null;$('#sheetRoot').innerHTML='';rearm();if(t==='new')updAdd();else render();return}
   if(editor||addOpen||noteOpen){editor=null;addOpen=false;noteOpen=null;rearm();render();return}
-  if(planEditing){finishEdit();rearm();render();return}
+  if(view==='plan'&&exOpen){const id=exOpen,el=document.querySelector('[data-exbox="'+id+'"]'),y=el?el.getBoundingClientRect().top:null;exOpen=null;rearm();render();
+    const r=document.querySelector('.exr[data-ex="'+id+'"]');if(r&&y!=null)window.scrollBy(0,r.getBoundingClientRect().top-y);return}
+  if(view==='plan'&&musOpen){musOpen=null;$('#sheetRoot').innerHTML='';rearm();render();return}
+  if(planEditing){rearm();keepPlace(()=>{finishEdit();render()});return}
   if(view!=='today'){setView('today');rearm();render();window.scrollTo(0,0);return}
   saveNow();toast('Press back again to exit. Everything is saved.');
   clearTimeout(exitT);exitT=setTimeout(()=>{if(document.visibilityState==='visible')rearm()},2500);
@@ -1466,7 +1470,6 @@ function saveUI(){try{sessionStorage.setItem('wt3ui',JSON.stringify({t:Date.now(
 window.addEventListener('pagehide',saveUI);window.addEventListener('beforeunload',saveUI);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveUI()});
 applyTheme(plan.theme);autoBackup();render();dedupeLibrary();prReady=true;initFirebase();armBack();
-try{history.scrollRestoration='manual'}catch(e){}
 if(uiScroll){const go=()=>window.scrollTo(0,uiScroll);requestAnimationFrame(go);setTimeout(go,120);setTimeout(go,400)}
 let lastDay=today(),hiddenAt=0;
 setInterval(()=>{const t=today();if(t!==lastDay){if(viewKey===lastDay&&!sessionActive(lastDay))viewKey=t;lastDay=t;softRender()}},60000);
