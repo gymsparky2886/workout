@@ -329,7 +329,7 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 <script>
 (function(){
 'use strict';
-const APP_VERSION=24, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=25, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const SESSION_MS=3*60*60*1000, AWAY_MS=30*60*1000;
@@ -733,7 +733,7 @@ function planHtml(){
   let h=signinBar()+'<h1 class="big sm">Your week</h1>';
   if(!hasContent(plan))return h+'<div class="empty"><p>Your week is empty. Tap Edit week, pick a day, name it, and add its exercises.</p><button class="btn primary" data-act="editweek">Edit week</button></div>';
   h+='<div class="daypills">'+ORDER.map(i=>{const x=plan.week[i];return '<button class="dp" data-act="pday" data-d="'+i+'" aria-pressed="'+(i===planDay)+'">'+DAYS[i]+'<small>'+esc(x.rest?'Rest':(x.name||(x.items.length?'Workout':'Empty')))+'</small></button>'}).join('')+'</div>';
-  h+='<div class="pgrid"><div class="card"><div class="card-head"><h2 class="h2d">'+esc(w.rest?'Rest day':(w.name||'No name'))+'</h2></div>';
+  h+='<div class="pgrid"><div class="card" data-sec="day"><div class="card-head"><h2 class="h2d">'+esc(w.rest?'Rest day':(w.name||'No name'))+'</h2></div>';
   if(w.rest)h+='<p class="help">Nothing planned. Rest days keep your streak.</p>';
   else if(!items.length)h+='<p class="help">No exercises on '+DAYS[planDay]+'. Tap Edit week to add some, or leave it empty as a rest day.</p>';
   else h+='<div class="ro">'+items.map(it=>{const t=exType(it.ex);return '<div class="rorow"><span><b>'+esc(exName(it.ex))+'</b><small>'+TYPES[t]+'</small></span><span class="g">'+goalTxt(t,it)+'</span></div>'}).join('')+'</div>';
@@ -758,7 +758,7 @@ function exListHtml(editing){
       (t==='time'?'':'<div><span class="flabel">Next adds</span>'+segB('exstep',id,cur,opts.map((o,i)=>[o[0],o[1],i===bi]))+'<p class="help">'+plan.unit+', when you hit every rep</p></div>')+
       '<div class="btns"><button class="btn" data-act="archive" data-ex="'+id+'">Archive</button><button class="btn danger" data-act="delex" data-ex="'+id+'">Delete</button><button class="btn" data-act="exopen" data-ex="'+id+'">Close</button></div><p class="help">Archive keeps its history in Progress. Delete removes it and its history for good.</p></div>';
   };
-  let h='<div class="card"><strong>Your exercises</strong><p class="help">'+(editing?'Tap one to rename, change type or step, or archive. Rename to an existing name to merge them, history included.':(act.length?'Tap one to change it.':''))+'</p>';
+  let h='<div class="card" data-sec="ex"><strong>Your exercises</strong><p class="help">'+(editing?'Tap one to rename, change type or step, or archive. Rename to an existing name to merge them, history included.':(act.length?'Tap one to change it.':''))+'</p>';
   if(!act.length&&!arc.length)h+='<p class="help">None yet. Add one to a day first.</p>';
   if(!act.length&&arc.length&&!editing)h+='<p class="help">No active exercises. Tap Edit week to add some.</p>';
   if(inW.length)h+='<div class="exgrp">In your week</div>'+inW.map(row).join('');
@@ -773,7 +773,7 @@ function planEditHtml(){
   const w=plan.week[planDay];
   let h='<h1 class="big sm">Your week</h1><div class="editbar"><span class="eb-l">Editing your week</span><span class="eb-b"><button class="btn" data-act="canceledit">Cancel</button><button class="btn primary" data-act="doneedit">Done editing</button></span></div>';
   h+='<div class="daypills">'+ORDER.map(i=>{const x=plan.week[i];return '<button class="dp" data-act="pday" data-d="'+i+'" aria-pressed="'+(i===planDay)+'">'+DAYS[i]+'<small>'+esc(x.rest?'Rest':(x.name||(x.items.length?'Workout':'Empty')))+'</small></button>'}).join('')+'</div>';
-  h+='<div class="pgrid"><div class="card"><div class="field"><label for="dname">Name for '+DAYS[planDay]+'</label><input class="inp" id="dname" value="'+esc(w.name)+'" placeholder="Push, Pull, Legs…"></div>';
+  h+='<div class="pgrid"><div class="card" data-sec="day"><div class="field"><label for="dname">Name for '+DAYS[planDay]+'</label><input class="inp" id="dname" value="'+esc(w.name)+'" placeholder="Push, Pull, Legs…"></div>';
   h+='<label class="toggle-row"><span>Rest day</span><input type="checkbox" class="sw" id="drest"'+(w.rest?' checked':'')+'></label>';
   if(!w.rest){
     const items=w.items.filter(i=>ex(i.ex));
@@ -863,6 +863,15 @@ document.addEventListener('keydown',e=>{
   else if(id==='noteIn'){e.preventDefault();act('noteclose')}
   else if(id&&id.startsWith('ed-')){e.preventDefault();act('edsave')}
 });
+function keepPlace(fn){
+  const ex=document.querySelector('[data-sec="ex"]'),day=document.querySelector('[data-sec="day"]');
+  let sec='day',el=day;if(ex&&ex.getBoundingClientRect().top<window.innerHeight*0.5&&(!isWide())){sec='ex';el=ex}
+  if(isWide()&&ex&&day&&ex.getBoundingClientRect().top<window.innerHeight*0.5&&day.getBoundingClientRect().bottom<0){sec='ex';el=ex}
+  const off=el?Math.min(Math.max(el.getBoundingClientRect().top,12),window.innerHeight*0.4):null;
+  fn();
+  const n=document.querySelector('[data-sec="'+sec+'"]');
+  if(n&&off!=null)window.scrollBy(0,n.getBoundingClientRect().top-off);else window.scrollTo(0,0);
+}
 function startEdit(){if(planEditing)return;editSnap=takeSnap();planEditing=true;exOpen=null}
 function finishEdit(){if(!planEditing)return;planEditing=false;editSnap=null}
 function readEd(f){const el=$('#ed-'+f);return el?num(el.value):null}
@@ -921,7 +930,7 @@ function act(a,b){
     case 'more':moreOpen=moreOpen===id?null:id;break;
     case 'addtype':{newType=b.dataset.v;b.parentElement.querySelectorAll('button').forEach(x=>x.setAttribute('aria-checked',String(x===b)));return}
     case 'combopick':{const box=b.closest('.combo'),inp=box.querySelector('input');inp.value=b.dataset.v;comboClose(inp);inp.focus();return}
-    case 'editweek':startEdit();window.scrollTo(0,0);break;
+    case 'editweek':keepPlace(()=>{startEdit();render()});return;
     case 'exedit':startEdit();exOpen=id;render();{const el=document.querySelector('[data-exbox="'+id+'"]');el&&el.scrollIntoView({block:'center'})}return;
     case 'exopen':{const y=b.getBoundingClientRect().top;exOpen=exOpen===id?null:id;render();const el=document.querySelector('[data-exbox="'+id+'"]')||document.querySelector('.exr[data-ex="'+id+'"]');if(el)window.scrollBy(0,el.getBoundingClientRect().top-y);return}
     case 'extype':{const want=b.dataset.v;if(want===exType(id))return;const n=doneSets(today(),id).length;
@@ -937,8 +946,8 @@ function act(a,b){
           Object.values(plan.week).forEach(w=>{w.items=w.items.filter(i=>i.ex!==id)});delete plan.library[id];
           if(progEx===id)progEx=null;if(exOpen===id)exOpen=null;Object.keys(active).forEach(k=>{if(active[k]===id)delete active[k]});savePlan()})});return}
     case 'exstep':plan.library[id].step=num(b.dataset.v);savePlan();break;
-    case 'doneedit':finishEdit();window.scrollTo(0,0);break;
-    case 'canceledit':{const sn=editSnap;planEditing=false;editSnap=null;if(sn&&(JSON.stringify(sn.plan)!==JSON.stringify(plan)||JSON.stringify(sn.days)!==JSON.stringify(days)))restoreSnap(sn);window.scrollTo(0,0);break}
+    case 'doneedit':keepPlace(()=>{finishEdit();render()});return;
+    case 'canceledit':keepPlace(()=>{const sn=editSnap;planEditing=false;editSnap=null;if(sn&&(JSON.stringify(sn.plan)!==JSON.stringify(plan)||JSON.stringify(sn.days)!==JSON.stringify(days)))restoreSnap(sn);render()});return;
     case 'pday':planDay=+b.dataset.d;break;
     case 'padd':{const nid=ensureEx($('#pName').value,newType);if(!nid){$('#pName').focus();return}
       if(!plan.startedOn)plan.startedOn=today();const w=plan.week[planDay];
