@@ -65,6 +65,30 @@ main{max-width:1180px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 
 .count b{font-family:var(--display);font-weight:600;font-size:34px;line-height:1}
 .count b span{color:var(--faint)}
 .count small{display:block;font-size:12px;color:var(--muted)}
+.th{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.tbig{font-size:clamp(40px,12vw,64px)}
+@media (min-width:900px){.tbig{font-size:clamp(56px,6vw,84px)}}
+.datebtn{border:0;background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 14px;font-weight:600;font-size:14px;white-space:nowrap;min-height:40px;display:inline-flex;gap:6px;align-items:center}
+.datebtn .chev{color:var(--muted)}
+.barrow{display:flex;align-items:center;gap:10px;margin-top:10px}
+.barrow .bar{flex:1;margin:0;height:6px}
+.barrow span{font-size:13px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.weekpanel{background:var(--surface);border-radius:16px;padding:10px 12px;margin-top:12px}
+.weekpanel .wk{margin-top:6px}
+.wp-top{display:flex;justify-content:space-between;align-items:center}
+@media (min-width:900px){.weekpanel{background:none;padding:0}.weekpanel .date{margin-top:4px}}
+.rest{padding:30px 22px}
+.rest-ic{font-size:30px;line-height:1;color:var(--accent-text)}
+.rest-l{font-family:var(--display);font-weight:600;font-size:24px;color:var(--ink)!important}
+.rest-n{color:var(--ink)!important}
+.rest-n b{font-weight:600}
+@keyframes prIn{0%{opacity:0;transform:translateY(-6px);box-shadow:0 0 0 0 rgba(242,194,48,.55)}60%{opacity:1;transform:none;box-shadow:0 0 0 10px rgba(242,194,48,0)}100%{box-shadow:0 0 0 0 rgba(242,194,48,0)}}
+.banner.prnew{animation:prIn .9s ease-out}
+.pstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pstat{background:var(--surface);border-radius:16px;padding:12px}
+.pstat b{display:block;font-family:var(--display);font-weight:600;font-size:24px;line-height:1.1}
+.pstat span{font-size:12px;color:var(--muted)}
+.pleft{display:flex;flex-direction:column;gap:12px}
 .bar{height:8px;background:var(--line);border-radius:999px;overflow:hidden;margin:12px 0 2px}
 .bar i{display:block;height:100%;background:var(--accent);border-radius:999px}
 .viewing{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--pr-tint);color:var(--pr-text);border-radius:12px;padding:6px 12px;margin-top:12px;font-size:14px}
@@ -95,7 +119,7 @@ details.wscore p{margin:4px 0}
 .acc{display:flex;flex-direction:column;gap:8px;margin-top:14px}
 .acc .card{scroll-margin-top:12px}
 .focus{order:1}
-.donebox{background:var(--done-tint);color:var(--done-text);border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.donebox{background:var(--sunk);color:var(--done-text);border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .donebox b{font-weight:600}
 .session{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--accent-tint);color:var(--accent-text);border-radius:12px;padding:8px 12px;margin-top:12px;font-size:14px}
 .list{order:2;display:flex;flex-direction:column;gap:8px}
@@ -119,7 +143,8 @@ details.wscore p{margin:4px 0}
 .set .n{font-size:13px}
 .set .v{font-family:var(--display);font-weight:600;font-size:25px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .set .r{font-size:13px;font-weight:600;text-align:right;min-width:22px}
-.set.done{background:var(--done);color:var(--done-ink)}
+.set.done{background:var(--done-tint);color:var(--done-text)}
+.set.done .r{color:var(--done)}
 .set.next{border:2px dashed var(--accent)}
 .set.next .v,.set.next .r{color:var(--accent-text)}
 .set.next .n{color:var(--muted)}
@@ -329,7 +354,7 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 <script>
 (function(){
 'use strict';
-const APP_VERSION=25, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=26, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const SESSION_MS=3*60*60*1000, AWAY_MS=30*60*1000;
@@ -361,7 +386,7 @@ const I={
 let plan, days={};
 const VIEWS=['today','plan','progress','settings'];
 let view=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'today', viewKey=today(), weekOff=0, active={}, editor=null, addOpen=false, noteOpen=null, sheet=false;
-let planDay=new Date().getDay(), progEx=null, pendingRender=false, planEditing=false, editSnap=null, exOpen=null, moreOpen=null, newType='weight', lastView=null, lastOpen={}, askState=null, bkCloudList=null;
+let planDay=new Date().getDay(), progEx=null, pendingRender=false, planEditing=false, editSnap=null, exOpen=null, moreOpen=null, wpOpen=false, prSeen=new Set(), prReady=false, newType='weight', lastView=null, lastOpen={}, askState=null, bkCloudList=null;
 function emptyWeek(){const w={};for(let i=0;i<7;i++)w[i]={name:'',rest:false,items:[]};return w}
 function normPlan(p){
   p=p||{};const o={v:3,unit:p.unit==='lb'?'lb':'kg',theme:(p.theme==='light'||p.theme==='dark')?p.theme:'auto',startedOn:p.startedOn||null,library:{},week:emptyWeek()};
@@ -596,19 +621,22 @@ function signinBar(){return fbOn&&authKnown&&!user&&fbState!=='failed'&&!LS.get(
 function todayHtml(){
   const d=viewKey,t0=today(),isT=d===t0,x=days[d],w=plan.week[parse(d).getDay()],items=visibleItems(d),st=stats(d),sk=streak();
   let h=signinBar();
-  h+='<div class="hdr-top"><span class="date">'+esc(fmtDate(d))+'</span><span class="pill'+(sk?' on':'')+'">'+(sk?sk+(sk===1?' day':' days')+' streak':'Start a streak')+'</span></div>';
-  if(!isT&&sessionDay()===d)h+='<div class="session"><span>Still in '+esc(dname(d))+'’s workout. Sets go to '+esc(dname(d))+' until you finish.</span><button class="link" data-act="finish">Finish workout</button></div>';
-  else if(!isT)h+='<div class="viewing"><span>Editing '+esc(fmtDate(d))+'</span><button class="link" data-act="today">Back to today</button></div>';
+  let bn='';
+  if(!isT&&sessionDay()===d)bn+='<div class="session"><span>Still in '+esc(dname(d))+'’s workout. Sets go to '+esc(dname(d))+' until you finish.</span><button class="link" data-act="finish">Finish workout</button></div>';
+  else if(!isT)bn+='<div class="viewing"><span>Editing '+esc(fmtDate(d))+'</span><button class="link" data-act="today">Back to today</button></div>';
   const rest=(x&&x.off)||(!items.length&&!st.p);
   const title=rest?'Rest day':((x&&x.plan&&x.title!=null)?(x.title||'Workout'):(w.name||'Workout'));
-  h+='<div class="title-row"><h1 class="big">'+esc(title)+'</h1>'+(st.p?'<div class="count"><b>'+st.n+'<span>/'+st.p+'</span></b><small>sets done</small></div>':'')+'</div>';
-  if(st.p)h+='<div class="bar" role="progressbar" aria-label="Sets done" aria-valuemin="0" aria-valuemax="'+st.p+'" aria-valuenow="'+st.n+'"><i style="width:'+Math.round(st.n/st.p*100)+'%"></i></div>';
-  h+=weekStrip()+weekScore();
+  const pillH='<span class="pill'+(sk?' on':'')+'">'+(sk?sk+(sk===1?' day':' days')+' streak':'Start a streak')+'</span>',wide=isWide();
+  h+='<div class="th"><h1 class="big tbig">'+esc(title)+'</h1>'+(wide?pillH:'<button class="datebtn" data-act="weekpanel" aria-expanded="'+wpOpen+'">'+esc(dname(d)+' '+parse(d).getDate()+' '+MONTHS[parse(d).getMonth()])+' <span class="chev" aria-hidden="true">'+(wpOpen?'⌃':'⌄')+'</span></button>')+'</div>';
+  if(st.p)h+='<div class="barrow"><div class="bar" role="progressbar" aria-label="Sets done" aria-valuemin="0" aria-valuemax="'+st.p+'" aria-valuenow="'+st.n+'"><i style="width:'+Math.round(st.n/st.p*100)+'%"></i></div><span>'+st.n+'/'+st.p+' sets</span></div>';
+  if(wide)h+='<div class="weekpanel"><div class="date">'+esc(fmtDate(d))+'</div>'+weekStrip()+weekScore()+'</div>';
+  if(wide){}else if(wpOpen)h+='<div class="weekpanel enter"><div class="wp-top"><span class="date">'+esc(fmtDate(d))+'</span>'+pillH+'</div>'+weekStrip()+weekScore()+'</div>';
+  h+=bn;
   if(!hasContent(plan)&&!items.length){h+='<div class="empty"><p>Set up your week first: name each day and add its exercises.</p><button class="btn primary" data-act="goplan">Set up my week</button></div>';return h}
-  if(x&&x.off)return h+'<div class="restcard"><p>Marked as rest. Your streak is safe.</p>'+(isT?'<button class="btn primary" data-act="unoff">Train today anyway</button>':'')+'</div>';
-  prs(d).forEach(p=>{h+='<div class="banner">'+I.trophy+'<div><b>New PR on '+esc(exName(p.id))+'</b><span>'+esc(fmtSet(p.t,p.tp))+', '+esc(p.diff)+'</span></div></div>'});
+  if(x&&x.off)return h+restCard(d,'Marked as rest.',isT?'<button class="btn primary" data-act="unoff">Train today anyway</button>':'');
+  prs(d).forEach(p=>{const k=d+'|'+p.id+'|'+JSON.stringify(p.tp),nw=!prSeen.has(k);prSeen.add(k);h+='<div class="banner'+(nw&&prReady?' prnew':'')+'">'+I.trophy+'<div><b>New PR on '+esc(exName(p.id))+'</b><span>'+esc(fmtSet(p.t,p.tp))+', '+esc(p.diff)+'</span></div></div>'});
   if(!items.length){
-    h+='<div class="restcard"><p>Nothing planned '+(isT?'today':'this day')+'. Add an exercise, or enjoy the rest.</p>'+(addOpen?'':'<button class="btn primary" data-act="openadd">Add an exercise</button>')+'</div>';
+    h+=restCard(d,'Nothing planned '+(isT?'today':'this day')+'.',addOpen?'':'<button class="btn" data-act="openadd">Add an exercise</button>');
     if(addOpen)h+=addForm(d);
     return h+skippedLine(d);
   }
@@ -625,6 +653,9 @@ function todayHtml(){
 const wideMQ=window.matchMedia?window.matchMedia('(min-width:900px)'):null;
 function isWide(){return !!(wideMQ&&wideMQ.matches)}
 if(wideMQ&&wideMQ.addEventListener)wideMQ.addEventListener('change',()=>{if(view==='today')softRender()});
+function nextWorkout(d){for(let i=1;i<=7;i++){const k=ymd(addDays(parse(d),i)),w=plan.week[parse(k).getDay()];if(!isOff(k)&&weekItems(k).length)return (w.name||'Workout')+', '+dname(k)}return null}
+function restCard(d,lead,btn){const sk=streak(),nx=nextWorkout(d);
+  return '<div class="restcard rest"><div class="rest-ic" aria-hidden="true">☾</div><p class="rest-l">'+esc(lead)+'</p><p>'+(sk?'Your '+sk+(sk===1?'-day':'-day')+' streak is safe.':'Rest days keep your streak.')+'</p>'+(nx?'<p class="rest-n">Next: <b>'+esc(nx)+'</b></p>':'')+(btn||'')+'</div>'}
 function activeFor(d,items){const a=active[d];const f=a&&items.find(i=>i.ex===a);if(f)return f;return items.find(it=>doneSets(d,it.ex).length<rowsFor(d,it))||items[items.length-1]}
 function weekStrip(){
   const wk=weekDates(weekOff),t0=today();
@@ -827,7 +858,11 @@ function progressHtml(){
     else if(t==='weight'){const vol=x.sets.reduce((a,s)=>a+toU(s.w)*s.r,0),p=recent[k+1];meta='Volume '+Math.round(vol)+' '+plan.unit;if(p){const dv=Math.round(vol-p.sets.reduce((a,s)=>a+toU(s.w)*s.r,0));meta+=dv>0?', up '+dv:dv<0?', down '+(-dv):', same';cls=dv>0?'up':dv<0?'down':''}}
     list+='<div class="sess"><div class="sess-h"><b>'+esc(fmtDate(x.d))+'</b><span class="meta"><span class="'+cls+'">'+meta+'</span><button class="trash" data-act="delsess" data-d="'+x.d+'" data-ex="'+progEx+'" aria-label="Delete this session" title="Delete this session">'+I.trash+'</button></span></div><div class="scs">'+x.sets.map((s,i)=>{const short=goal&&(t==='time'?s.t<goal:s.r<goal);return '<span class="sc'+(i===ti?' best':short?' short':'')+'">'+esc(t==='weight'?fw(s.w)+' × '+s.r:fmtSet(t,s))+'</span>'}).join('')+'</div></div>'});
   list+='<p class="help">Yellow: best set that day. Orange: short of your goal. Bin: delete that session.</p></div>';
-  return h+'<div class="pgrid">'+hero+list+'</div>';
+  const c30=ymd(addDays(new Date(),-30)),s30=ss.filter(x=>x.d>=c30);
+  const tot=t==='weight'?Math.round(s30.reduce((a,x)=>a+x.sets.reduce((b,z)=>b+toU(z.w)*z.r,0),0)):t==='time'?s30.reduce((a,x)=>a+x.sets.reduce((b,z)=>b+z.t,0),0):s30.reduce((a,x)=>a+x.sets.reduce((b,z)=>b+z.r,0),0);
+  const totL=t==='weight'?plan.unit+' lifted, 30 days':t==='time'?'seconds, 30 days':'reps, 30 days';
+  const first=ss[0].d,stats='<div class="pstats"><div class="pstat"><b>'+s30.length+'</b><span>sessions, 30 days</span></div><div class="pstat"><b>'+tot.toLocaleString()+'</b><span>'+totL+'</span></div><div class="pstat"><b>'+parse(first).getDate()+' '+MONTHS[parse(first).getMonth()]+'</b><span>first logged</span></div></div>';
+  return h+'<div class="pgrid"><div class="pleft">'+hero+stats+'</div>'+list+'</div>';
 }
 
 /* ---------------- events ---------------- */
@@ -927,6 +962,7 @@ function act(a,b){
     case 'wkprev':weekOff--;break;
     case 'wknext':if(weekOff<0)weekOff++;break;
     case 'goplan':setView('plan');planDay=new Date().getDay();startEdit();break;
+    case 'weekpanel':wpOpen=!wpOpen;break;
     case 'more':moreOpen=moreOpen===id?null:id;break;
     case 'addtype':{newType=b.dataset.v;b.parentElement.querySelectorAll('button').forEach(x=>x.setAttribute('aria-checked',String(x===b)));return}
     case 'combopick':{const box=b.closest('.combo'),inp=box.querySelector('input');inp.value=b.dataset.v;comboClose(inp);inp.focus();return}
@@ -1044,7 +1080,7 @@ document.addEventListener('keydown',e=>{const h=e.target.closest&&e.target.close
 /* ---------------- start ---------------- */
 plan=normPlan(LS.get('plan'));
 Object.entries(LS.get('days')||{}).forEach(([k,v])=>{days[k]=normDay(v)});
-viewKey=homeDay();applyTheme(plan.theme);autoBackup();render();initFirebase();armBack();
+viewKey=homeDay();applyTheme(plan.theme);autoBackup();render();prReady=true;initFirebase();armBack();
 let lastDay=today(),hiddenAt=0;
 setInterval(()=>{const t=today();if(t!==lastDay){if(viewKey===lastDay&&!sessionActive(lastDay))viewKey=t;lastDay=t;softRender()}},60000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){hiddenAt=Date.now();saveNow();return}
