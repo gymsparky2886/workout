@@ -278,7 +278,7 @@ details.wscore p{margin:4px 0}
 <script>
 (function(){
 'use strict';
-const APP_VERSION=19, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=21, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const SESSION_MS=3*60*60*1000, AWAY_MS=30*60*1000;
@@ -507,7 +507,7 @@ function restoreSnap(sn){
   if(JSON.stringify(plan)!==JSON.stringify(sn.plan)){plan=normPlan(sn.plan);applyTheme(plan.theme);savePlan()}
   render();
 }
-function withUndo(msg,fn){const sn=takeSnap();fn();render();toast(msg,()=>restoreSnap(sn))}
+function withUndo(msg,fn){fn();render()}
 let tt=null,undoFn=null;function toast(m,undo){const t=$('#toast');t.innerHTML='<span>'+esc(m)+'</span>'+(undo?'<button class="tbtn" data-act="undo">Undo</button>':'');undoFn=undo||null;t.classList.toggle('act',!!undo);t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>{t.classList.remove('show','act');undoFn=null},undo?7000:3200)}
 function hideToast(){const t=$('#toast');t.classList.remove('show','act');undoFn=null}
 function softRender(){const a=document.activeElement;if(a&&a.matches&&a.matches('input,select')&&a.id!=='impfile'){pendingRender=true;return}render()}
@@ -516,7 +516,22 @@ function applyTheme(v){v=v==='light'||v==='dark'?v:'auto';const r=document.docum
   const ms=document.querySelectorAll('meta[name="theme-color"]');if(ms.length===2){ms[0].content=v==='dark'?'#12151B':'#F2F3F0';ms[1].content=v==='light'?'#F2F3F0':'#12151B'}}
 
 /* ---------------- render ---------------- */
-function setView(v){view=v;try{history.replaceState(null,'',v==='today'?location.pathname+location.search:'#'+v)}catch(e){}}
+function saveNow(){clearTimeout(lt);LS.set('plan',plan);LS.set('days',days);LS.set('pending',{days:[...dirtyDays],replace:[...replaceDays],plan:planDirty,all:replaceAll});clearTimeout(ct);if(user&&fdb&&(planDirty||dirtyDays.size)){const base='users/'+user.uid;
+  if(planDirty){planDirty=false;fdb.doc(base+'/meta/plan').set(clone(plan)).catch(syncErr)}dirtyDays.forEach(d=>{const x=days[d];if(!x)return;const ref=fdb.doc(base+'/days/'+d);(replaceDays.has(d)?ref.set(clone(x)):ref.set(clone(x),{merge:true})).catch(syncErr)});dirtyDays.clear();replaceDays.clear()}}
+let exiting=false,exitT=null;
+function armBack(){try{if(!history.state||!history.state.guard)history.pushState({guard:1},'',location.href)}catch(e){}}
+window.addEventListener('popstate',()=>{
+  if(exiting)return;
+  const rearm=()=>{try{history.pushState({guard:1},'',location.href)}catch(e){}};
+  if(askState){closeAsk('cancel');rearm();return}
+  if(editor||addOpen||noteOpen){editor=null;addOpen=false;noteOpen=null;rearm();render();return}
+  if(planEditing){finishEdit();rearm();render();return}
+  if(view!=='today'){setView('today');rearm();render();window.scrollTo(0,0);return}
+  saveNow();toast('Press back again to exit. Everything is saved.');
+  clearTimeout(exitT);exitT=setTimeout(()=>{if(document.visibilityState==='visible')rearm()},2500);
+});
+window.addEventListener('pagehide',saveNow);
+function setView(v){view=v;try{history.replaceState(history.state,'',v==='today'?location.pathname+location.search:'#'+v)}catch(e){}}
 function render(){
   const now=today();if(viewKey>now)viewKey=now;
   document.querySelectorAll('.tabbar button').forEach(b=>{if(b.dataset.view===view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
@@ -616,7 +631,7 @@ function editorHtml(t,s,tv,i){
   h+='<div class="btns"><button class="btn primary" data-act="edsave">Save as done</button>'+(s.done?'<button class="btn" data-act="edundo">Not done</button>':'')+'<button class="btn" data-act="edcancel">Cancel</button></div></div>';
   return h;
 }
-function addForm(d){return '<div class="card"><strong>Add an exercise for '+(d===today()?'today':esc(fmtDate(d)))+'</strong><div class="formgrid"><div class="field wide"><label for="addName">Exercise</label><input class="inp" id="addName" list="exlist" autocomplete="off" placeholder="Incline press"></div><div class="field"><label for="addType">Type</label>'+typeSelect('id="addType"','weight')+'</div><div class="field"><label for="addSets">Sets</label><input class="inp" id="addSets" inputmode="numeric" value="3"></div><div class="field"><label for="addReps">Reps or seconds</label><input class="inp" id="addReps" inputmode="numeric" value="10"></div><p class="help wide">'+TYPE_HELP+'</p></div><div class="btns"><button class="btn primary" data-act="addday">Add</button><button class="btn" data-act="closeadd">Cancel</button></div></div>'}
+function addForm(d){return '<div class="card"><strong>Add an exercise for '+(d===today()?'today':esc(fmtDate(d)))+'</strong><div class="field"><label for="addName">Exercise</label><input class="inp" id="addName" list="exlist" autocomplete="off" placeholder="Pick or type a name"></div><p class="help">Sets, reps and type come from your plan. A new name starts as Weights, 3 × 10; change it in Plan.</p><div class="btns"><button class="btn primary" data-act="addday">Add</button><button class="btn" data-act="closeadd">Cancel</button></div></div>'}
 function skippedLine(d){const x=days[d];if(!x||!x.skip.length)return '';const sk=x.skip.filter(i=>ex(i)&&!(ex(i).archived&&d>=today()));if(!sk.length)return '';return '<p class="help">Skipped: '+sk.map(i=>esc(exName(i))+' <button class="link" data-act="unskip" data-ex="'+i+'">Put back</button>').join(', ')+'</p>'}
 function stepSelect(id){const opts=plan.unit==='lb'?STEPS_LB.map(v=>[v/KG_LB,v]):STEPS_KG.map(v=>[v,v]),cur=exStep(id);let bi=0;opts.forEach((o,i)=>{if(Math.abs(o[0]-cur)<Math.abs(opts[bi][0]-cur))bi=i});
   return '<select class="inp" aria-label="Weight step for '+esc(exName(id))+'" data-step="'+id+'">'+opts.map((o,i)=>'<option value="'+o[0]+'"'+(i===bi?' selected':'')+'>+'+o[1]+' '+plan.unit+' step</option>').join('')+'</select>'}
@@ -755,9 +770,9 @@ document.addEventListener('keydown',e=>{
   else if(id&&id.startsWith('ed-')){e.preventDefault();act('edsave')}
 });
 function startEdit(){if(planEditing)return;editSnap=takeSnap();planEditing=true;exOpen=null}
-function finishEdit(){if(!planEditing)return;const sn=editSnap;planEditing=false;editSnap=null;if(sn&&(JSON.stringify(sn.plan)!==JSON.stringify(plan)||JSON.stringify(sn.days)!==JSON.stringify(days)))toast('Week saved.',()=>restoreSnap(sn))}
+function finishEdit(){if(!planEditing)return;planEditing=false;editSnap=null}
 function readEd(f){const el=$('#ed-'+f);return el?num(el.value):null}
-const UNDO_MSG={exstep:'Step changed.',addset:'Set added.',dropset:'Set removed.',unskip:'Put back.',addday:'Exercise added.',off:'Marked as rest.',unoff:'Back to training.',edundo:'Set marked not done.',rm:'Removed from this day.',restore:'Restored.',unit:'Unit changed.',padd:'Exercise added.'};
+const UNDO_MSG={};
 function act(a,b){
   const d=viewKey,id=b&&b.dataset.ex,snap0=UNDO_MSG[a]?takeSnap():null;
   switch(a){
@@ -769,8 +784,7 @@ function act(a,b){
     case 'done':{const i=+b.dataset.i,it=visibleItems(d).find(x=>x.ex===id);if(!it)return;const rows=rowsFor(d,it),tv=rowTargets(d,id,it,rows).rowList[i];if(!tv)return;
       const before=days[d]?clone(days[d]):null;
       const s=setRow(d,id,i);s.w=tv.w!=null?tv.w:null;s.r=tv.r!=null?tv.r:null;s.t=tv.t!=null?tv.t:null;s.done=true;editor=null;
-      active[d]=id;bumpSession(d);touchDay(d);render();
-      toast('Set '+(i+1)+' logged: '+fmtSet(exType(id),s)+'.',()=>{days[d]=before||normDay();touchDay(d,true);render()});return}
+      active[d]=id;bumpSession(d);touchDay(d);render();return}
     case 'editset':editor={d,ex:id,i:+b.dataset.i};render();{const f=document.querySelector('.editor input');f&&f.focus()}return;
     case 'step':{const el=$('#ed-'+b.dataset.f),dir=+b.dataset.dir,st=b.dataset.f==='w'?stepU(editor.ex):b.dataset.f==='t'?5:1;const v=num(el.value)||0;el.value=String(Math.max(0,Math.round((v+dir*st)*100)/100));return}
     case 'edsave':{const t=exType(editor.ex),w=readEd('w'),r=readEd('r'),tt=readEd('t');
@@ -780,12 +794,11 @@ function act(a,b){
       if(t==='time'&&(tt==null||tt<1)){toast('Seconds must be at least 1.');return}
       const before=days[editor.d]?clone(days[editor.d]):null,ed=editor;
       const s=setRow(ed.d,ed.ex,ed.i);s.w=w!=null?fromU(w):null;s.r=r!=null?Math.round(r):null;s.t=tt!=null?Math.round(tt):null;s.done=true;
-      active[ed.d]=ed.ex;bumpSession(ed.d);touchDay(ed.d);editor=null;render();
-      toast('Set '+(ed.i+1)+' saved: '+fmtSet(t,s)+'.',()=>{days[ed.d]=before||normDay();touchDay(ed.d,true);render()});return}
+      active[ed.d]=ed.ex;bumpSession(ed.d);touchDay(ed.d);editor=null;render();return}
     case 'edundo':{const s=setRow(editor.d,editor.ex,editor.i);s.done=false;touchDay(editor.d);editor=null;break}
     case 'undo':{const f=undoFn;hideToast();if(f)f();return}
-    case 'finish':finishSession();viewKey=today();weekOff=0;editor=null;toast('Workout finished.');break;
-    case 'hidesignin':LS.set('hideSignin',true);toast('Hidden. Sign in any time from Settings.');break;
+    case 'finish':finishSession();viewKey=today();weekOff=0;editor=null;break;
+    case 'hidesignin':LS.set('hideSignin',true);break;
     case 'edcancel':editor=null;break;
     case 'addset':{const x=snap(d);x.rows[id]=+b.dataset.rows+1;touchDay(d);break}
     case 'dropset':{const x=snap(d),n=+b.dataset.rows-1;x.rows[id]=n;x.sets[id]=(x.sets[id]||[]).slice(0,n);if(editor&&editor.i>=n)editor=null;touchDay(d);break}
@@ -799,10 +812,10 @@ function act(a,b){
     case 'noteclose':noteOpen=null;break;
     case 'openadd':addOpen=true;render();{const n=$('#addName');n&&n.focus()}return;
     case 'closeadd':addOpen=false;break;
-    case 'addday':{const nid=ensureEx($('#addName').value,$('#addType').value);if(!nid){$('#addName').focus();return}
+    case 'addday':{const nid=ensureEx($('#addName').value,'weight');if(!nid){$('#addName').focus();return}
       if(!plan.startedOn)plan.startedOn=today();const x=snap(d);x.skip=x.skip.filter(i=>i!==nid);
       if(visibleItems(d).some(i=>i.ex===nid)){toast(exName(nid)+' is already on this day.');addOpen=false;active[d]=nid;break}
-      if(!plannedItems(d).some(i=>i.ex===nid))x.extra.push({ex:nid,sets:Math.max(1,Math.round(num($('#addSets').value)||3)),reps:Math.max(1,Math.round(num($('#addReps').value)||10))});
+      if(!plannedItems(d).some(i=>i.ex===nid)){let g=null;for(const k of ORDER){g=plan.week[k].items.find(i=>i.ex===nid);if(g)break}x.extra.push({ex:nid,sets:g?g.sets:3,reps:g?g.reps:10})}
       active[d]=nid;addOpen=false;savePlan();touchDay(d);break}
     case 'off':if(d!==today())return;snap(d).off=true;touchDay(d);break;
     case 'unoff':snap(d).off=false;touchDay(d);break;
@@ -814,9 +827,9 @@ function act(a,b){
     case 'editweek':startEdit();window.scrollTo(0,0);break;
     case 'exedit':startEdit();exOpen=id;render();{const el=document.querySelector('[data-exbox="'+id+'"]');el&&el.scrollIntoView({block:'center'})}return;
     case 'exopen':{const y=b.getBoundingClientRect().top;exOpen=exOpen===id?null:id;render();const el=document.querySelector('[data-exbox="'+id+'"]')||document.querySelector('.exr[data-ex="'+id+'"]');if(el)window.scrollBy(0,el.getBoundingClientRect().top-y);return}
-    case 'extype':{const want=b.dataset.v;if(want===exType(id))return;const n=sessions(id).reduce((a,x)=>a+x.sets.length,0);
-      const go=()=>withUndo('Type changed.',()=>{plan.library[id].type=want;savePlan()});
-      if(n)confirmAsk('Change the type?',exName(id)+' has '+n+' logged sets. Changing the type changes how they show.','Change type','primary').then(ok=>{if(ok)go()});else go();return}
+    case 'extype':{const want=b.dataset.v;if(want===exType(id))return;const n=doneSets(today(),id).length;
+      const go=()=>{plan.library[id].type=want;savePlan();render()};
+      if(n)ask({title:'Sets already logged today',msg:'You logged '+n+(n===1?' set':' sets')+' of '+exName(id)+' today. Changing the type changes how '+(n===1?'it shows':'they show')+' on Today.',buttons:[{v:'yes',label:'Change type anyway',style:'primary'},{v:'cancel',label:'Keep '+TYPES[exType(id)]}]}).then(v=>{if(v==='yes')go()});else go();return}
     case 'delex':{const nm=exName(id),n=sessions(id).reduce((a,x)=>a+x.sets.length,0);
       confirmAsk('Delete '+nm+' for good?',(n?'It leaves your plan and Progress, with all '+n+(n===1?' logged set':' logged sets')+'. ':'It leaves your plan. ')+'Archive instead if you want to keep the history.','Delete for good').then(ok=>{if(!ok)return;
         withUndo('Deleted '+nm+'.',()=>{Object.entries(days).forEach(([d,x])=>{let ch=false;
@@ -828,16 +841,16 @@ function act(a,b){
           if(progEx===id)progEx=null;if(exOpen===id)exOpen=null;Object.keys(active).forEach(k=>{if(active[k]===id)delete active[k]});savePlan()})});return}
     case 'exstep':plan.library[id].step=num(b.dataset.v);savePlan();break;
     case 'doneedit':finishEdit();window.scrollTo(0,0);break;
-    case 'canceledit':{const sn=editSnap;planEditing=false;editSnap=null;if(sn&&(JSON.stringify(sn.plan)!==JSON.stringify(plan)||JSON.stringify(sn.days)!==JSON.stringify(days))){restoreSnap(sn);toast('Changes discarded.')}window.scrollTo(0,0);break}
+    case 'canceledit':{const sn=editSnap;planEditing=false;editSnap=null;if(sn&&(JSON.stringify(sn.plan)!==JSON.stringify(plan)||JSON.stringify(sn.days)!==JSON.stringify(days)))restoreSnap(sn);window.scrollTo(0,0);break}
     case 'pday':planDay=+b.dataset.d;break;
     case 'padd':{const nid=ensureEx($('#pName').value,$('#pType').value);if(!nid){$('#pName').focus();return}
       if(!plan.startedOn)plan.startedOn=today();const w=plan.week[planDay];
       if(w.items.some(i=>i.ex===nid)){toast(exName(nid)+' is already on '+DAYS[planDay]+'.');return}
       w.items.push({ex:nid,sets:Math.max(1,Math.round(num($('#pSets').value)||3)),reps:Math.max(1,Math.round(num($('#pReps').value)||10))});
-      savePlan();render();{const p=$('#pName');p&&p.focus()}toast(exName(nid)+' added to '+DAYS[planDay]+'.',()=>restoreSnap(snap0));return}
+      savePlan();render();{const p=$('#pName');p&&p.focus()}return}
     case 'rm':plan.week[planDay].items.splice(+b.dataset.i,1);savePlan();break;
-    case 'archive':confirmAsk('Archive '+exName(id)+'?','It leaves your plan. Its history stays in Progress, and you can restore it.','Archive').then(ok=>{if(ok)withUndo('Archived '+exName(id)+'.',()=>{Object.values(plan.week).forEach(w=>{w.items=w.items.filter(i=>i.ex!==id)});plan.library[id].archived=true;savePlan()})});return;
-    case 'restore':plan.library[id].archived=false;savePlan();toast(exName(id)+' restored. Add it to a day in your plan.');break;
+    case 'archive':Object.values(plan.week).forEach(w=>{w.items=w.items.filter(i=>i.ex!==id)});plan.library[id].archived=true;if(exOpen===id)exOpen=null;savePlan();break;
+    case 'restore':plan.library[id].archived=false;savePlan();break;
     case 'pex':progEx=id;break;
     case 'delsess':{const dd=b.dataset.d,x=days[dd];if(!x||!x.sets[id])return;const n=doneSets(dd,id).length;
       confirmAsk('Delete this session?',exName(id)+' on '+fmtDate(dd)+', '+n+(n===1?' set':' sets')+'. Your plan and other exercises stay.','Delete session').then(ok=>{if(ok)withUndo('Session deleted.',()=>{delete x.sets[id];delete x.rows[id];touchDay(dd,true)})});return}
@@ -870,7 +883,7 @@ function shareData(){const x=shareFile();if(!x||!canShareFile()){toast('Sharing 
   navigator.share({files:[x],title:x.name}).then(()=>toast('Backup shared.')).catch(e=>{if(e&&e.name==='AbortError')toast('Sharing cancelled.');else toast('Could not share. Use Save backup file.')})}
 function importData(d){
   if(!d||d.app!=='workout-tracker')throw 0;
-  confirmAsk('Load this backup?','Everything goes back to the backup from '+String(d.saved||'').slice(0,10)+', on this device and online. You can undo right after.','Load backup').then(ok=>{if(!ok)return;
+  confirmAsk('Load this backup?','Everything goes back to the backup from '+String(d.saved||'').slice(0,10)+', on this device and online.','Load backup').then(ok=>{if(!ok)return;
     try{withUndo('Backup loaded.',()=>applyData(d));setView('today')}catch(x){toast('That file is not a workout backup.')}render()});
 }
 function applyData(d){
@@ -907,7 +920,7 @@ function loadCloudBackups(){if(!user||!fdb||bkCloudList)return;bkCloudList='load
   fdb.collection('users/'+user.uid+'/backups').orderBy('date','desc').limit(BK_KEEP).get().then(q=>{bkCloudList=q.docs.map(x=>x.data());if(view==='settings')softRender()}).catch(()=>{bkCloudList=[]})}
 function backupList(){if(user&&Array.isArray(bkCloudList)&&bkCloudList.length)return bkCloudList.map(b=>({date:b.date,sets:b.sets,src:'cloud'}));return (LS.get('bk')||[]).map(b=>({date:b.date,sets:b.sets,src:'local'}))}
 function restoreBackup(src,date){
-  const go=data=>confirmAsk('Restore '+fmtDate(date)+'?','Everything goes back to how it was when you opened the app that day, on this device and online. You can undo right after.','Restore').then(ok=>{if(ok)withUndo('Backup restored.',()=>applyData(data))});
+  const go=data=>confirmAsk('Restore '+fmtDate(date)+'?','Everything goes back to how it was when you opened the app that day, on this device and online.','Restore').then(ok=>{if(ok)withUndo('Backup restored.',()=>applyData(data))});
   if(src==='local'){const b=(LS.get('bk')||[]).find(x=>x.date===date);if(b)go(b.data);return}
   const b=(bkCloudList||[]).find(x=>x.date===date);if(b){try{go(JSON.parse(b.json))}catch(e){toast('That backup could not be read.')}}
 }
@@ -925,10 +938,10 @@ document.addEventListener('keydown',e=>{const h=e.target.closest&&e.target.close
 /* ---------------- start ---------------- */
 plan=normPlan(LS.get('plan'));
 Object.entries(LS.get('days')||{}).forEach(([k,v])=>{days[k]=normDay(v)});
-viewKey=homeDay();applyTheme(plan.theme);autoBackup();render();initFirebase();
+viewKey=homeDay();applyTheme(plan.theme);autoBackup();render();initFirebase();armBack();
 let lastDay=today(),hiddenAt=0;
 setInterval(()=>{const t=today();if(t!==lastDay){if(viewKey===lastDay&&!sessionActive(lastDay))viewKey=t;lastDay=t;softRender()}},60000);
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){hiddenAt=Date.now();return}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){hiddenAt=Date.now();saveNow();return}
   autoBackup();const t=today();if(hiddenAt&&Date.now()-hiddenAt>AWAY_MS){viewKey=homeDay();weekOff=0;editor=null;addOpen=false;noteOpen=null}else if(t!==lastDay&&viewKey===lastDay&&!sessionActive(lastDay))viewKey=t;lastDay=t;softRender()});
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 })();
