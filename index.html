@@ -119,6 +119,15 @@ details.wscore p{margin:4px 0}
 .tgrid{display:flex;flex-direction:column;gap:12px;margin-top:14px}
 .acc{display:flex;flex-direction:column;gap:8px;margin-top:14px}
 .acc .card{scroll-margin-top:12px}
+::view-transition-group(*){animation-duration:.3s;animation-timing-function:cubic-bezier(.2,.8,.2,1)}
+::view-transition-image-pair(*){overflow:hidden;border-radius:18px}
+::view-transition-old(*),::view-transition-new(*){height:auto;width:100%;object-fit:none;object-position:top left}
+::view-transition-old(*){animation:vtOut .1s ease-out both}
+::view-transition-new(*){animation:vtIn .18s ease-out .06s both}
+@keyframes vtOut{to{opacity:0}}
+@keyframes vtIn{from{opacity:0}}
+::view-transition-old(root),::view-transition-new(root){animation:none}
+@media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
 .focus{order:1}
 .donebox{background:var(--sunk);color:var(--done-text);border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .donebox b{font-weight:600}
@@ -309,10 +318,16 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 .food b{font-weight:600}
 .food .g{color:var(--prot);font-weight:700}
 .inl{display:flex;gap:8px}
+.tickrow{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:14px;min-height:36px;cursor:pointer}
+.tickrow input{width:20px;height:20px;accent-color:var(--accent);margin:0}
 .inl .inp{flex:1}
 .rr{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--hair);font-size:14px}
 .rr:last-child{border-bottom:0}
 .rr>span:first-child{color:var(--muted)}
+.rrb{all:unset;box-sizing:border-box;width:100%;cursor:pointer;min-height:44px}
+.rrb:focus-visible{outline:2px solid var(--accent)}
+.dayfoods{background:var(--sunk);border-radius:10px;padding:2px 12px;margin:2px 0 6px}
+.dayfoods .rr{font-size:13px;border-color:var(--line)}
 .rr .rm{border:0;background:none;color:var(--faint);min-width:32px;min-height:32px}
 .rr em{font-style:normal;font-weight:600}
 .rr em.up,.rr .up{color:var(--done-text)}
@@ -404,7 +419,7 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 <script>
 (function(){
 'use strict';
-const APP_VERSION=30, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=31, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const SESSION_MS=3*60*60*1000, AWAY_MS=30*60*1000;
@@ -436,7 +451,7 @@ const I={
 let plan, days={};
 const VIEWS=['today','plan','progress','settings'];
 let view=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'today', viewKey=today(), weekOff=0, active={}, editor=null, addOpen=false, noteOpen=null, sheet=false;
-let planDay=new Date().getDay(), progEx=null, pendingRender=false, planEditing=false, editSnap=null, exOpen=null, moreOpen=null, protOpen=false, wuOpen={}, wpOpen=false, prSeen=new Set(), prReady=false, newType='weight', lastView=null, lastOpen={}, askState=null, bkCloudList=null;
+let planDay=new Date().getDay(), progEx=null, pendingRender=false, planEditing=false, editSnap=null, exOpen=null, moreOpen=null, protOpen=false, vtBusy=false, protDayOpen=null, wuOpen={}, wpOpen=false, prSeen=new Set(), prReady=false, newType='weight', lastView=null, lastOpen={}, askState=null, bkCloudList=null;
 function emptyWeek(){const w={};for(let i=0;i<7;i++)w[i]={name:'',rest:false,items:[]};return w}
 function normPlan(p){
   p=p||{};const o={v:3,unit:p.unit==='lb'?'lb':'kg',theme:(p.theme==='light'||p.theme==='dark')?p.theme:'auto',startedOn:p.startedOn||null,library:{},week:emptyWeek()};
@@ -667,7 +682,7 @@ function renderProt(){if(askState)return;const r=$('#sheetRoot');if(!protOpen){r
   let h='<div class="scrim" data-act="protclose"></div><section class="askbox protbox" role="dialog" aria-modal="true" aria-labelledby="ptitle"><div class="ph"><h2 id="ptitle" class="h2d" style="font-size:26px">Add protein</h2><button class="link" data-act="protclose">Close</button></div>';
   if(!plan.protein.goal)h+='<div class="field"><label for="pgoal1">First, your daily goal in grams</label><div class="inl"><input class="inp" id="pgoal1" inputmode="numeric" placeholder="150"><button class="btn primary" data-act="protgoal1">Save</button></div></div>';
   h+=plan.protein.foods.length?plan.protein.foods.map(f=>'<button class="food" data-act="protadd" data-f="'+f.id+'"><b>'+esc(f.name)+'</b><span class="g">+'+f.g+' g</span></button>').join(''):'<p class="help">Save your usual foods in Settings, Protein, for one-tap adding.</p>';
-  h+='<div class="inl"><input class="inp" id="pother" inputmode="numeric" placeholder="Other: grams" aria-label="Other, grams of protein"><button class="btn primary" data-act="protother">Add</button></div>';
+  h+='<div><span class="flabel">Something else</span><div class="foodrow" style="margin-top:0"><input class="inp" id="pname" placeholder="Name (optional)" aria-label="Food name, optional" autocapitalize="sentences"><input class="inp" id="pother" inputmode="numeric" placeholder="30" aria-label="Grams of protein"><span class="x">g</span><button class="btn primary" data-act="protother">Add</button></div><label class="tickrow"><input type="checkbox" id="psave"> Save to my foods</label></div>';
   h+='<div><span class="flabel">'+(d===today()?'Today':esc(fmtDate(d)))+': '+protOf(d)+' g'+(plan.protein.goal?' of '+plan.protein.goal:'')+'</span>'+(list.length?list.map((e,i)=>'<div class="rr"><span>'+esc(e.name)+'</span><span>'+e.g+' g <button class="rm" data-act="protdel" data-i="'+i+'" aria-label="Remove '+esc(e.name)+'">✕</button></span></div>').join(''):'<p class="help">Nothing logged yet.</p>')+'</div></section>';
   r.innerHTML=h}
 function closeAsk(v){if(!askState)return;const r=askState.res;askState=null;renderAsk();renderProt();r(v)}
@@ -706,6 +721,7 @@ window.addEventListener('popstate',()=>{
 window.addEventListener('pagehide',saveNow);
 function setView(v){view=v;try{history.replaceState(history.state,'',v==='today'?location.pathname+location.search:'#'+v)}catch(e){}}
 function pillsFade(){const p=$('.pills');if(!p)return;const f=()=>p.classList.toggle('fade',p.scrollWidth-p.clientWidth-p.scrollLeft>4);f();p.addEventListener('scroll',f,{passive:true})}
+function smoothOK(){return !(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)}
 function render(){document.body.classList.toggle('editing',view==='plan'&&planEditing);setTimeout(renderProt,0);
   const now=today();if(viewKey>now)viewKey=now;
   document.querySelectorAll('.tabbar button').forEach(b=>{if(b.dataset.view===view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
@@ -778,13 +794,13 @@ function weekScore(){
 function rowHtml(d,it,isAct){
   const id=it.ex,t=exType(id),ds=doneSets(d,id),rows=rowsFor(d,it),full=ds.length>=rows,tg=full?null:rowTargets(d,id,it,rows);
   const sub=ds.length?listTxt(t,ds):(tg&&tg.has?'Next '+listTxt(t,tg.rowList):'Goal '+goalTxt(t,it));
-  return '<button class="row'+(full?' done':'')+(isAct?' is-active':'')+'" data-act="focus" data-ex="'+id+'"><span><span class="nm">'+esc(exName(id))+'</span><span class="sub">'+esc(sub)+'</span></span><span class="cnt">'+(full?'Done':Math.min(ds.length,rows)+' of '+rows)+'</span></button>';
+  return '<button class="row'+(full?' done':'')+(isAct?' is-active':'')+'" data-act="focus" data-ex="'+id+'"'+(isWide()?'':' style="view-transition-name:vx-'+id+'"')+'><span><span class="nm">'+esc(exName(id))+'</span><span class="sub">'+esc(sub)+'</span></span><span class="cnt">'+(full?'Done':Math.min(ds.length,rows)+' of '+rows)+'</span></button>';
 }
 function cardHtml(d,it,items){
   const id=it.ex,t=exType(id),x=days[d],sets=(x&&x.sets[id])||[],rows=rowsFor(d,it),tg=rowTargets(d,id,it,rows),e=ex(id);
   let first=-1;for(let i=0;i<rows;i++){if(!valid(t,sets[i])){first=i;break}}
   const isNew=lastOpen['card']!==d+'|'+id;lastOpen['card']=d+'|'+id;
-  let h='<section class="card'+(isNew?' enter':'')+'" data-card="'+id+'" aria-label="'+esc(exName(id))+'"><div class="card-head"><h2 class="h2d">'+esc(exName(id))+'</h2><span class="goal">Goal '+goalTxt(t,it)+'</span></div>';
+  let h='<section class="card'+(isNew&&!vtBusy?' enter':'')+'" data-card="'+id+'"'+(isWide()?'':' style="view-transition-name:vx-'+id+'"')+' aria-label="'+esc(exName(id))+'"><div class="card-head"><h2 class="h2d">'+esc(exName(id))+'</h2><span class="goal">Goal '+goalTxt(t,it)+'</span></div>';
   h+='<div class="chips">'+(tg.has?'<span class="chip">Last '+esc(dname(tg.lastDate))+': '+esc(listTxt(t,tg.last))+'</span>':'<span class="chip">First time. This sets the bar.</span>')+'</div>';
   if(tg.has)h+='<div class="why">'+esc(tg.why)+'</div>';
   if(plateau(id,d))h+='<span class="flag">No progress in 3 weeks</span>';
@@ -958,7 +974,9 @@ function proteinProgress(){const g=plan.protein.goal,t0=today(),ds=[];for(let i=
   let h='<div class="pgrid"><div class="hero"><div class="top"><div><div class="lbl">Days goal hit, last 14</div><div class="val">'+(g?hit+' of 14':'No goal')+'</div></div><div style="text-align:right"><div class="lbl">Daily average</div><div class="val" style="font-size:clamp(26px,8vw,36px)">'+avg+' g</div></div></div>';
   h+='<div class="pbars" role="img" aria-label="Protein per day, last 14 days">'+(g?'<div class="gline" style="bottom:'+Math.round(g/mx*100)+'%"></div>':'')+vals.map((v,i)=>'<i class="'+(g&&v>=g?'hit':'')+'" style="height:'+Math.max(3,Math.round(v/mx*100))+'%" title="'+esc(ds[i])+': '+v+' g"></i>').join('')+'</div>';
   h+='<div class="pb-l"><span>'+parse(ds[0]).getDate()+' '+MONTHS[parse(ds[0]).getMonth()]+'</span><span>Today</span></div>'+(g?'<p class="lbl" style="margin:0">Orange: goal hit. Dashed line: your '+g+' g goal.</p>':'<p class="lbl" style="margin:0">Set a daily goal in Settings, Protein.</p>')+'</div>';
-  h+='<div class="card"><strong>Last 7 days</strong>'+ds.slice(-7).reverse().map(d=>'<div class="rr"><span>'+esc(fmtDate(d))+'</span><span'+(g&&protOf(d)>=g?' class="up"':'')+'>'+protOf(d)+' g</span></div>').join('')+'</div></div>';
+  h+='<div class="card"><strong>Last 7 days</strong><p class="help" style="margin:0">Tap a day to see what you ate.</p>'+ds.slice(-7).reverse().map(d=>{const op=protDayOpen===d,list=(days[d]&&days[d].protein)||[];
+    return '<button class="rr rrb" data-act="protday" data-d="'+d+'" aria-expanded="'+op+'"><span>'+esc(fmtDate(d))+'</span><span'+(g&&protOf(d)>=g?' class="up"':'')+'>'+protOf(d)+' g <span class="chev" aria-hidden="true">'+(op?'⌃':'⌄')+'</span></span></button>'+
+      (op?'<div class="dayfoods enter">'+(list.length?list.map(e=>'<div class="rr"><span>'+esc(e.name)+'</span><span>'+e.g+' g</span></div>').join(''):'<p class="help" style="margin:6px 0">Nothing logged.</p>')+'</div>':'')}).join('')+'</div></div>';
   return h}
 function weeksProgress(){const t=new Date(),mon0=ymd(addDays(t,-((t.getDay()+6)%7)));let h='<div class="weeks">';
   for(let i=0;i<8;i++){const mon=ymd(addDays(parse(mon0),-7*i));if(plan.startedOn&&ymd(addDays(parse(mon),6))<plan.startedOn)break;
@@ -1039,7 +1057,7 @@ document.addEventListener('keydown',e=>{
   if(['addName','addSets','addReps'].includes(id)){e.preventDefault();act('addday')}
   else if(['pName','pSets','pReps'].includes(id)){e.preventDefault();act('padd')}
   else if(id==='noteIn'){e.preventDefault();act('noteclose')}
-  else if(id==='pother'){e.preventDefault();act('protother')}
+  else if(id==='pother'||id==='pname'){e.preventDefault();act('protother')}
   else if(id==='pgoal1'){e.preventDefault();act('protgoal1')}
   else if(id==='nfName'||id==='nfG'){e.preventDefault();act('foodadd')}
   else if(id&&id.startsWith('ed-')){e.preventDefault();act('edsave')}
@@ -1060,10 +1078,12 @@ const UNDO_MSG={};
 function act(a,b){
   const d=viewKey,id=b&&b.dataset.ex,snap0=UNDO_MSG[a]?takeSnap():null;
   switch(a){
-    case 'focus':{const y=b.getBoundingClientRect().top,fromRow=b.classList.contains('row');active[d]=id;editor=null;noteOpen=null;render();
-      if(!isWide()){const c=document.querySelector('.card[data-card="'+id+'"]');if(c){
-        if(fromRow)window.scrollBy(0,c.getBoundingClientRect().top-y);
-        else if(c.getBoundingClientRect().top<0||c.getBoundingClientRect().top>window.innerHeight*0.6)c.scrollIntoView({block:'start'})}}
+    case 'focus':{const y=b.getBoundingClientRect().top,fromRow=b.classList.contains('row');
+      const apply=()=>{active[d]=id;editor=null;noteOpen=null;moreOpen=null;render();
+        if(!isWide()){const c=document.querySelector('.card[data-card="'+id+'"]');if(c&&fromRow)window.scrollBy(0,c.getBoundingClientRect().top-y)}};
+      const after=()=>{if(!isWide()&&!fromRow){const c=document.querySelector('.card[data-card="'+id+'"]');if(c){const t=c.getBoundingClientRect().top;if(t<0||t>window.innerHeight*0.45)c.scrollIntoView({block:'start',behavior:smoothOK()?'smooth':'auto'})}}};
+      if(!isWide()&&smoothOK()&&document.startViewTransition){vtBusy=true;const vt=document.startViewTransition(apply);vt.finished.finally(()=>{vtBusy=false;after()})}
+      else{apply();after()}
       return}
     case 'done':{const i=+b.dataset.i,it=visibleItems(d).find(x=>x.ex===id);if(!it)return;const rows=rowsFor(d,it),tv=rowTargets(d,id,it,rows).rowList[i];if(!tv)return;
       const before=days[d]?clone(days[d]):null;
@@ -1109,10 +1129,14 @@ function act(a,b){
     case 'wknext':if(weekOff<0)weekOff++;break;
     case 'goplan':setView('plan');planDay=new Date().getDay();startEdit();break;
     case 'protopen':protOpen=true;render();setTimeout(()=>{const f=$('#pgoal1')||$('.protbox .food')||$('#pother');f&&f.focus()},30);return;
+    case 'protday':protDayOpen=protDayOpen===b.dataset.d?null:b.dataset.d;break;
     case 'protclose':protOpen=false;break;
     case 'protgoal1':{const g=num($('#pgoal1').value);if(!(g>0)){toast('Type your daily goal in grams.');return}plan.protein.goal=Math.round(g);savePlan();break}
     case 'protadd':{const f=plan.protein.foods.find(x=>x.id===b.dataset.f);if(!f)return;const x=getDay(viewKey,true);x.protein.push({id:newId(),name:f.name,g:f.g});touchDay(viewKey);break}
-    case 'protother':{const g=num($('#pother').value);if(!(g>0)){toast('Type the grams.');$('#pother').focus();return}const x=getDay(viewKey,true);x.protein.push({id:newId(),name:'Other',g:Math.round(g)});touchDay(viewKey);break}
+    case 'protother':{const g=num($('#pother').value);if(!(g>0)){toast('Type the grams.');$('#pother').focus();return}
+      const nm=($('#pname').value||'').trim(),gg=Math.round(g),x=getDay(viewKey,true);x.protein.push({id:newId(),name:nm||'Other',g:gg});touchDay(viewKey);
+      if(nm&&$('#psave').checked&&!plan.protein.foods.some(f=>f.name.toLowerCase()===nm.toLowerCase())){plan.protein.foods.push({id:newId(),name:nm,g:gg});savePlan()}
+      break}
     case 'protdel':{const x=getDay(viewKey,true);x.protein.splice(+b.dataset.i,1);touchDay(viewKey,true);break}
     case 'foodadd':{const n=($('#nfName').value||'').trim(),g=num($('#nfG').value);if(!n||!(g>0)){toast('Type a food name and its grams of protein.');return}plan.protein.foods.push({id:newId(),name:n,g:Math.round(g)});savePlan();break}
     case 'fooddel':plan.protein.foods=plan.protein.foods.filter(f=>f.id!==b.dataset.f);savePlan();break;
