@@ -141,7 +141,10 @@ details.wscore p{margin:4px 0}
 .askbox p{margin:0;color:var(--muted);white-space:pre-line}
 .askbtns{display:flex;flex-direction:column;gap:8px;margin-top:4px}
 .askbtns .btn{width:100%;min-height:48px}
-.editbar{position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--accent-tint);color:var(--accent-text);border-radius:14px;padding:8px 12px;margin:12px 0;font-weight:600}
+.editbar{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 74px);z-index:15;display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--accent-tint);color:var(--accent-text);border-radius:14px;padding:8px 10px 8px 14px;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+body.editing main{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 170px)}
+body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
+@media (min-width:900px){.editbar{position:sticky;top:0;left:auto;right:auto;bottom:auto;margin:12px 0;box-shadow:none}body.editing main{padding-bottom:48px}body.editing #toast{bottom:28px}}
 .editbar .btns .btn{min-height:40px}
 .ro{display:flex;flex-direction:column}
 .rorow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--hair)}
@@ -278,7 +281,7 @@ details.wscore p{margin:4px 0}
 <script>
 (function(){
 'use strict';
-const APP_VERSION=21, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=22, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const SESSION_MS=3*60*60*1000, AWAY_MS=30*60*1000;
@@ -532,7 +535,7 @@ window.addEventListener('popstate',()=>{
 });
 window.addEventListener('pagehide',saveNow);
 function setView(v){view=v;try{history.replaceState(history.state,'',v==='today'?location.pathname+location.search:'#'+v)}catch(e){}}
-function render(){
+function render(){document.body.classList.toggle('editing',view==='plan'&&planEditing);
   const now=today();if(viewKey>now)viewKey=now;
   document.querySelectorAll('.tabbar button').forEach(b=>{if(b.dataset.view===view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
   $('#exlist').innerHTML=Object.values(plan.library).filter(v=>!v.archived).map(v=>'<option value="'+esc(v.name)+'">').join('');
@@ -665,7 +668,7 @@ function exListHtml(editing){
       '<div class="field"><label for="exn-'+id+'">Name</label><input class="inp" id="exn-'+id+'" data-ren="'+id+'" value="'+esc(exName(id))+'" autocomplete="off"></div>'+
       '<div><span class="flabel">Type</span>'+segB('extype',id,t,Object.entries(TYPES).map(([k,v])=>[k,v,k===t]))+'</div>'+
       (t==='time'?'':'<div><span class="flabel">Next adds</span>'+segB('exstep',id,cur,opts.map((o,i)=>[o[0],o[1],i===bi]))+'<p class="help">'+plan.unit+', when you hit every rep</p></div>')+
-      '<div class="btns"><button class="btn" data-act="archive" data-ex="'+id+'">Archive</button><button class="btn danger" data-act="delex" data-ex="'+id+'">Delete</button><button class="btn primary" data-act="exopen" data-ex="'+id+'">Done</button></div><p class="help">Archive keeps its history in Progress. Delete removes it and its history for good.</p></div>';
+      '<div class="btns"><button class="btn" data-act="archive" data-ex="'+id+'">Archive</button><button class="btn danger" data-act="delex" data-ex="'+id+'">Delete</button><button class="btn" data-act="exopen" data-ex="'+id+'">Close</button></div><p class="help">Archive keeps its history in Progress. Delete removes it and its history for good.</p></div>';
   };
   let h='<div class="card"><strong>Your exercises</strong><p class="help">'+(editing?'Tap one to rename, change type or step, or archive. Rename to an existing name to merge them, history included.':(act.length?'Tap one to change it.':''))+'</p>';
   if(!act.length&&!arc.length)h+='<p class="help">None yet. Add one to a day first.</p>';
@@ -692,7 +695,7 @@ function planEditHtml(){
   }
   h+='</div>';
   h+=exListHtml(true);
-  return h+'</div><div class="btns" style="margin-top:14px"><button class="btn" data-act="canceledit">Cancel</button><button class="btn primary" data-act="doneedit">Done editing</button></div>';
+  return h+'</div>';
 }
 function bkHtml(){loadCloudBackups();const l=backupList();
   if(!l.length)return '<p class="help">No automatic backups yet. One is saved each day you open the app, and the last 7 are kept.</p>';
