@@ -292,7 +292,8 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 @media (min-width:900px){.sheet{bottom:auto;top:50%;left:50%;right:auto;transform:translate(-50%,-50%);width:520px;border-radius:24px;max-height:86vh;padding-top:20px}.grab{display:none}}
 .grab{width:40px;height:5px;border-radius:999px;background:var(--line);align-self:center}
 .sec h3{margin:0 0 8px;font-size:14px;font-weight:600}
-.setpage{display:flex;flex-direction:column;gap:12px;margin-top:16px;max-width:560px}
+.setpage{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+@media (min-width:900px){.setpage{display:block;column-count:2;column-gap:16px}.setpage>*{break-inside:avoid;margin-bottom:16px;display:flex}.setpage>p{display:block;column-span:all}}
 .setpage .card{gap:8px}
 .seg{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);background:var(--sunk);border-radius:12px;padding:4px;gap:4px}
 .seg button{border:0;background:none;min-height:42px;border-radius:9px;color:var(--muted)}
@@ -324,7 +325,11 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 .rr{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--hair);font-size:14px}
 .rr:last-child{border-bottom:0}
 .rr>span:first-child{color:var(--muted)}
-.rrb{all:unset;box-sizing:border-box;width:100%;cursor:pointer;min-height:44px}
+.rrb{all:unset;box-sizing:border-box;width:100%;cursor:pointer;min-height:48px;display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid var(--hair);font-size:15px}
+.rrb>span:first-child{color:var(--ink)}
+.rrb>span:last-child{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rrb .chev{margin-left:6px;font-weight:400}
+.rrb .up{color:var(--done-text)}
 .rrb:focus-visible{outline:2px solid var(--accent)}
 .dayfoods{background:var(--sunk);border-radius:10px;padding:2px 12px;margin:2px 0 6px}
 .dayfoods .rr{font-size:13px;border-color:var(--line)}
@@ -452,7 +457,7 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 <script>
 (function(){
 'use strict';
-const APP_VERSION=35, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=36, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MUSCLES=['Chest','Back','Shoulders','Biceps','Triceps','Core','Quads','Hamstrings','Glutes','Calves'];
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -1050,7 +1055,7 @@ function proteinProgress(){const g=plan.protein.goal,t0=today(),ds=[];for(let i=
   h+='<div class="pbars" role="img" aria-label="Protein per day, last 14 days">'+(g?'<div class="gline" style="bottom:'+Math.round(g/mx*100)+'%"></div>':'')+vals.map((v,i)=>'<i class="'+(g&&v>=g?'hit':'')+'" style="height:'+Math.max(3,Math.round(v/mx*100))+'%" title="'+esc(ds[i])+': '+v+' g"></i>').join('')+'</div>';
   h+='<div class="pb-l"><span>'+parse(ds[0]).getDate()+' '+MONTHS[parse(ds[0]).getMonth()]+'</span><span>Today</span></div>'+(g?'<p class="lbl" style="margin:0">Orange: goal hit. Dashed line: your '+g+' g goal.</p>':'<p class="lbl" style="margin:0">Set a daily goal in Settings, Protein.</p>')+'</div>';
   h+='<div class="card"><strong>Last 7 days</strong><p class="help" style="margin:0">Tap a day to see what you ate.</p>'+ds.slice(-7).reverse().map(d=>{const op=protDayOpen===d,list=(days[d]&&days[d].protein)||[];
-    return '<button class="rr rrb" data-act="protday" data-d="'+d+'" aria-expanded="'+op+'"><span>'+esc(fmtDate(d))+'</span><span'+(g&&protOf(d)>=g?' class="up"':'')+'>'+protOf(d)+' g <span class="chev" aria-hidden="true">'+(op?'⌃':'⌄')+'</span></span></button>'+
+    return '<button class="rrb" data-act="protday" data-d="'+d+'" aria-expanded="'+op+'"><span>'+esc(dname(d)+' '+parse(d).getDate()+' '+MONTHS[parse(d).getMonth()])+(d===today()?' <span class="help" style="display:inline">today</span>':'')+'</span><span'+(g&&protOf(d)>=g?' class="up"':'')+'>'+protOf(d)+' g <span class="chev" aria-hidden="true">'+(op?'⌃':'⌄')+'</span></span></button>'+
       (op?'<div class="dayfoods enter">'+(list.length?list.map(e=>'<div class="rr"><span>'+esc(e.name)+'</span><span>'+e.g+' g</span></div>').join(''):'<p class="help" style="margin:6px 0">Nothing logged.</p>')+'</div>':'')}).join('')+'</div></div>';
   return h}
 function weeksProgress(){const t=new Date(),mon0=ymd(addDays(t,-((t.getDay()+6)%7)));let h='<div class="weeks">';
