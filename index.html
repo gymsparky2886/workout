@@ -33,13 +33,13 @@
   --accent:#6F95EC;--accent-ink:#0D1420;--accent-tint:#1E2A45;--accent-text:#A9C1F5;
   --done:#2E9E62;--done-ink:#06140C;--done-tint:#16301F;--done-text:#8FE0B0;
   --pr:#F2C230;--pr-tint:#3A3015;--pr-text:#F5D77A;--warn:#F08A6A;--warn-tint:#3A1E16;--warn-text:#F5B49E;
-  --hero:#232935;--hero-ink:#EEF1F5;--hero-muted:#A3ACBA;--hero-bar:#3A4252;--pill:#EEF1F5;--pill-ink:#12151B;--scrim:rgba(0,0,0,.6);--danger:#F2B8B5;--danger-ink:#601410;--prot:#E2A13B;--prot-tint:#3A2A12;color-scheme:dark}}
+  --hero:#232935;--hero-ink:#EEF1F5;--hero-muted:#A3ACBA;--hero-bar:#3A4252;--pill:#EEF1F5;--pill-ink:#12151B;--scrim:rgba(0,0,0,.6);--danger:#F2B8B5;--danger-ink:#601410;--prot:#E2A13B;--prot-tint:#3A2A12;--b-body:#20252E;--b-edge:#2C3340;--b-mus:#272D38;--b-line:#363E4B;color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#12151B;--surface:#1B2029;--sunk:#232935;--seg-on:#39404D;--ink:#EEF1F5;--muted:#A3ACBA;--faint:#7C8696;--line:#2C3340;--hair:#262C37;
   --accent:#6F95EC;--accent-ink:#0D1420;--accent-tint:#1E2A45;--accent-text:#A9C1F5;
   --done:#2E9E62;--done-ink:#06140C;--done-tint:#16301F;--done-text:#8FE0B0;
   --pr:#F2C230;--pr-tint:#3A3015;--pr-text:#F5D77A;--warn:#F08A6A;--warn-tint:#3A1E16;--warn-text:#F5B49E;
-  --hero:#232935;--hero-ink:#EEF1F5;--hero-muted:#A3ACBA;--hero-bar:#3A4252;--pill:#EEF1F5;--pill-ink:#12151B;--scrim:rgba(0,0,0,.6);--danger:#F2B8B5;--danger-ink:#601410;--prot:#E2A13B;--prot-tint:#3A2A12;color-scheme:dark}
+  --hero:#232935;--hero-ink:#EEF1F5;--hero-muted:#A3ACBA;--hero-bar:#3A4252;--pill:#EEF1F5;--pill-ink:#12151B;--scrim:rgba(0,0,0,.6);--danger:#F2B8B5;--danger-ink:#601410;--prot:#E2A13B;--prot-tint:#3A2A12;--b-body:#20252E;--b-edge:#2C3340;--b-mus:#272D38;--b-line:#363E4B;color-scheme:dark}
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;overflow-y:scroll}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
@@ -396,6 +396,38 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 .body{width:100%;max-width:420px;display:block;margin:8px auto 0}
 .body .bt{font-size:10px;fill:var(--muted)}
 .mzk{display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--accent)}
+.musfield{all:unset;box-sizing:border-box;width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:var(--sunk);cursor:pointer;font-size:15px}
+.musfield:focus-visible{outline:2px solid var(--accent)}
+.musfield .ph-t{color:var(--faint)}
+.mstar-i{color:var(--pr)}
+.musbox{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--surface);border-radius:24px 24px 0 0;padding:10px 18px calc(env(safe-area-inset-bottom,0px) + 16px);max-height:86vh;display:flex;flex-direction:column;gap:8px;max-width:560px;margin:0 auto;animation:sheetUp .22s cubic-bezier(.2,.8,.2,1)}
+@keyframes sheetUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+@media (min-width:900px){.musbox{bottom:auto;top:50%;left:50%;right:auto;transform:translate(-50%,-50%);width:480px;border-radius:24px;animation:pop .18s ease-out}}
+.mlist{overflow-y:auto;margin:0 -4px;padding:0 4px}
+.mgrp{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 2px}
+.mrow{display:flex;align-items:center;border-bottom:1px solid var(--hair)}
+.mtick{all:unset;flex:1;display:flex;align-items:center;gap:12px;min-height:46px;cursor:pointer;font-size:15px}
+.mtick:focus-visible,.mstar:focus-visible{outline:2px solid var(--accent)}
+.mbox{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--line);display:grid;place-items:center;font-size:13px;font-weight:800;color:var(--accent-ink)}
+.mtick[aria-pressed="true"] .mbox{background:var(--accent);border-color:var(--accent)}
+.mstar{border:0;background:none;width:44px;height:44px;font-size:20px;color:var(--faint)}
+.mstar.on{color:var(--pr)}
+.mstar.off{display:inline-block}
+.btn.off{background:var(--sunk);color:var(--faint);border-color:var(--line)}
+.mcheck{margin:12px 0}
+.mcheck .pickl{color:var(--accent-text);font-weight:600}
+.bodywrap{position:relative}
+.body{width:100%;max-width:460px;display:block;margin:6px auto 0}
+.body .bsil{fill:var(--b-body);stroke:var(--b-edge);stroke-width:1.2}
+.body .bm{fill:var(--b-mus);stroke:var(--b-line);stroke-width:1;cursor:pointer;transition:fill-opacity .2s}
+.body .bm.on{fill:var(--accent)}
+.body .bm.tap{stroke:var(--pr);stroke-width:2.2}
+.body .bt{font-size:14px;fill:var(--muted)}
+.bempty{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);background:var(--sunk);border-radius:14px;padding:12px 18px;text-align:center;display:flex;flex-direction:column;gap:2px;box-shadow:0 6px 18px rgba(0,0,0,.2)}
+.bempty b{font-weight:600}.bempty span{font-size:13px;color:var(--muted)}
+.mtapl{text-align:center;margin-top:4px;font-size:15px}.mtapl b{font-weight:700}
+.mzk.none{background:none;box-shadow:inset 0 0 0 1.5px var(--b-line)}
+:root{--b-body:#E6E9ED;--b-edge:#D3D8DE;--b-mus:#DCE0E5;--b-line:#C5CBD3}
 .combo{position:relative}
 .combo .inp{padding-right:36px}
 .combo::after{content:"";position:absolute;right:14px;top:22px;width:8px;height:8px;border-right:2px solid var(--faint);border-bottom:2px solid var(--faint);transform:translateY(-70%) rotate(45deg);pointer-events:none}
@@ -458,9 +490,11 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 <script>
 (function(){
 'use strict';
-const APP_VERSION=38, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=41, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
-const MUSCLES=['Chest','Back','Shoulders','Biceps','Triceps','Core','Quads','Hamstrings','Glutes','Calves'];
+const MGROUPS=[['Upper body',['Chest','Shoulders','Traps','Back','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs']],['Legs',['Glutes','Inner thighs','Quads','Hamstrings','Calves']]];
+const MUSCLES=MGROUPS.flatMap(g=>g[1]);
+const BODY={"out": "M91 64 C84 70 70 72 58 80 C47 87 42 99 42 113 C40 130 38 145 38 158 C37 167 36 172 35 179 C32 200 30 216 32 232 C33 241 30 252 34 258 C38 263 45 259 45 251 C46 236 48 214 50 197 C51 188 52 180 54 171 C56 150 58 128 62 114 C64 132 66 150 68 168 C69 183 66 196 66 209 C64 240 66 270 70 300 C72 312 71 322 72 331 C68 352 70 381 76 404 C77 414 71 422 80 427 L94 427 C97 421 95 414 95 404 C96 381 95 352 93 333 C93 322 94 312 95 302 C97 270 98 241 100 227 C 102 241 103 270 105 302 C 106 312 107 322 107 333 C 105 352 104 381 105 404 C 105 414 103 421 106 427 L 120 427 C 129 422 123 414 124 404 C 130 381 132 352 128 331 C 129 322 128 312 130 300 C 134 270 136 240 134 209 C 134 196 131 183 132 168 C 134 150 136 132 138 114 C 142 128 144 150 146 171 C 148 180 149 188 150 197 C 152 214 154 236 155 251 C 155 259 162 263 166 258 C 170 252 167 241 168 232 C 170 216 168 200 165 179 C 164 172 163 167 162 158 C 162 145 160 130 158 113 C 158 99 153 87 142 80 C 130 72 116 70 109 64 Z", "front": [["Traps", "M91 66 C86 72 76 76 64 80 C74 83 86 81 93 76 Z"], ["Traps", "M 109 66 C 114 72 124 76 136 80 C 126 83 114 81 107 76 Z"], ["Shoulders", "M60 82 C50 87 44 98 43 112 C49 112 55 106 61 100 C64 94 64 87 60 82 Z"], ["Shoulders", "M 140 82 C 150 87 156 98 157 112 C 151 112 145 106 139 100 C 136 94 136 87 140 82 Z"], ["Chest", "M65 92 C74 86 90 86 99 90 L99 120 C90 126 76 126 67 118 C63 110 63 100 65 92 Z"], ["Chest", "M 135 92 C 126 86 110 86 101 90 L 101 120 C 110 126 124 126 133 118 C 137 110 137 100 135 92 Z"], ["Biceps", "M46 118 C51 116 56 121 56 131 C56 146 53 160 50 166 C46 160 43 146 43 132 C43 124 44 120 46 118 Z"], ["Biceps", "M 154 118 C 149 116 144 121 144 131 C 144 146 147 160 150 166 C 154 160 157 146 157 132 C 157 124 156 120 154 118 Z"], ["Forearms", "M38 182 C42 177 48 179 50 186 C50 202 46 220 42 232 C38 222 35 202 38 182 Z"], ["Forearms", "M 162 182 C 158 177 152 179 150 186 C 150 202 154 220 158 232 C 162 222 165 202 162 182 Z"], ["Abs", "M89 126 L99 126 L99 144 L89 144 Z"], ["Abs", "M 111 126 L 101 126 L 101 144 L 111 144 Z"], ["Abs", "M89 147 L99 147 L99 165 L89 165 Z"], ["Abs", "M 111 147 L 101 147 L 101 165 L 111 165 Z"], ["Abs", "M89 168 L99 168 L99 186 L89 186 Z"], ["Abs", "M 111 168 L 101 168 L 101 186 L 111 186 Z"], ["Abs", "M90 189 L99 189 L99 212 C95 210 91 202 90 189 Z"], ["Abs", "M 110 189 L 101 189 L 101 212 C 105 210 109 202 110 189 Z"], ["Abs", "M69 140 C75 152 80 172 84 198 L80 200 C74 182 70 162 69 140 Z"], ["Abs", "M 131 140 C 125 152 120 172 116 198 L 120 200 C 126 182 130 162 131 140 Z"], ["Quads", "M70 214 C78 206 88 208 92 220 C93 250 90 280 85 300 C79 304 74 300 72 292 C68 262 67 236 70 214 Z"], ["Quads", "M 130 214 C 122 206 112 208 108 220 C 107 250 110 280 115 300 C 121 304 126 300 128 292 C 132 262 133 236 130 214 Z"], ["Inner thighs", "M94 222 C99 230 99 254 96 278 C92 266 91 242 94 222 Z"], ["Inner thighs", "M 106 222 C 101 230 101 254 104 278 C 108 266 109 242 106 222 Z"], ["Calves", "M73 338 C77 333 81 339 81 352 C81 370 78 386 76 394 C72 380 70 360 73 338 Z"], ["Calves", "M 127 338 C 123 333 119 339 119 352 C 119 370 122 386 124 394 C 128 380 130 360 127 338 Z"]], "back": [["Traps", "M100 61 C93 65 82 72 66 80 C78 84 90 90 100 104 C110 90 122 84 134 80 C118 72 107 65 100 61 Z"], ["Shoulders", "M60 82 C50 87 44 98 43 112 C49 112 55 106 61 100 C64 94 64 87 60 82 Z"], ["Shoulders", "M 140 82 C 150 87 156 98 157 112 C 151 112 145 106 139 100 C 136 94 136 87 140 82 Z"], ["Back", "M66 98 C76 96 88 102 98 110 L98 160 C88 156 76 150 70 140 C66 128 64 112 66 98 Z"], ["Back", "M 134 98 C 124 96 112 102 102 110 L 102 160 C 112 156 124 150 130 140 C 134 128 136 112 134 98 Z"], ["Lower back", "M88 160 C94 164 98 166 100 168 C102 166 106 164 112 160 L112 194 C106 198 94 198 88 194 Z"], ["Triceps", "M44 116 C49 114 55 119 56 129 C56 145 54 158 50 166 C46 158 42 145 42 131 C42 123 42 119 44 116 Z"], ["Triceps", "M 156 116 C 151 114 145 119 144 129 C 144 145 146 158 150 166 C 154 158 158 145 158 131 C 158 123 158 119 156 116 Z"], ["Forearms", "M38 182 C42 177 48 179 50 186 C50 202 46 220 42 232 C38 222 35 202 38 182 Z"], ["Forearms", "M 162 182 C 158 177 152 179 150 186 C 150 202 154 220 158 232 C 162 222 165 202 162 182 Z"], ["Glutes", "M70 200 C78 194 92 196 99 204 L99 236 C90 242 76 240 70 230 C67 220 67 208 70 200 Z"], ["Glutes", "M 130 200 C 122 194 108 196 101 204 L 101 236 C 110 242 124 240 130 230 C 133 220 133 208 130 200 Z"], ["Hamstrings", "M70 242 C78 242 90 242 96 246 C96 268 92 288 88 300 C80 304 74 300 72 290 C69 272 68 257 70 242 Z"], ["Hamstrings", "M 130 242 C 122 242 110 242 104 246 C 104 268 108 288 112 300 C 120 304 126 300 128 290 C 131 272 132 257 130 242 Z"], ["Calves", "M72 336 C78 330 90 332 94 342 C95 360 91 378 87 388 C81 390 77 384 75 376 C70 362 70 348 72 336 Z"], ["Calves", "M 128 336 C 122 330 110 332 106 342 C 105 360 109 378 113 388 C 119 390 123 384 125 376 C 130 362 130 348 128 336 Z"]]};
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const SESSION_MS=3*60*60*1000, AWAY_MS=30*60*1000;
 const STEPS_KG=[1,1.25,2,2.5,5], STEPS_LB=[2.5,5,10];
@@ -491,11 +525,11 @@ const I={
 let plan, days={};
 const VIEWS=['today','plan','progress','settings'];
 let view=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'today', viewKey=today(), weekOff=0, active={}, editor=null, addOpen=false, noteOpen=null, sheet=false;
-let planDay=new Date().getDay(), progEx=null, pendingRender=false, planEditing=false, editSnap=null, exOpen=null, moreOpen=null, yearSel=null, protOpen=false, protArm=null, protArmT=null, protKeepInputs=false, vtBusy=false, protDayOpen=null, wuOpen={}, wpOpen=false, prSeen=new Set(), prReady=false, newType='weight', lastView=null, lastOpen={}, askState=null, bkCloudList=null;
+let planDay=new Date().getDay(), progEx=null, pendingRender=false, planEditing=false, editSnap=null, exOpen=null, musOpen=null, newMus=[], newMain=null, musTap=null, moreOpen=null, yearSel=null, protOpen=false, protArm=null, protArmT=null, protKeepInputs=false, vtBusy=false, protDayOpen=null, wuOpen={}, wpOpen=false, prSeen=new Set(), prReady=false, newType='weight', lastView=null, lastOpen={}, askState=null, bkCloudList=null;
 function emptyWeek(){const w={};for(let i=0;i<7;i++)w[i]={name:'',rest:false,items:[]};return w}
 function normPlan(p){
   p=p||{};const o={v:3,unit:p.unit==='lb'?'lb':'kg',theme:(p.theme==='light'||p.theme==='dark')?p.theme:'auto',startedOn:p.startedOn||null,library:{},week:emptyWeek()};
-  Object.entries(p.library||{}).forEach(([k,v])=>{if(v&&typeof v==='object')o.library[k]={name:String(v.name||'Exercise'),type:TYPES[v.type]?v.type:'weight',note:String(v.note||''),archived:!!v.archived,step:num(v.step)||null,warm:v.warm===false?false:true,muscles:Array.isArray(v.muscles)?v.muscles.filter(m=>MUSCLES.includes(m)):null}});
+  Object.entries(p.library||{}).forEach(([k,v])=>{if(v&&typeof v==='object')o.library[k]={name:String(v.name||'Exercise'),type:TYPES[v.type]?v.type:'weight',note:String(v.note||''),archived:!!v.archived,step:num(v.step)||null,warm:v.warm===false?false:true,muscles:Array.isArray(v.muscles)?[...new Set(v.muscles.map(m=>m==='Core'?'Abs':m).filter(m=>MUSCLES.includes(m)))]:[],main:typeof v.main==='string'?v.main:null}});
   for(let i=0;i<7;i++){const w=(p.week||{})[i];if(w)o.week[i]={name:String(w.name||''),rest:!!w.rest,items:(w.items||[]).filter(x=>x&&x.ex).map(x=>({ex:x.ex,sets:x.sets||3,reps:x.reps||10}))}}
   const pr=p.protein||{};o.protein={goal:num(pr.goal)||null,foods:(pr.foods||[]).filter(f=>f&&f.name).map(f=>({id:String(f.id||newId()),name:String(f.name),g:Math.round(num(f.g)||0)}))};
   o.deload={};Object.entries(p.deload||{}).forEach(([k,v])=>{if(v&&v.until)o.deload[k]={from:String(v.from||v.until),until:String(v.until)}});
@@ -681,10 +715,11 @@ function recapHtml(mon,title){const r=weekRecap(mon),sun=ymd(addDays(parse(mon),
   if(r.prl.length)h+='<div class="chips">'+r.prl.slice(0,6).map(x=>'<span class="chip prchip">PR '+esc(x)+'</span>').join('')+'</div>';
   return h+'</div>'}
 function stamp(d){if(d!==today()&&d!==sessionDay())return;const x=getDay(d,true),n=Date.now();if(!x.t0)x.t0=n;x.t1=n}
-const MUS_KEYS=[['Chest',/bench|chest|fly|flye|push.?up|pec|dip/],['Back',/row|pull.?down|pull.?up|chin|lat\b|lats|deadlift|pullover|shrug|face pull|back/],['Shoulders',/overhead|ohp|shoulder|lateral|raise|military|arnold|face pull|delt/],['Biceps',/curl|bicep|chin/],['Triceps',/tricep|push.?down|skull|dip|close.?grip|kickback|extension/],['Core',/plank|crunch|\bab|abs|core|sit.?up|leg raise|hollow|russian/],['Quads',/squat|leg press|lunge|leg extension|quad|hack|split/],['Hamstrings',/hamstring|leg curl|rdl|romanian|deadlift|good morning|nordic/],['Glutes',/hip thrust|glute|squat|lunge|deadlift|bridge|kickback/],['Calves',/calf|calves/]];
-function guessMuscles(name){const n=name.toLowerCase();let m=MUS_KEYS.filter(([k,r])=>r.test(n)).map(x=>x[0]);
-  if(/leg (curl|extension)/.test(n))m=m.filter(x=>x!=='Biceps'&&x!=='Triceps');if(/cable crunch|ab /.test(n))m=['Core'];return m}
-function exMuscles(id){const e=plan.library[id];if(!e)return [];return e.muscles&&e.muscles.length?e.muscles:guessMuscles(e.name)}
+function exMuscles(id){const e=plan.library[id];return e&&Array.isArray(e.muscles)?e.muscles:[]}
+function exMain(id){const e=plan.library[id],m=exMuscles(id);return e&&e.main&&m.includes(e.main)?e.main:(m[0]||null)}
+function musSummary(list,main){if(!list.length)return '<span class="ph-t">Tap to pick muscles</span>';const ord=[main].concat(list.filter(x=>x!==main));
+  return ord.slice(0,3).map(m=>esc(m)+(m===main?' <span class="mstar-i">★</span>':'')).join(', ')+(ord.length>3?' <span class="help" style="display:inline">+'+(ord.length-3)+'</span>':'')}
+function musField(t){const nw=t==='new',list=nw?newMus:exMuscles(t),main=nw?newMain:exMain(t);return '<button type="button" class="musfield" data-act="musopen" data-t="'+t+'" id="mf-'+t+'"><span>'+musSummary(list,main)+'</span><span class="chev" aria-hidden="true">›</span></button>'}
 function dayVol(d,ids){const x=days[d];let v=0;if(!x)return 0;Object.entries(x.sets).forEach(([id,a])=>{if(ids&&!ids.includes(id))return;if(exType(id)==='weight')(a||[]).forEach(s=>{if(valid('weight',s))v+=toU(s.w)*s.r})});return v}
 function lastSameDay(d){const nm=weekPlanName(d);if(!nm)return null;const ds=Object.keys(days).filter(k=>k<d&&weekPlanName(k)===nm&&Object.keys(days[k].sets||{}).some(id=>doneSets(k,id).length)).sort();return ds.length?ds[ds.length-1]:null}
 function race(d){const L=lastSameDay(d),x=days[d];if(!L||!x)return null;let diff=0,cmp=false,tt=0,lt=0;
@@ -748,7 +783,7 @@ function ask(o){return new Promise(res=>{askState=Object.assign({},o,{res});rend
 function confirmAsk(title,msg,yes,style){return ask({title,msg,buttons:[{v:'yes',label:yes,style:style||'danger'},{v:'cancel',label:'Cancel'}]}).then(v=>v==='yes')}
 function renderAsk(){const r=$('#sheetRoot');if(!askState){r.innerHTML='';return}const a=askState;
   r.innerHTML='<div class="scrim" data-askv="cancel"></div><div class="askbox" id="askBox" role="alertdialog" aria-modal="true" aria-labelledby="askT"'+(a.msg?' aria-describedby="askM"':'')+'><h2 id="askT" class="h2d" style="font-size:26px">'+esc(a.title)+'</h2>'+(a.msg?'<p id="askM">'+esc(a.msg)+'</p>':'')+'<div class="askbtns">'+a.buttons.map(b=>'<button class="btn'+(b.style?' '+b.style:'')+'" data-askv="'+b.v+'">'+esc(b.label)+'</button>').join('')+'</div></div>'}
-function renderProt(){if(askState)return;const r=$('#sheetRoot');if(!protOpen){r.innerHTML='';return}
+function renderProt(){if(askState)return;const r=$('#sheetRoot');if(!protOpen){if(!musOpen)r.innerHTML='';return}
   const d=viewKey,list=(days[d]&&days[d].protein)||[];
   let h='<div class="ph"><h2 id="ptitle" class="h2d" style="font-size:26px">Add protein</h2><button class="link" data-act="protclose">Close</button></div>';
   if(!plan.protein.goal)h+='<div class="field"><label for="pgoal1">First, your daily goal in grams</label><div class="inl"><input class="inp" id="pgoal1" inputmode="numeric" placeholder="150"><button class="btn primary" data-act="protgoal1">Save</button></div></div>';
@@ -762,6 +797,14 @@ function renderProt(){if(askState)return;const r=$('#sheetRoot');if(!protOpen){r
     if(!protKeepInputs){}else{if($('#pname'))$('#pname').value=keep.pname||'';if($('#pother'))$('#pother').value=keep.pother||'';if($('#psave'))$('#psave').checked=!!keep.psave}
     protKeepInputs=false;if(aid&&document.getElementById(aid))document.getElementById(aid).focus({preventScroll:true});return}
   r.innerHTML='<div class="scrim" data-act="protclose"></div><section class="askbox protbox" role="dialog" aria-modal="true" aria-labelledby="ptitle">'+h+'</section>'}
+function musRows(t){const nw=t==='new',list=nw?newMus:exMuscles(t),main=nw?newMain:exMain(t);
+  return MGROUPS.map(([g,ms])=>'<div class="mgrp">'+g+'</div>'+ms.map(m=>{const on=list.includes(m);return '<div class="mrow"><button type="button" class="mtick" data-act="mtog" data-v="'+m+'" aria-pressed="'+on+'"><span class="mbox" aria-hidden="true">'+(on?'✓':'')+'</span>'+m+'</button>'+(on?'<button type="button" class="mstar'+(m===main?' on':'')+'" data-act="mmain" data-v="'+m+'" aria-label="'+(m===main?m+' is the main muscle':'Make '+m+' the main muscle')+'">'+(m===main?'★':'☆')+'</button>':'<span class="mstar off"></span>')+'</div>'}).join('')).join('')}
+function renderMus(){if(!musOpen||askState)return;const r=$('#sheetRoot'),t=musOpen,nm=t==='new'?((($('#pName')||$('#addName')||{}).value||'').trim()||'new exercise'):exName(t);
+  const inner='<div class="grab"></div><div class="ph"><h2 class="h2d" id="mtitle" style="font-size:24px">Muscles for '+esc(nm)+'</h2><button class="link" data-act="musclose">Done</button></div><p class="help" style="margin:0">Tick all that apply. ★ marks the main muscle: it counts 1 set, the others count half.</p><div class="mlist">'+musRows(t)+'</div>';
+  const box=r.querySelector('.musbox');if(box){const l=box.querySelector('.mlist'),sc=l?l.scrollTop:0;box.innerHTML=inner;const l2=box.querySelector('.mlist');if(l2)l2.scrollTop=sc;return}
+  r.innerHTML='<div class="scrim" data-act="musclose"></div><section class="musbox" role="dialog" aria-modal="true" aria-labelledby="mtitle">'+inner+'</section>'}
+function updAdd(){[['pName','padd'],['addName','addday']].forEach(([i,a])=>{const inp=$('#'+i),btn=$('[data-act="'+a+'"]');if(!inp||!btn)return;const nm=inp.value.trim(),need=nm&&!findEx(nm)&&!newMus.length;btn.classList.toggle('off',!!need);btn.textContent=need?'Pick muscles first':'Add'});
+  const f=$('#mf-new');if(f)f.querySelector('span').innerHTML=musSummary(newMus,newMain)}
 function closeAsk(v){if(!askState)return;const r=askState.res;askState=null;renderAsk();renderProt();r(v)}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-askv]');if(!b||!askState)return;e.stopPropagation();e.preventDefault();closeAsk(b.dataset.askv)},true);
 const takeSnap=()=>({plan:clone(plan),days:clone(days)});
@@ -789,6 +832,7 @@ window.addEventListener('popstate',()=>{
   const rearm=()=>{try{history.pushState({guard:1},'',location.href)}catch(e){}};
   if(askState){closeAsk('cancel');rearm();return}
   if(protOpen){protOpen=false;rearm();render();return}
+  if(musOpen){const t=musOpen;musOpen=null;$('#sheetRoot').innerHTML='';rearm();if(t==='new')updAdd();else render();return}
   if(editor||addOpen||noteOpen){editor=null;addOpen=false;noteOpen=null;rearm();render();return}
   if(planEditing){finishEdit();rearm();render();return}
   if(view!=='today'){setView('today');rearm();render();window.scrollTo(0,0);return}
@@ -799,7 +843,7 @@ window.addEventListener('pagehide',saveNow);
 function setView(v){view=v;try{history.replaceState(history.state,'',v==='today'?location.pathname+location.search:'#'+v)}catch(e){}}
 function pillsFade(){const p=$('.pills');if(!p)return;const sel=p.querySelector('[aria-pressed="true"]');if(sel&&(sel.offsetLeft+sel.offsetWidth>p.scrollLeft+p.clientWidth||sel.offsetLeft<p.scrollLeft))p.scrollLeft=Math.max(0,sel.offsetLeft-16);const f=()=>p.classList.toggle('fade',p.scrollWidth-p.clientWidth-p.scrollLeft>4);f();p.addEventListener('scroll',f,{passive:true})}
 function smoothOK(){return !(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)}
-function render(){document.body.classList.toggle('editing',view==='plan'&&planEditing);setTimeout(renderProt,0);
+function render(){document.body.classList.toggle('editing',view==='plan'&&planEditing);setTimeout(()=>{renderProt();renderMus();updAdd()},0);
   const now=today();if(viewKey>now)viewKey=now;
   document.querySelectorAll('.tabbar button').forEach(b=>{if(b.dataset.view===view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
   const v=$('#view');if(lastView!==view){v.classList.remove('vin');void v.offsetWidth;v.classList.add('vin');lastView=view}
@@ -924,7 +968,7 @@ function editorHtml(t,s,tv,i){
   h+='<div class="edbtns"><button class="btn" data-act="edcancel">Cancel</button>'+(s.done?'<button class="btn" data-act="edundo">Not done</button>':'')+'<button class="btn primary" data-act="edsave">'+(s.done?'Save':'Save as done')+'</button></div></div>';
   return h;
 }
-function addForm(d){return '<div class="card"><strong>Add an exercise for '+(d===today()?'today':esc(fmtDate(d)))+'</strong><div class="field"><label for="addName">Exercise</label>'+comboHtml('addName','Pick or type a name')+'</div><p class="help">Sets, reps and type come from your plan. A new name starts as Weights, 3 × 10; change it in Plan.</p><div class="btns"><button class="btn primary" data-act="addday">Add</button><button class="btn" data-act="closeadd">Cancel</button></div></div>'}
+function addForm(d){return '<div class="card"><strong>Add an exercise for '+(d===today()?'today':esc(fmtDate(d)))+'</strong><div class="field"><label for="addName">Exercise</label>'+comboHtml('addName','Pick or type a name')+'</div><div class="field"><span class="flabel">Muscles, for a new exercise</span>'+musField('new')+'</div><p class="help">Sets, reps and type come from your plan. A new name starts as Weights, 3 × 10; change it in Plan.</p><div class="btns"><button class="btn primary" data-act="addday">Add</button><button class="btn" data-act="closeadd">Cancel</button></div></div>'}
 function skippedLine(d){const x=days[d];if(!x||!x.skip.length)return '';const sk=x.skip.filter(i=>ex(i)&&!(ex(i).archived&&d>=today()));if(!sk.length)return '';return '<p class="help">Skipped: '+sk.map(i=>esc(exName(i))+' <button class="link" data-act="unskip" data-ex="'+i+'">Put back</button>').join(', ')+'</p>'}
 function stepSelect(id){const opts=plan.unit==='lb'?STEPS_LB.map(v=>[v/KG_LB,v]):STEPS_KG.map(v=>[v,v]),cur=exStep(id);let bi=0;opts.forEach((o,i)=>{if(Math.abs(o[0]-cur)<Math.abs(opts[bi][0]-cur))bi=i});
   return '<select class="inp" aria-label="Weight step for '+esc(exName(id))+'" data-step="'+id+'">'+opts.map((o,i)=>'<option value="'+o[0]+'"'+(i===bi?' selected':'')+'>+'+o[1]+' '+plan.unit+' step</option>').join('')+'</select>'}
@@ -998,7 +1042,7 @@ function exListHtml(editing){
       '<div class="field"><label for="exn-'+id+'">Name</label><input class="inp" id="exn-'+id+'" data-ren="'+id+'" value="'+esc(exName(id))+'" autocomplete="off"></div>'+
       '<div><span class="flabel">Type</span>'+segB('extype',id,t,Object.entries(TYPES).map(([k,v])=>[k,v,k===t]))+'</div>'+
       (t==='time'?'':'<div><span class="flabel">Next adds</span>'+segB('exstep',id,cur,opts.map((o,i)=>[o[0],o[1],i===bi]))+'<p class="help">'+plan.unit+', when you hit every rep</p></div>')+
-      '<div><span class="flabel">Muscles'+(plan.library[id].muscles&&plan.library[id].muscles.length?'':' <span class="help">(guessed from the name, tap to change)</span>')+'</span><div class="muschips">'+MUSCLES.map(m=>'<button type="button" class="mchip" data-act="exmus" data-ex="'+id+'" data-v="'+m+'" aria-pressed="'+exMuscles(id).includes(m)+'">'+m+'</button>').join('')+'</div></div>'+
+      '<div><span class="flabel">Muscles <span class="help" style="display:inline">(★ main counts 1 set, others half)</span></span>'+musField(id)+'</div>'+
       (t==='weight'?'<div><span class="flabel">Warm-up sets</span>'+segB('exwarm',id,'',[['on','Show',plan.library[id].warm!==false],['off','Hide',plan.library[id].warm===false]])+'</div>':'')+
       '<div class="btns"><button class="btn" data-act="archive" data-ex="'+id+'">Archive</button><button class="btn danger" data-act="delex" data-ex="'+id+'">Delete</button><button class="btn" data-act="exopen" data-ex="'+id+'">Close</button></div><p class="help">Archive keeps its history in Progress. Delete removes it and its history for good.</p></div>';
   };
@@ -1014,8 +1058,8 @@ function exListHtml(editing){
   return h+'</div>';
 }
 function planEditHtml(){
-  const w=plan.week[planDay];
-  let h='<h1 class="big sm">Your week</h1><div class="editbar"><span class="eb-l">Editing your week</span><span class="eb-b"><button class="btn" data-act="canceledit">Cancel</button><button class="btn primary" data-act="doneedit">Done editing</button></span></div>';
+  const w=plan.week[planDay];const untag=Object.keys(plan.library).filter(id=>!plan.library[id].archived&&!exMuscles(id).length);
+  let h='<h1 class="big sm">Your week</h1>'+(untag.length?'<div class="card mcheck"><strong>Pick muscles for '+untag.length+(untag.length===1?' exercise':' exercises')+'</strong><p class="help" style="margin:0">They don\'t show on the body map until you do.</p>'+untag.map(id=>'<button class="rrb" data-act="musopen" data-t="'+id+'"><span>'+esc(exName(id))+'</span><span class="pickl">Pick ›</span></button>').join('')+'</div>':'')+'<div class="editbar"><span class="eb-l">Editing your week</span><span class="eb-b"><button class="btn" data-act="canceledit">Cancel</button><button class="btn primary" data-act="doneedit">Done editing</button></span></div>';
   h+='<div class="daypills">'+ORDER.map(i=>{const x=plan.week[i];return '<button class="dp" data-act="pday" data-d="'+i+'" aria-pressed="'+(i===planDay)+'">'+DAYS[i]+'<small>'+esc(x.rest?'Rest':(x.name||(x.items.length?'Workout':'Empty')))+'</small></button>'}).join('')+'</div>';
   h+='<div class="pgrid"><div class="card" data-sec="day"><div class="field"><label for="dname">Name for '+DAYS[planDay]+'</label><input class="inp" id="dname" value="'+esc(w.name)+'" placeholder="Push, Pull, Legs…"></div>';
   h+='<label class="toggle-row"><span>Rest day</span><input type="checkbox" class="sw" id="drest"'+(w.rest?' checked':'')+'></label>';
@@ -1023,7 +1067,7 @@ function planEditHtml(){
     const items=w.items.filter(i=>ex(i.ex));
     if(!items.length)h+='<p class="help">No exercises yet. Add one below.</p>';
     else h+='<div class="plist">'+w.items.map((it,idx)=>{if(!ex(it.ex))return '';const t=exType(it.ex);return '<div class="prow" data-row="'+idx+'"><button class="handle" data-i="'+idx+'" aria-label="Drag to reorder, or use arrow keys">'+I.grip+'</button><span class="nm">'+esc(exName(it.ex))+'<small>'+TYPES[t]+'</small></span><input inputmode="numeric" aria-label="Sets" data-pi="'+idx+'" data-pf="sets" value="'+(it.sets||3)+'"><span class="x">×</span><input inputmode="numeric" aria-label="'+(t==='time'?'Seconds':'Reps')+'" data-pi="'+idx+'" data-pf="reps" value="'+(it.reps||10)+'"><span class="x">'+(t==='time'?'s':'')+'</span><button class="rm" data-act="rm" data-i="'+idx+'" aria-label="Remove from '+DAYS[planDay]+'">✕</button></div>'}).join('')+'</div>';
-    h+='<div class="formgrid" style="margin-top:6px"><div class="field wide"><label for="pName">Add exercise to '+DAYS[planDay]+'</label>'+comboHtml('pName','Exercise name')+'</div><div class="field wide"><span class="flabel">Type, for a new exercise</span>'+typeSeg()+'</div><div class="field"><label for="pSets">Sets</label><input class="inp" id="pSets" inputmode="numeric" value="3"></div><div class="field"><label for="pReps">Reps or seconds</label><input class="inp" id="pReps" inputmode="numeric" value="10"></div><div class="field" style="display:flex;align-items:flex-end"><button class="btn primary" data-act="padd" style="width:100%">Add</button></div><p class="help wide">'+typeHelp()+'</p></div>';
+    h+='<div class="formgrid" style="margin-top:6px"><div class="field wide"><label for="pName">Add exercise to '+DAYS[planDay]+'</label>'+comboHtml('pName','Exercise name')+'</div><div class="field wide"><span class="flabel">Type, for a new exercise</span>'+typeSeg()+'</div><div class="field wide"><span class="flabel">Muscles, for a new exercise</span>'+musField('new')+'</div><div class="field"><label for="pSets">Sets</label><input class="inp" id="pSets" inputmode="numeric" value="3"></div><div class="field"><label for="pReps">Reps or seconds</label><input class="inp" id="pReps" inputmode="numeric" value="10"></div><div class="field" style="display:flex;align-items:flex-end"><button class="btn primary" data-act="padd" style="width:100%">Add</button></div><p class="help wide">'+typeHelp()+'</p></div>';
   }
   h+='</div>';
   h+=exListHtml(true);
@@ -1075,34 +1119,17 @@ function yearProgress(){const t0=today(),t=parse(t0),mon=addDays(t,-((t.getDay()
   const yrSets=Object.keys(days).filter(k=>k>ymd(mon)).reduce((a,k)=>a+stats(k).n,0),yrDays=Object.keys(days).filter(k=>k>ymd(mon)&&stats(k).n).length;
   return '<div class="card"><div class="ph"><strong>Last 12 months</strong><span class="help" style="margin:0">'+yrDays+' training days, '+yrSets+' sets</span></div><div class="hm-wrap" id="hmw"><div class="hm-months">'+months+'</div><div class="hm-grid">'+cols+'</div></div>'+det+
     '<div class="hm-legend"><span>Less</span><i class="hm l0"></i><i class="hm l1"></i><i class="hm l2"></i><i class="hm l3"></i><i class="hm l4"></i><span>More</span><i class="hm lr" style="margin-left:10px"></i><span>Rest</span></div></div>'}
-function musclesProgress(){const ws=weekDates(0),cnt={};MUSCLES.forEach(m=>cnt[m]=0);
-  ws.forEach(d=>{const x=days[d];if(!x)return;Object.keys(x.sets).forEach(id=>{const n=doneSets(d,id).length;if(n)exMuscles(id).forEach(m=>{cnt[m]+=n})})});
-  const op=m=>{const n=cnt[m];return n>=10?1:n>=5?.7:n>0?.4:0};
-  const f=(m,shape)=>shape.replace('/>',' class="mz" style="fill-opacity:'+(op(m)||1)+'" fill="'+(op(m)?'var(--accent)':'var(--line)')+'"><title>'+m+': '+cnt[m]+' sets</title></'+shape.split(' ')[0].slice(1)+'>');
-  const N='fill="var(--line)" opacity=".55"';
-  let svg='<svg viewBox="0 0 240 230" class="body" role="img" aria-label="Muscles trained this week">';
-  // front
-  svg+='<circle cx="60" cy="22" r="12" '+N+'/><rect x="55" y="34" width="10" height="8" rx="3" '+N+'/>';
-  svg+=f('Shoulders','<circle cx="38" cy="50" r="10"/>')+f('Shoulders','<circle cx="82" cy="50" r="10"/>');
-  svg+=f('Chest','<rect x="44" y="44" width="15" height="24" rx="6"/>')+f('Chest','<rect x="61" y="44" width="15" height="24" rx="6"/>');
-  svg+=f('Core','<rect x="47" y="70" width="26" height="40" rx="8"/>');
-  svg+=f('Biceps','<ellipse cx="31" cy="76" rx="7" ry="15"/>')+f('Biceps','<ellipse cx="89" cy="76" rx="7" ry="15"/>');
-  svg+='<ellipse cx="27" cy="106" rx="6" ry="14" '+N+'/><ellipse cx="93" cy="106" rx="6" ry="14" '+N+'/>';
-  svg+=f('Quads','<ellipse cx="51" cy="140" rx="9" ry="26"/>')+f('Quads','<ellipse cx="69" cy="140" rx="9" ry="26"/>');
-  svg+=f('Calves','<ellipse cx="51" cy="192" rx="6" ry="17"/>')+f('Calves','<ellipse cx="69" cy="192" rx="6" ry="17"/>');
-  // back
-  svg+='<circle cx="180" cy="22" r="12" '+N+'/><rect x="175" y="34" width="10" height="8" rx="3" '+N+'/>';
-  svg+=f('Shoulders','<circle cx="158" cy="50" r="10"/>')+f('Shoulders','<circle cx="202" cy="50" r="10"/>');
-  svg+=f('Back','<rect x="164" y="44" width="32" height="50" rx="10"/>');
-  svg+=f('Triceps','<ellipse cx="151" cy="76" rx="7" ry="15"/>')+f('Triceps','<ellipse cx="209" cy="76" rx="7" ry="15"/>');
-  svg+='<ellipse cx="147" cy="106" rx="6" ry="14" '+N+'/><ellipse cx="213" cy="106" rx="6" ry="14" '+N+'/><rect x="167" y="96" width="26" height="14" rx="6" '+N+'/>';
-  svg+=f('Glutes','<circle cx="171" cy="120" r="11"/>')+f('Glutes','<circle cx="189" cy="120" r="11"/>');
-  svg+=f('Hamstrings','<ellipse cx="171" cy="152" rx="9" ry="22"/>')+f('Hamstrings','<ellipse cx="189" cy="152" rx="9" ry="22"/>');
-  svg+=f('Calves','<ellipse cx="171" cy="194" rx="7" ry="16"/>')+f('Calves','<ellipse cx="189" cy="194" rx="7" ry="16"/>');
-  svg+='<text x="60" y="226" text-anchor="middle" class="bt">Front</text><text x="180" y="226" text-anchor="middle" class="bt">Back</text></svg>';
-  const sorted=MUSCLES.slice().sort((a,b)=>cnt[b]-cnt[a]),none=MUSCLES.filter(m=>!cnt[m]);
-  let h='<div class="pgrid"><div class="card"><strong>This week</strong>'+svg+'<div class="hm-legend"><i class="mzk" style="opacity:.4"></i><span>1 to 4 sets</span><i class="mzk" style="opacity:.7"></i><span>5 to 9</span><i class="mzk"></i><span>10+</span></div></div>';
-  h+='<div class="card"><strong>Sets per muscle</strong>'+sorted.filter(m=>cnt[m]).map(m=>'<div class="rr"><span>'+m+'</span><span>'+cnt[m]+'</span></div>').join('')+(none.length?'<p class="help">Not trained this week: '+none.join(', ')+'.</p>':'')+'<p class="help">Muscles come from each exercise. Change them in Plan, Edit week, tap the exercise.</p></div></div>';
+function musclesProgress(){const ws=weekDates(0),cnt={};MUSCLES.forEach(m=>cnt[m]=0);let untagged=new Set();
+  ws.forEach(d=>{const x=days[d];if(!x)return;Object.keys(x.sets).forEach(id=>{const n=doneSets(d,id).length;if(!n)return;const ms=exMuscles(id),mn=exMain(id);if(!ms.length){untagged.add(exName(id));return}ms.forEach(m=>{cnt[m]+=m===mn?n:n/2})})});
+  const tot=Object.values(cnt).reduce((a,b)=>a+b,0),fm=n=>Number.isInteger(n)?String(n):n.toFixed(1);
+  const op=n=>n>=10?1:n>=5?.65:n>0?.35:0;
+  const fig=(list,dx)=>'<g transform="translate('+dx+' 0)"><path d="'+BODY.out+'" class="bsil"/><ellipse cx="100" cy="36" rx="18" ry="22" class="bsil"/>'+list.map(([m,d])=>{const o=op(cnt[m]);return '<path d="'+d+'" class="bm'+(o?' on':'')+(musTap===m?' tap':'')+'"'+(o?' style="fill-opacity:'+o+'"':'')+' data-act="mtap" data-v="'+m+'"><title>'+m+': '+fm(cnt[m])+' sets</title></path>'}).join('')+'</g>';
+  let svg='<svg viewBox="28 0 384 452" class="body" role="img" aria-label="Muscles trained this week">'+fig(BODY.front,10)+fig(BODY.back,230)+'<text x="110" y="448" text-anchor="middle" class="bt">Front</text><text x="330" y="448" text-anchor="middle" class="bt">Back</text></svg>';
+  let h='<div class="pgrid"><div class="card"><div class="ph"><strong>This week</strong><span class="help" style="margin:0">'+fm(tot)+' muscle sets</span></div><div class="bodywrap">'+svg+(tot?'':'<div class="bempty"><b>No sets yet this week</b><span>Muscles light up as you train</span></div>')+'</div>';
+  h+=(musTap?'<div class="mtapl"><b>'+musTap+'</b>: '+fm(cnt[musTap])+' sets this week</div>':'<p class="help" style="text-align:center;margin:4px 0 0">Tap a muscle for its sets.</p>');
+  h+='<div class="hm-legend" style="justify-content:center"><i class="mzk none"></i><span>None</span><i class="mzk" style="opacity:.35"></i><span>1 to 4 sets</span><i class="mzk" style="opacity:.65"></i><span>5 to 9</span><i class="mzk"></i><span>10+</span></div></div>';
+  const sorted=MUSCLES.filter(m=>cnt[m]).sort((a,b)=>cnt[b]-cnt[a]),none=MUSCLES.filter(m=>!cnt[m]);
+  h+='<div class="card"><strong>Sets per muscle</strong>'+(sorted.length?sorted.map(m=>'<div class="rr"><span>'+m+'</span><span>'+fm(cnt[m])+'</span></div>').join(''):'<p class="help">Nothing yet this week.</p>')+(none.length&&tot?'<p class="help">Not trained yet: '+none.join(', ')+'.</p>':'')+(untagged.size?'<p class="help">No muscles picked for: '+[...untagged].map(esc).join(', ')+'. Pick them in Plan, Edit week.</p>':'')+'<p class="help">The main muscle of an exercise counts 1 set, the others half.</p></div></div>';
   return h}
 function progressHtml(){
   const lastOf=id=>{const ss=sessions(id);return ss.length?ss[ss.length-1].d:''};
@@ -1153,7 +1180,7 @@ document.querySelector('.tabbar').addEventListener('click',e=>{const b=e.target.
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.disabled)return;act(b.dataset.act,b)});
 document.addEventListener('input',e=>{
   const t=e.target;
-  if(t.getAttribute('role')==='combobox'){comboSel=-1;comboRender(t);return}
+  if(t.getAttribute('role')==='combobox'){comboSel=-1;comboRender(t);updAdd();return}
   if(t.dataset.note!=null){ex(t.dataset.note).note=t.value.trim();savePlan();return}
   if(t.id==='dname'){plan.week[planDay].name=t.value;savePlan();const s=document.querySelector('.dp[aria-pressed="true"] small');if(s)s.textContent=t.value||'Workout';return}
   if(t.dataset.pf){const it=plan.week[planDay].items[+t.dataset.pi],n=num(t.value);if(it&&n!=null&&n>0){it[t.dataset.pf]=Math.round(n);savePlan()}return}
@@ -1241,7 +1268,8 @@ function act(a,b){
     case 'noteclose':noteOpen=null;break;
     case 'openadd':addOpen=true;editor=null;moreOpen=null;render();{const n=$('#addName');n&&n.focus()}return;
     case 'closeadd':addOpen=false;break;
-    case 'addday':{const nid=ensureEx($('#addName').value,'weight');if(!nid){$('#addName').focus();return}
+    case 'addday':{const an=($('#addName').value||'').trim(),af=an?findEx(an):null;if(an&&!af&&!newMus.length){musOpen='new';renderMus();return}
+      const nid=ensureEx($('#addName').value,'weight');if(!nid){$('#addName').focus();return}if(!af&&newMus.length){plan.library[nid].muscles=newMus.slice();plan.library[nid].main=newMain;newMus=[];newMain=null}
       if(!plan.startedOn)plan.startedOn=today();const x=snap(d);x.skip=x.skip.filter(i=>i!==nid);
       if(visibleItems(d).some(i=>i.ex===nid)){toast(exName(nid)+' is already on this day.');addOpen=false;active[d]=nid;break}
       if(!plannedItems(d).some(i=>i.ex===nid)){let g=null;for(const k of ORDER){g=plan.week[k].items.find(i=>i.ex===nid);if(g)break}x.extra.push({ex:nid,sets:g?g.sets:3,reps:g?g.reps:10})}
@@ -1255,6 +1283,13 @@ function act(a,b){
     case 'goplan':setView('plan');planDay=new Date().getDay();startEdit();break;
     case 'protopen':protOpen=true;render();setTimeout(()=>{const f=$('#pgoal1')||$('.protbox .food')||$('#pother');f&&f.focus()},30);return;
     case 'protday':protDayOpen=protDayOpen===b.dataset.d?null:b.dataset.d;break;
+    case 'musopen':musOpen=b.dataset.t;renderMus();return;
+    case 'musclose':{const t=musOpen;musOpen=null;$('#sheetRoot').innerHTML='';if(t==='new'){updAdd();return}break}
+    case 'mtog':{const t=musOpen,m=b.dataset.v;if(!t)return;
+      if(t==='new'){const k=newMus.indexOf(m);if(k>-1)newMus.splice(k,1);else newMus.push(m);if(!newMus.includes(newMain))newMain=newMus[0]||null;renderMus();updAdd();return}
+      const e=plan.library[t];if(!e)return;const l=exMuscles(t).slice(),k=l.indexOf(m);if(k>-1)l.splice(k,1);else l.push(m);e.muscles=l;if(!l.includes(e.main))e.main=l[0]||null;savePlan();renderMus();return}
+    case 'mmain':{const t=musOpen,m=b.dataset.v;if(t==='new'){newMain=m;renderMus();updAdd();return}const e=plan.library[t];if(e){e.main=m;savePlan();renderMus()}return}
+    case 'mtap':musTap=musTap===b.dataset.v?null:b.dataset.v;break;
     case 'protclose':protArm=null;protOpen=false;break;
     case 'protgoal1':{const g=num($('#pgoal1').value);if(!(g>0)){toast('Type your daily goal in grams.');return}plan.protein.goal=Math.round(g);savePlan();break}
     case 'protadd':{const f=plan.protein.foods.find(x=>x.id===b.dataset.f);if(!f)return;const x=getDay(viewKey,true);x.protein.push({id:newId(),name:f.name,g:f.g});touchDay(viewKey);protKeepInputs=true;break}
@@ -1268,7 +1303,6 @@ function act(a,b){
     case 'fooddel':plan.protein.foods=plan.protein.foods.filter(f=>f.id!==b.dataset.f);savePlan();break;
     case 'wutoggle':{const k=viewKey+'|'+id;wuOpen[k]=!wuOpen[k];break}
     case 'wutick':{const x=getDay(viewKey,true),a=x.warm[id]=x.warm[id]||[];a[+b.dataset.i]=!a[+b.dataset.i];touchDay(viewKey);break}
-    case 'exmus':{const cur=exMuscles(id).slice(),m=b.dataset.v,k=cur.indexOf(m);if(k>-1)cur.splice(k,1);else cur.push(m);plan.library[id].muscles=cur;savePlan();break}
     case 'exwarm':plan.library[id].warm=b.dataset.v==='on';savePlan();break;
     case 'deload':{const t0=today();plan.deload[id]={from:t0,until:ymd(addDays(parse(t0),6))};savePlan();break}
     case 'enddeload':delete plan.deload[id];savePlan();break;
@@ -1276,7 +1310,7 @@ function act(a,b){
     case 'weekpanel':wpOpen=!wpOpen;break;
     case 'more':moreOpen=moreOpen===id?null:id;break;
     case 'addtype':{newType=b.dataset.v;b.parentElement.querySelectorAll('button').forEach(x=>x.setAttribute('aria-checked',String(x===b)));return}
-    case 'combopick':{const box=b.closest('.combo'),inp=box.querySelector('input');inp.value=b.dataset.v;comboClose(inp);comboHint(inp);inp.focus();return}
+    case 'combopick':{const box=b.closest('.combo'),inp=box.querySelector('input');inp.value=b.dataset.v;comboClose(inp);comboHint(inp);updAdd();inp.focus();return}
     case 'editweek':keepPlace(()=>{startEdit();render()});return;
     case 'exedit':startEdit();exOpen=id;render();{const el=document.querySelector('[data-exbox="'+id+'"]');el&&el.scrollIntoView({block:'center'})}return;
     case 'exopen':{const y=b.getBoundingClientRect().top;exOpen=exOpen===id?null:id;render();const el=document.querySelector('[data-exbox="'+id+'"]')||document.querySelector('.exr[data-ex="'+id+'"]');if(el)window.scrollBy(0,el.getBoundingClientRect().top-y);return}
@@ -1297,7 +1331,8 @@ function act(a,b){
     case 'canceledit':keepPlace(()=>{const sn=editSnap;planEditing=false;editSnap=null;if(sn&&(JSON.stringify(sn.plan)!==JSON.stringify(plan)||JSON.stringify(sn.days)!==JSON.stringify(days)))restoreSnap(sn);render()});return;
     case 'pday':planDay=+b.dataset.d;break;
     case 'padd':{const pin=$('#pName'),pf=findEx(pin.value||'');if(pf&&weekDaysOf(pf).length){comboClose(pin);comboHint(pin);pin.focus();return}
-      const nid=ensureEx(pin.value,newType);if(!nid){$('#pName').focus();return}
+      if(pin.value.trim()&&!pf&&!newMus.length){musOpen='new';renderMus();return}
+      const nid=ensureEx(pin.value,newType);if(nid&&!pf&&newMus.length){plan.library[nid].muscles=newMus.slice();plan.library[nid].main=newMain;newMus=[];newMain=null}if(!nid){$('#pName').focus();return}
       if(!plan.startedOn)plan.startedOn=today();const w=plan.week[planDay];
       if(w.items.some(i=>i.ex===nid)){toast(exName(nid)+' is already on '+DAYS[planDay]+'.');return}
       w.items.push({ex:nid,sets:Math.max(1,Math.round(num($('#pSets').value)||3)),reps:Math.max(1,Math.round(num($('#pReps').value)||10))});
