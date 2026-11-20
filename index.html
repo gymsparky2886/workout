@@ -495,7 +495,7 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=44, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=45, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Chest','Shoulders','Traps','Back','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs']],['Legs',['Glutes','Inner thighs','Quads','Hamstrings','Calves']]];
 const MUSCLES=MGROUPS.flatMap(g=>g[1]);
@@ -1322,7 +1322,10 @@ function act(a,b){
     case 'combopick':{const box=b.closest('.combo'),inp=box.querySelector('input');inp.value=b.dataset.v;comboClose(inp);comboHint(inp);updAdd();inp.focus();return}
     case 'editweek':keepPlace(()=>{startEdit();render()});return;
     case 'exedit':startEdit();exOpen=id;render();{const el=document.querySelector('[data-exbox="'+id+'"]');el&&el.scrollIntoView({block:'center'})}return;
-    case 'exopen':{const y=b.getBoundingClientRect().top;exOpen=exOpen===id?null:id;render();const el=document.querySelector('[data-exbox="'+id+'"]')||document.querySelector('.exr[data-ex="'+id+'"]');if(el)window.scrollBy(0,el.getBoundingClientRect().top-y);return}
+    case 'exopen':{const y=b.getBoundingClientRect().top,opening=exOpen!==id;exOpen=opening?id:null;render();
+      if(opening){const box=document.querySelector('[data-exbox="'+id+'"]');if(box){const r=document.querySelector('.exr[data-ex="'+id+'"]');window.scrollBy(0,box.getBoundingClientRect().top-y);box.scrollIntoView({block:'center',behavior:smoothOK()?'smooth':'auto'})}}
+      else{const el=document.querySelector('.exr[data-ex="'+id+'"]');if(el)window.scrollBy(0,el.getBoundingClientRect().top-y)}
+      return}
     case 'extype':{const want=b.dataset.v;if(want===exType(id))return;const n=doneSets(today(),id).length;
       const go=()=>{plan.library[id].type=want;savePlan();render()};
       if(n)ask({title:'Sets already logged today',msg:'You logged '+n+(n===1?' set':' sets')+' of '+exName(id)+' today. Changing the type changes how '+(n===1?'it shows':'they show')+' on Today.',buttons:[{v:'yes',label:'Change type anyway',style:'primary'},{v:'cancel',label:'Keep '+TYPES[exType(id)]}]}).then(v=>{if(v==='yes')go()});else go();return}
