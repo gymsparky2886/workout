@@ -27,5 +27,40 @@
       "purpose": "maskable"
     }
   ],
-  "id": "./"
+  "id": "./",
+  "shortcuts": [
+    {
+      "name": "Today",
+      "short_name": "Today",
+      "url": "./#today",
+      "icons": [
+        {
+          "src": "icon3-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Add protein",
+      "short_name": "Protein",
+      "url": "./?protein=1#today",
+      "icons": [
+        {
+          "src": "icon3-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Progress",
+      "short_name": "Progress",
+      "url": "./#progress",
+      "icons": [
+        {
+          "src": "icon3-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
 }
