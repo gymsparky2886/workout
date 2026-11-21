@@ -50,6 +50,11 @@ button{cursor:pointer}
 main{max-width:1180px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 18px) 18px calc(env(safe-area-inset-bottom,0px) + 104px)}
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:4px 0 calc(env(safe-area-inset-bottom,0px) + 4px)}
 .tabbar button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;color:var(--muted);padding:6px 0;min-height:56px;justify-content:center}
+.tabbar button{position:relative}
+.tbadge{position:absolute;top:6px;left:calc(50% + 6px);width:11px;height:11px;border-radius:50%;border:2px solid var(--surface);display:none;animation:fIn .2s ease-out}
+.tbadge.s-pend{display:block;background:var(--faint)}
+.tbadge.s-out{display:block;background:var(--warn)}
+@media (min-width:900px){.tbadge{top:2px}}
 .tabbar button[aria-current="page"]{color:var(--accent);font-weight:600}
 @media (min-width:900px){
   body{padding-left:96px}
@@ -571,7 +576,7 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
   <button data-view="today" aria-current="page"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/></svg>Today</button>
   <button data-view="plan"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Plan</button>
   <button data-view="progress"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19h16M6 15l4-4 3 3 5-6"/></svg>Progress</button>
-  <button data-view="settings"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
+  <button data-view="settings"><span class="tbadge" id="tbadge" aria-hidden="true"></span><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
 </nav>
 <main id="view"><p class="help">Loading…</p></main>
 <div id="sheetRoot"></div>
@@ -581,7 +586,7 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=49, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=51, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Chest','Shoulders','Traps','Back','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs']],['Legs',['Glutes','Inner thighs','Quads','Hamstrings','Calves']]];
 const MUSCLES=MGROUPS.flatMap(g=>g[1]);
@@ -658,7 +663,7 @@ const dirtyDays=new Set(),replaceDays=new Set(),editAt={};let planDirty=false,pl
 let syncPending=false;
 function syncInfo(){if(!fbOn)return ['off','Sync is off'];if(!user)return ['out','Not signed in: saved on this phone only'];if(!navigator.onLine||syncPending||dirtyDays.size||planDirty)return ['pend','Saved on this phone, uploading when online'];return ['ok','Synced to your account']}
 function dotHtml(){const [k,l]=syncInfo();return '<span class="syncdot s-'+k+'" role="img" aria-label="'+l+'" title="'+l+'"></span>'}
-function updDot(){const [k,l]=syncInfo();document.querySelectorAll('.syncdot').forEach(e=>{e.className='syncdot s-'+k;e.title=l;e.setAttribute('aria-label',l)});const t=$('#synctext');if(t)t.textContent=l}
+function updDot(){const [k,l]=syncInfo();const tb=document.getElementById('tbadge');if(tb){tb.className='tbadge s-'+k;const st=document.querySelector('[data-view=settings]');if(st)st.setAttribute('aria-label',k==='pend'||k==='out'?'Settings, '+l:'Settings')}document.querySelectorAll('.syncdot').forEach(e=>{e.className='syncdot s-'+k;e.title=l;e.setAttribute('aria-label',l)});const t=$('#synctext');if(t)t.textContent=l}
 window.addEventListener('online',()=>{updDot();softRender()});window.addEventListener('offline',()=>{updDot();softRender()});
 function savePlan(){planDirty=true;planEditAt=Date.now();saveLocal();flush()}
 function touchDay(d,replace){dirtyDays.add(d);if(replace)replaceDays.add(d);editAt[d]=Date.now();saveLocal();flush()}
@@ -953,10 +958,10 @@ function setView(v){view=v;try{history.replaceState(history.state,'',v==='today'
 function pillsFade(){const p=$('.pills');if(!p)return;const sel=p.querySelector('[aria-pressed="true"]');if(sel&&(sel.offsetLeft+sel.offsetWidth>p.scrollLeft+p.clientWidth||sel.offsetLeft<p.scrollLeft))p.scrollLeft=Math.max(0,sel.offsetLeft-16);const f=()=>p.classList.toggle('fade',p.scrollWidth-p.clientWidth-p.scrollLeft>4);f();p.addEventListener('scroll',f,{passive:true})}
 function smoothOK(){return !(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)}
 let wakeLock=null;
-async function syncWake(){try{const d=viewKey,st=stats(d),want=view==='today'&&document.visibilityState==='visible'&&(d===today()||d===sessionDay())&&st.n>0&&st.n<st.p;
+async function syncWake(){try{const d=viewKey,st=stats(d),want=LS.get('awake')!==false&&view==='today'&&document.visibilityState==='visible'&&(d===today()||d===sessionDay())&&st.n>0&&st.n<st.p;
   if(want&&!wakeLock&&navigator.wakeLock){wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{wakeLock=null})}else if(!want&&wakeLock){const w=wakeLock;wakeLock=null;await w.release()}}catch(e){wakeLock=null}}
 document.addEventListener('visibilitychange',()=>syncWake());
-function postRender(){syncWake();
+function postRender(){syncWake();updDot();
   document.querySelectorAll('[data-k]').forEach(el=>{const k=el.dataset.k,to=el.style.width;if(smoothOK()&&barW[k]!=null&&barW[k]!==to){el.style.transition='none';el.style.width=barW[k];void el.offsetWidth;el.style.transition='';el.style.width=to}barW[k]=to});
   if(swapAnim&&smoothOK())document.querySelectorAll(swapAnim).forEach(e=>{e.classList.remove('enter');void e.offsetWidth;e.classList.add('enter')});swapAnim=null;
   if(chartAnim){const v=$('#view');v.classList.add('grow');setTimeout(()=>v.classList.remove('grow'),800);chartAnim=false}
@@ -1228,6 +1233,7 @@ function settingsHtml(){
     '<div class="card sec"><h3>Protein</h3><div class="field"><label for="pgoal">Daily goal (grams)</label><input class="inp" id="pgoal" inputmode="numeric" value="'+(plan.protein.goal||'')+'" placeholder="150"></div><span class="flabel">Your foods (one-tap add on Today)</span>'+
       plan.protein.foods.map(f=>'<div class="foodrow"><input class="inp" data-fname="'+f.id+'" value="'+esc(f.name)+'" aria-label="Food name"><input class="inp" data-fg="'+f.id+'" inputmode="numeric" value="'+f.g+'" aria-label="Grams of protein"><span class="x">g</span><button class="rm" data-act="fooddel" data-f="'+f.id+'" aria-label="Delete '+esc(f.name)+'">✕</button></div>').join('')+
       '<div class="foodrow"><input class="inp" id="nfName" placeholder="e.g. Protein shake" aria-label="New food name"><input class="inp" id="nfG" inputmode="numeric" placeholder="25" aria-label="Grams of protein"><span class="x">g</span><button class="btn primary" data-act="foodadd">Add</button></div></div>'+
+    '<div class="card sec"><h3>During workouts</h3><label class="toggle-row"><span>Keep screen on</span><input type="checkbox" class="sw" id="awakeT"'+(LS.get('awake')!==false?' checked':'')+'></label><p class="help">While a workout is going on Today, your screen won\'t dim or lock. This device only.</p></div>'+
     '<div class="card sec"><h3>Weight unit</h3>'+seg('unit',plan.unit,[['kg','kg'],['lb','lb']],'Weight unit')+'<p class="help">Switching converts all your numbers.</p></div>'+
     '<div class="card sec"><h3>Theme</h3>'+seg('theme',plan.theme,[['auto','Auto'],['light','Light'],['dark','Dark']],'Theme')+'<p class="help">Auto follows your device.</p></div>'+
     '<div class="card sec"><h3>Automatic backups</h3>'+bkHtml()+'</div>'+
@@ -1365,6 +1371,7 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('change',e=>{
   const t=e.target;
+  if(t.id==='awakeT'){LS.set('awake',t.checked);syncWake();return}
   if(t.id==='drest'){plan.week[planDay].rest=t.checked;savePlan();render();return}
   if(t.dataset.type){const id=t.dataset.type,n=sessions(id).reduce((a,x)=>a+x.sets.length,0);
     const want=t.value;
