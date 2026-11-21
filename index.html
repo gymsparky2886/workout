@@ -525,6 +525,25 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 .reopen{background:var(--accent-tint);color:var(--accent-text);border-radius:12px;padding:8px 12px;margin-top:12px;font-size:14px;font-weight:600}
 .reopenhint{color:var(--accent-text)!important;font-weight:600}
 .finbtn{min-width:200px}
+.combo .inp{padding-right:44px}
+.combo-arrow{position:absolute;right:4px;top:4px;width:38px;height:calc(100% - 8px);max-height:44px;border:0;background:none;color:var(--muted);font-size:18px;border-radius:10px;transition:transform .2s ease}
+.combo.open .combo-arrow{transform:rotate(180deg)}
+.lockd .set{opacity:.42}
+.lockd .set .r,.lockd .set .tap{visibility:hidden}
+.lockd .set.next{border-style:solid;border-color:var(--line)}
+.startbtn{display:block;width:100%;margin-top:14px;border:0;border-radius:16px;padding:15px;background:var(--done);color:var(--done-ink);font-weight:700;font-size:17px;box-shadow:0 6px 18px color-mix(in srgb,var(--done) 30%,transparent)}
+.startbtn.shake,#resumebtn.shake{animation:shake .45s ease;box-shadow:0 0 0 3px var(--pr)}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.starthint{margin:6px 0 0;text-align:center;color:var(--pr-text);font-weight:600;font-size:14px}
+.inprog{display:inline-flex;align-items:center;gap:8px;margin-top:12px;background:var(--done-tint);color:var(--done-text);border-radius:999px;padding:5px 12px;font-weight:600;font-size:13px}
+.dotlive{width:8px;height:8px;border-radius:50%;background:var(--done);animation:livePulse 1.6s ease-in-out infinite}
+@keyframes livePulse{50%{opacity:.35}}
+.pchg{border:1.5px solid var(--accent);margin-top:12px;gap:8px}
+.pchg .btns,.allskip .btns,.wdone .btns{display:flex;gap:8px;flex-wrap:wrap}
+.pchg .btns .btn,.allskip .btns .btn,.wdone .btns .btn{flex:1;min-width:140px}
+.allskip{margin-top:12px;gap:10px}
+.skipc{margin-top:10px;gap:2px}
+.skipc .rr{align-items:center}
 .combo{position:relative}
 .combo .inp{padding-right:36px}
 .combo::after{content:"";position:absolute;right:14px;top:22px;width:8px;height:8px;border-right:2px solid var(--faint);border-bottom:2px solid var(--faint);transform:translateY(-70%) rotate(45deg);pointer-events:none}
@@ -610,7 +629,7 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=52, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=54, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Chest','Shoulders','Traps','Back','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs']],['Legs',['Glutes','Inner thighs','Quads','Hamstrings','Calves']]];
 const MUSCLES=MGROUPS.flatMap(g=>g[1]);
@@ -656,13 +675,13 @@ function normPlan(p){
   o.snooze={};Object.entries(p.snooze||{}).forEach(([k,v])=>{if(typeof v==='string')o.snooze[k]=v});
   return o;
 }
-function normDay(d){d=d||{};return {title:typeof d.title==='string'?d.title:null,plan:Array.isArray(d.plan)?d.plan:null,skip:Array.isArray(d.skip)?d.skip:[],extra:Array.isArray(d.extra)?d.extra:[],sets:d.sets||{},rows:d.rows||{},off:!!d.off,protein:Array.isArray(d.protein)?d.protein.filter(e=>e&&num(e.g)>0).map(e=>({id:String(e.id||newId()),name:String(e.name||'Other'),g:Math.round(num(e.g))})):[],warm:d.warm&&typeof d.warm==='object'?d.warm:{},t0:num(d.t0)||null,t1:num(d.t1)||null,note:typeof d.note==='string'?d.note:'',order:Array.isArray(d.order)?d.order:null,finished:!!d.finished,reopened:!!d.reopened}}
+function normDay(d){d=d||{};return {title:typeof d.title==='string'?d.title:null,plan:Array.isArray(d.plan)?d.plan:null,skip:Array.isArray(d.skip)?d.skip:[],extra:Array.isArray(d.extra)?d.extra:[],sets:d.sets||{},rows:d.rows||{},off:!!d.off,protein:Array.isArray(d.protein)?d.protein.filter(e=>e&&num(e.g)>0).map(e=>({id:String(e.id||newId()),name:String(e.name||'Other'),g:Math.round(num(e.g))})):[],warm:d.warm&&typeof d.warm==='object'?d.warm:{},t0:num(d.t0)||null,t1:num(d.t1)||null,note:typeof d.note==='string'?d.note:'',order:Array.isArray(d.order)?d.order:null,finished:!!d.finished,reopened:!!d.reopened,started:num(d.started)||null,planAck:typeof d.planAck==='string'?d.planAck:null}}
 const hasContent=p=>Object.keys(p.library).length>0;
 
 /* ---------------- units ---------------- */
 const toU=kg=>kg==null?null:(plan.unit==='lb'?kg*KG_LB:kg);
 const fromU=v=>v==null?null:(plan.unit==='lb'?v/KG_LB:v);
-function fw(kg){const v=toU(kg);if(v==null)return '';const m=plan.unit==='lb'?10:100;return String(Math.round(v*m)/m)}
+function fw(kg){const v=toU(kg);if(v==null)return '';if(plan.unit==='lb'){const r1=Math.round(v*10)/10;return String(Math.abs(v-r1)<0.01?r1:Math.round(v*2)/2)}const r2=Math.round(v*100)/100;return String(Math.abs(v-r2)<0.0005?r2:Math.round(v*4)/4)}
 function exStep(id){const e=plan.library[id];return e&&e.step?e.step:(plan.unit==='lb'?5/KG_LB:2.5)}
 function stepU(id){const m=plan.unit==='lb'?10:100;return Math.round(toU(exStep(id))*m)/m}
 
@@ -757,7 +776,9 @@ const exName=id=>ex(id)?ex(id).name:'Exercise';
 const exType=id=>ex(id)?ex(id).type:'weight';
 function getDay(d,create){if(!days[d]){if(!create)return null;days[d]=normDay()}return days[d]}
 function weekItems(d){const w=plan.week[parse(d).getDay()];return w&&!w.rest?w.items.filter(i=>ex(i.ex)&&!ex(i.ex).archived):[]}
-function dayPlan(d){const x=days[d];return x&&x.plan?x.plan.filter(i=>ex(i.ex)):weekItems(d)}
+function hasDone(d){const x=days[d];return !!(x&&Object.values(x.sets||{}).some(a=>(a||[]).some(s=>s&&s.done)))}
+function isFrozen(d){const x=days[d];if(!x||!x.plan)return false;if(d<today())return true;return !!(x.started||hasDone(d))}
+function dayPlan(d){const x=days[d];return x&&x.plan&&isFrozen(d)?x.plan.filter(i=>ex(i.ex)):weekItems(d)}
 function snap(d){const x=getDay(d,true);if(!x.plan){x.plan=clone(weekItems(d));x.title=plan.week[parse(d).getDay()].name||''}return x}
 function plannedItems(d){const x=days[d],p=dayPlan(d),extra=x?x.extra.filter(e=>ex(e.ex)&&!p.some(i=>i.ex===e.ex)):[],t0=today();
   return p.concat(extra).filter(i=>!(ex(i.ex).archived&&d>=t0))}
@@ -766,7 +787,7 @@ function rowsFor(d,it){const x=days[d],s=(x&&x.sets[it.ex])||[];return (x&&x.row
 function valid(t,s){if(!s||!s.done)return false;if(t==='time')return s.t!=null;if(t==='reps')return s.r!=null;return s.w!=null&&s.r!=null}
 function doneSets(d,id){const x=days[d],t=exType(id);return x&&x.sets[id]?x.sets[id].filter(s=>valid(t,s)):[]}
 const isOff=d=>!!(days[d]&&days[d].off);
-function stats(d){let p=0,n=0;if(isOff(d))return{p,n};plannedItems(d).forEach(it=>{const r=Math.max(rowsFor(d,it),it.sets||3);p+=r;n+=Math.min(r,doneSets(d,it.ex).length)});return{p,n}}
+function stats(d){let p=0,n=0;if(isOff(d))return{p,n};visibleItems(d).forEach(it=>{const r=Math.max(rowsFor(d,it),it.sets||3);p+=r;n+=Math.min(r,doneSets(d,it.ex).length)});return{p,n}}
 const started=d=>!!plan.startedOn&&d>=plan.startedOn;
 const needsWork=d=>started(d)&&!isOff(d)&&plannedItems(d).length>0;
 function complete(d){const s=stats(d);return s.p>0&&s.n>=Math.ceil(s.p/2)}
@@ -830,7 +851,7 @@ function weekRecap(mon){const t0=today(),ds=[0,1,2,3,4,5,6].map(i=>ymd(addDays(p
     if(plan.protein.goal){pd++;if(protOf(d)>=plan.protein.goal)ph++}});
   let pv=0;[0,1,2,3,4,5,6].map(i=>ymd(addDays(parse(mon),i-7))).forEach(d=>{const x=days[d];if(x)Object.entries(x.sets).forEach(([id,a])=>{if(exType(id)==='weight')(a||[]).forEach(s=>{if(valid('weight',s))pv+=toU(s.w)*s.r})})});
   return {sp,sn,wp,wd,vol:Math.round(vol),pv:Math.round(pv),missed,prl,ph,pd,days:ds.length}}
-function weekPlanName(d){const x=days[d];return (x&&x.plan&&x.title)||plan.week[parse(d).getDay()].name||''}
+function weekPlanName(d){const x=days[d];return (x&&x.plan&&isFrozen(d)&&x.title)||plan.week[parse(d).getDay()].name||''}
 function recapHtml(mon,title){const r=weekRecap(mon),sun=ymd(addDays(parse(mon),6)),lab=parse(mon).getDate()+' to '+parse(sun).getDate()+' '+MONTHS[parse(sun).getMonth()];
   const live=ymd(addDays(parse(mon),6))>=today(),pct=r.pv&&!live?Math.round((r.vol-r.pv)/r.pv*100):null;
   let h='<div class="card recap"><b class="rt">'+esc(title||('Your week, '+lab))+'</b>';
@@ -840,7 +861,7 @@ function recapHtml(mon,title){const r=weekRecap(mon),sun=ymd(addDays(parse(mon),
   h+='<div class="rr"><span>Missed</span><span>'+(r.missed.length?esc(r.missed.join('; ')):'None')+'</span></div>';
   if(r.prl.length)h+='<div class="chips">'+r.prl.slice(0,6).map(x=>'<span class="chip prchip">PR '+esc(x)+'</span>').join('')+'</div>';
   return h+'</div>'}
-function reopenIf(d){const x=days[d];if(x&&x.finished){x.finished=false;x.reopened=true;if(d===today())bumpSession(d)}}
+function reopenIf(d){}
 function stamp(d){if(d!==today()&&d!==sessionDay())return;const x=getDay(d,true),n=Date.now();if(!x.t0)x.t0=n;x.t1=n}
 function exMuscles(id){const e=plan.library[id];return e&&Array.isArray(e.muscles)?e.muscles:[]}
 function exMain(id){const e=plan.library[id],m=exMuscles(id);return e&&e.main&&m.includes(e.main)?e.main:(m[0]||null)}
@@ -983,7 +1004,7 @@ function setView(v){view=v;try{history.replaceState(history.state,'',v==='today'
 function pillsFade(){const p=$('.pills');if(!p)return;const sel=p.querySelector('[aria-pressed="true"]');if(sel&&(sel.offsetLeft+sel.offsetWidth>p.scrollLeft+p.clientWidth||sel.offsetLeft<p.scrollLeft))p.scrollLeft=Math.max(0,sel.offsetLeft-16);const f=()=>p.classList.toggle('fade',p.scrollWidth-p.clientWidth-p.scrollLeft>4);f();p.addEventListener('scroll',f,{passive:true})}
 function smoothOK(){return !(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)}
 let wakeLock=null;
-async function syncWake(){try{const d=viewKey,st=stats(d),want=LS.get('awake')!==false&&view==='today'&&document.visibilityState==='visible'&&(d===today()||d===sessionDay())&&st.n>0&&st.n<st.p&&!(days[d]&&days[d].finished);
+async function syncWake(){try{const d=viewKey,st=stats(d),want=LS.get('awake')!==false&&view==='today'&&document.visibilityState==='visible'&&liveDay(d)&&!!(days[d]&&days[d].started&&!days[d].finished);
   if(want&&!wakeLock&&navigator.wakeLock){wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{wakeLock=null})}else if(!want&&wakeLock){const w=wakeLock;wakeLock=null;await w.release()}}catch(e){wakeLock=null}}
 document.addEventListener('visibilitychange',()=>syncWake());
 function postRender(){syncWake();updDot();
@@ -1003,13 +1024,14 @@ function render(){document.body.classList.toggle('editing',view==='plan'&&planEd
 }
 function signinBar(){return fbOn&&authKnown&&!user&&fbState!=='failed'&&!LS.get('hideSignin')?'<div class="signin"><span>Sign in to sync your devices.</span><span><button class="link" data-act="signin">Sign in</button><button class="x" data-act="hidesignin" aria-label="Hide this. Sign in later from Settings.">✕</button></span></div>':''}
 function todayHtml(){
+  legacyStart(viewKey);autoEnd(viewKey);
   const d=viewKey,t0=today(),isT=d===t0,x=days[d],w=plan.week[parse(d).getDay()],items=visibleItems(d),st=stats(d),sk=streak();
   let h=signinBar();
   let bn='';
   if(!isT&&sessionDay()===d)bn+='<div class="session"><span>Still in '+esc(dname(d))+'’s workout. Sets go to '+esc(dname(d))+' until you finish.</span><button class="link" data-act="finish">Finish workout</button></div>';
   else if(!isT)bn+='<div class="viewing"><span>Editing '+esc(fmtDate(d))+'</span><button class="link" data-act="today">Back to today</button></div>';
-  const rest=(x&&x.off)||(!items.length&&!st.p);
-  const title=rest?'Rest day':((x&&x.plan&&x.title!=null)?(x.title||'Workout'):(w.name||'Workout'));
+  const rest=(x&&x.off)||!plannedItems(d).length;
+  const title=!hasContent(plan)?'Today':rest?'Rest day':((x&&x.plan&&isFrozen(d)&&x.title!=null)?(x.title||'Workout'):(w.name||'Workout'));
   const pillH='<span class="pill'+(sk?' on':'')+'">'+(sk?sk+(sk===1?' day':' days')+' streak':'Start a streak')+'</span>',wide=isWide();
   h+='<div class="th"><h1 class="big tbig">'+esc(title)+'</h1>'+(wide?'<span class="hdr-r">'+dotHtml()+pillH+'</span>':'<button class="datebtn" data-act="weekpanel" aria-expanded="'+wpOpen+'">'+dotHtml()+esc(dname(d)+' '+parse(d).getDate()+' '+MONTHS[parse(d).getMonth()])+' <span class="chev" aria-hidden="true">'+(wpOpen?'⌃':'⌄')+'</span></button>')+'</div>';
   if(wide)h+='<div class="weekpanel"><div class="date">'+esc(fmtDate(d))+'</div>'+weekStrip()+weekScore()+'</div>';
@@ -1018,13 +1040,16 @@ function todayHtml(){
   h+=raceHtml(d);
   h+=protRow(d);
   h+=bn;
-  if(x&&x.finished)h+=doneCard(d);else if(x&&x.reopened&&st.n)h+='<div class="reopen">Workout reopened. Tap Finish when you\'re done.</div>';
+  h+=planChangeCard(d);
+  if(x&&x.finished)h+=doneCard(d);
+  else if(liveDay(d)&&items.length&&!(x&&x.off)){if(x&&x.started)h+='<div class="inprog"><span class="dotlive"></span>Workout in progress</div>';else h+='<button class="startbtn" id="startbtn" data-act="startwk">▶ Start workout</button><p class="starthint" id="starthint" hidden>Tap Start workout first</p>'}
   if(parse(d).getDay()===0&&hasContent(plan))h+=recapHtml(ymd(addDays(parse(d),-6)));
   if(isT&&parse(d).getDate()<=3&&hasContent(plan)){const pm=ymd(addDays(parse(d.slice(0,8)+'01'),-1)).slice(0,7);if(LS.get('wrapSeen')!==pm&&plan.startedOn&&plan.startedOn.slice(0,7)<=pm)h+=wrapHtml(pm,true)}
   h+=guideHtml();
   if(!hasContent(plan)&&!items.length&&LS.get('guide')!=='on'){h+='<div class="empty"><p>Set up your week first: name each day and add its exercises.</p><button class="btn primary" data-act="goplan">Set up my week</button></div>';return h}
   if(x&&x.off)return h+restCard(d,'Marked as rest.',isT?'<button class="btn primary" data-act="unoff">Train today anyway</button>':'');
   prs(d).forEach(p=>{const k=d+'|'+p.id+'|'+JSON.stringify(p.tp),nw=!prSeen.has(k);prSeen.add(k);h+='<div class="banner'+(nw&&prReady?' prnew':'')+'">'+I.trophy+'<div><b>New PR on '+esc(exName(p.id))+'</b><span>'+esc(fmtSet(p.t,p.tp))+', '+esc(p.diff)+'</span></div></div>'});
+  if(!items.length&&plannedItems(d).length){h+='<div class="card allskip"><b>You skipped all of '+(isT?'today':esc(dname(d)))+'\'s exercises.</b><div class="btns"><button class="btn primary" data-act="unskipall">Put all back</button><button class="btn" data-act="openadd">Add an exercise</button></div></div>'+skippedLine(d);if(addOpen)h+=addForm(d);return h}
   if(!items.length){
     h+=restCard(d,'Nothing planned '+(isT?'today':'this day')+'.',addOpen?'':'<button class="btn" data-act="openadd">Add an exercise</button>');
     if(addOpen)h+=addForm(d);
@@ -1060,14 +1085,23 @@ function guideHtml(){const g=LS.get('guide');if(g==='done')return '';if(g!=='on'
     st(s1,1,'Set up your week','Name each day and add its exercises','goplan','Start')+
     st(s2,2,'Pick muscles','So the body map knows what you trained','goplan','Pick')+
     st(s3,3,'Protein goal','Optional: a daily target for the protein bar','gosettings','Set')+'</div>'}
-function canFinish(d){const x=days[d];if(!x||x.finished)return false;return (d===today()||d===sessionDay())&&stats(d).n>0}
+function planSig(d){const w=plan.week[parse(d).getDay()];return (w.name||'')+'|'+weekItems(d).map(i=>i.ex+':'+i.sets+':'+(i.reps||i.secs||'')).join(',')}
+function snapSig(d){const x=days[d];return (x.title||'')+'|'+(x.plan||[]).filter(i=>ex(i.ex)&&!ex(i.ex).archived).map(i=>i.ex+':'+i.sets+':'+(i.reps||i.secs||'')).join(',')}
+function planChangeCard(d){const x=days[d];if(d!==today()||!x||!isFrozen(d)||x.finished)return '';const ps=planSig(d);if(ps===snapSig(d)||x.planAck===ps)return '';
+  return '<div class="card pchg"><b>Your plan for '+esc(DAYS[parse(d).getDay()])+' changed.</b><p class="help" style="margin:0">Use the new one for today? Sets you already logged stay.</p><div class="btns"><button class="btn primary" data-act="plannew">Use new plan</button><button class="btn" data-act="plankeep">Keep today as is</button></div></div>'}
+function liveDay(d){return d===today()||d===sessionDay()}
+function canFinish(d){const x=days[d];return !!(x&&x.started&&!x.finished&&liveDay(d))}
+function locked(d){if(!liveDay(d))return false;const x=days[d];return !(x&&x.started&&!x.finished)}
+function legacyStart(d){const x=days[d];if(x&&!x.started&&!x.finished&&hasDone(d)&&liveDay(d))x.started=x.t0||Date.now()}
+function autoEnd(d){const x=days[d];if(!x||!x.started||x.finished)return;const last=Math.max(x.t1||0,x.started||0);if(Date.now()-last<=SESSION_MS)return;if(hasDone(d)){x.finished=true}else{x.started=null}touchDay(d)}
+function nudgeStart(){const b=$('#startbtn')||$('#resumebtn');if(!b){return}b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');const h=$('#starthint');if(h){h.hidden=false;clearTimeout(nudgeStart.t);nudgeStart.t=setTimeout(()=>{h.hidden=true},2600)}buzz();b.scrollIntoView({block:'nearest',behavior:smoothOK()?'smooth':'auto'})}
 function doneCard(d){const st=stats(d),vol=Math.round(dayVol(d)),pr=prs(d),r=race(d),nm=weekPlanName(d)||'Workout';
   return '<div class="card wdone"><div class="ph"><b class="wdt">'+esc(nm)+' done ✓</b><span class="help" style="margin:0">'+esc(dname(d)+' '+parse(d).getDate()+' '+MONTHS[parse(d).getMonth()])+'</span></div>'+
     '<div class="wstats"><div><b>'+st.n+'</b><span>'+(st.n===1?'set':'sets')+'</span></div><div><b>'+vol.toLocaleString()+'</b><span>'+plan.unit+' lifted</span></div><div><b>'+pr.length+'</b><span>'+(pr.length===1?'PR':'PRs')+'</span></div></div>'+
     (r&&r.final?'<p class="wbeat'+(r.pct>=0?'':' down')+'">'+(r.pct>0?'Beat last '+esc(nm)+' by '+r.pct+'%':r.pct===0?'Matched last '+esc(nm):'Short of last '+esc(nm)+' by '+(-r.pct)+'%')+'</p>':'')+
     pr.slice(0,2).map(p=>'<p class="wpr">PR: '+esc(exName(p.id))+' '+esc(fmtSet(p.t,p.tp))+'</p>').join('')+
-    '<button class="btn primary" data-act="sharewk" data-d="'+d+'">Share this workout</button></div>'}
-function nextWorkout(d){for(let i=1;i<=7;i++){const k=ymd(addDays(parse(d),i)),w=plan.week[parse(k).getDay()];if(!isOff(k)&&weekItems(k).length)return (w.name||'Workout')+', '+dname(k)}return null}
+    '<div class="btns"><button class="btn primary" data-act="sharewk" data-d="'+d+'">Share workout</button>'+(liveDay(d)?'<button class="btn" id="resumebtn" data-act="resumewk">Resume</button>':'')+'</div><p class="starthint" id="starthint" hidden>Tap Resume workout first</p></div>'}
+function nextWorkout(d){const base=d<today()?today():d;for(let i=1;i<=7;i++){const k=ymd(addDays(parse(base),i)),w=plan.week[parse(k).getDay()];if(!isOff(k)&&weekItems(k).length)return (w.name||'Workout')+', '+dname(k)}return null}
 function restCard(d,lead,btn){const sk=streak(),nx=nextWorkout(d);
   return '<div class="restcard rest"><div class="rest-ic" aria-hidden="true">☾</div><p class="rest-l">'+esc(lead)+'</p><p>'+(sk?'Your '+sk+(sk===1?'-day':'-day')+' streak is safe.':'Rest days keep your streak.')+'</p>'+(nx?'<p class="rest-n">Next: <b>'+esc(nx)+'</b></p>':'')+(btn||'')+'</div>'}
 function activeFor(d,items){const a=active[d];const f=a&&items.find(i=>i.ex===a);if(f)return f;return items.find(it=>doneSets(d,it.ex).length<rowsFor(d,it))||items[items.length-1]}
@@ -1097,7 +1131,7 @@ function cardHtml(d,it,items){
   const id=it.ex,t=exType(id),x=days[d],sets=(x&&x.sets[id])||[],rows=rowsFor(d,it),tg=rowTargets(d,id,it,rows),e=ex(id);
   let first=-1;for(let i=0;i<rows;i++){if(!valid(t,sets[i])){first=i;break}}
   const isNew=lastOpen['card']!==d+'|'+id;lastOpen['card']=d+'|'+id;
-  let h='<section class="card'+(isWide()?'':' dragi')+(isNew&&!vtBusy?' enter':'')+'" data-card="'+id+'" data-ex="'+id+'"'+(isWide()?'':' style="view-transition-name:vx-'+id+'"')+' aria-label="'+esc(exName(id))+'"><div class="card-head">'+(isWide()?'':'<button class="handle" aria-label="Drag to reorder '+esc(exName(id))+'">'+I.grip+'</button>')+'<h2 class="h2d">'+esc(exName(id))+'</h2><span class="goal">Goal '+goalTxt(t,it)+'</span></div>';
+  let h='<section class="card'+(locked(d)?' lockd':'')+(isWide()?'':' dragi')+(isNew&&!vtBusy?' enter':'')+'" data-card="'+id+'" data-ex="'+id+'"'+(isWide()?'':' style="view-transition-name:vx-'+id+'"')+' aria-label="'+esc(exName(id))+'"><div class="card-head">'+(isWide()?'':'<button class="handle" aria-label="Drag to reorder '+esc(exName(id))+'">'+I.grip+'</button>')+'<h2 class="h2d">'+esc(exName(id))+'</h2><span class="goal">Goal '+goalTxt(t,it)+'</span></div>';
   h+='<div class="chips">'+(tg.has?'<span class="chip">Last '+esc(dname(tg.lastDate))+': '+esc(listTxt(t,tg.last))+'</span>':'<span class="chip">First time. This sets the bar.</span>')+'</div>';
   if(tg.has)h+='<div class="why">'+esc(tg.why)+'</div>';
   if(plateau(id,d))h+='<span class="flag">No progress in 3 weeks</span>';
@@ -1138,12 +1172,12 @@ function editorHtml(t,s,tv,i){
   h+='<div class="edbtns"><button class="btn" data-act="edcancel">Cancel</button>'+(s.done?'<button class="btn" data-act="edundo">Not done</button>':'')+'<button class="btn primary" data-act="edsave">'+(s.done?'Save':'Save as done')+'</button></div></div>';
   return h;
 }
-function addForm(d){return '<div class="card"><strong>Add an exercise for '+(d===today()?'today':esc(fmtDate(d)))+'</strong><div class="field"><label for="addName">Exercise</label>'+comboHtml('addName','Pick or type a name')+'</div><div class="field"><span class="flabel">Muscles, for a new exercise</span>'+musField('new')+'</div>'+(days[d]&&days[d].finished?'<p class="help reopenhint">Your workout reopens once you log a set of it.</p>':'')+'<p class="help">Sets, reps and type come from your plan. A new name starts as Weights, 3 × 10; change it in Plan.</p><div class="btns"><button class="btn primary" data-act="addday">Add</button><button class="btn" data-act="closeadd">Cancel</button></div></div>'}
-function skippedLine(d){const x=days[d];if(!x||!x.skip.length)return '';const sk=x.skip.filter(i=>ex(i)&&!(ex(i).archived&&d>=today()));if(!sk.length)return '';return '<p class="help">Skipped: '+sk.map(i=>esc(exName(i))+' <button class="link" data-act="unskip" data-ex="'+i+'">Put back</button>').join(', ')+'</p>'}
+function addForm(d){return '<div class="card"><strong>Add an exercise for '+(d===today()?'today':esc(fmtDate(d)))+'</strong><div class="field"><label for="addName">Exercise</label>'+comboHtml('addName','Pick or type a name')+'</div><div class="field"><span class="flabel">Muscles, for a new exercise</span>'+musField('new')+'</div>'+(days[d]&&days[d].finished?'<p class="help reopenhint">Tap Resume workout above to log it.</p>':'')+'<p class="help">Sets, reps and type come from your plan. A new name starts as Weights, 3 × 10; change it in Plan.</p><div class="btns"><button class="btn primary" data-act="addday">Add</button><button class="btn" data-act="closeadd">Cancel</button></div></div>'}
+function skippedLine(d){const x=days[d];if(!x||!x.skip.length)return '';const inDay=plannedItems(d).map(i=>i.ex);const sk=x.skip.filter(i=>ex(i)&&inDay.includes(i)&&!(ex(i).archived&&d>=today()));if(!sk.length)return '';return '<div class="card skipc"><div class="ph"><strong>Skipped</strong>'+(sk.length>1?'<button class="link" data-act="unskipall">Put all back</button>':'')+'</div>'+sk.map(i=>'<div class="rr"><span>'+esc(exName(i))+'</span><button class="link" data-act="unskip" data-ex="'+i+'">Put back</button></div>').join('')+'</div>'}
 function stepSelect(id){const opts=plan.unit==='lb'?STEPS_LB.map(v=>[v/KG_LB,v]):STEPS_KG.map(v=>[v,v]),cur=exStep(id);let bi=0;opts.forEach((o,i)=>{if(Math.abs(o[0]-cur)<Math.abs(opts[bi][0]-cur))bi=i});
   return '<select class="inp" aria-label="Weight step for '+esc(exName(id))+'" data-step="'+id+'">'+opts.map((o,i)=>'<option value="'+o[0]+'"'+(i===bi?' selected':'')+'>+'+o[1]+' '+plan.unit+' step</option>').join('')+'</select>'}
 function typeSeg(){return '<div class="seg" role="radiogroup" aria-label="Type">'+Object.entries(TYPES).map(([k,v])=>'<button type="button" role="radio" data-act="addtype" data-v="'+k+'" aria-checked="'+(k===newType)+'">'+v+'</button>').join('')+'</div>'}
-function comboHtml(id,ph){return '<div class="combo" data-combo="'+id+'"><input class="inp" id="'+id+'" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="cl-'+id+'" autocomplete="off" autocapitalize="words" placeholder="'+esc(ph)+'"><div class="combo-list" id="cl-'+id+'" role="listbox" hidden></div></div><p class="help combo-hint" id="hint-'+id+'" aria-live="polite"></p>'}
+function comboHtml(id,ph){return '<div class="combo" data-combo="'+id+'"><input class="inp" id="'+id+'" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="cl-'+id+'" autocomplete="off" autocapitalize="words" placeholder="'+esc(ph)+'"><button type="button" class="combo-arrow" data-act="combotoggle" aria-label="Show exercises" tabindex="-1">⌄</button><div class="combo-list" id="cl-'+id+'" role="listbox" hidden></div></div><p class="help combo-hint" id="hint-'+id+'" aria-live="polite"></p>'}
 function weekDaysOf(id){return ORDER.filter(i=>plan.week[i].items.some(x=>x.ex===id)).map(i=>DAYS[i])}
 function hintInfo(inp){const raw=inp.value.trim(),f=raw?findEx(raw):null;if(!f)return null;
   if(inp.id==='pName'){const wd=weekDaysOf(f);if(wd.length)return {id:f,warn:true,m:exName(f)+' is already on '+wd.join(', ')+'. Each exercise can be on one day only.'}}
@@ -1442,7 +1476,7 @@ const UNDO_MSG={};
 function act(a,b){
   const d=viewKey,id=b&&b.dataset.ex,snap0=UNDO_MSG[a]?takeSnap():null;
   switch(a){
-    case 'logall':{const it=visibleItems(d).find(x=>x.ex===id);if(!it)return;const rows=rowsFor(d,it),tl=rowTargets(d,id,it,rows).rowList,t=exType(id);let last=-1;
+    case 'logall':{if(locked(d)){nudgeStart();return}const it=visibleItems(d).find(x=>x.ex===id);if(!it)return;const rows=rowsFor(d,it),tl=rowTargets(d,id,it,rows).rowList,t=exType(id);let last=-1;
       for(let i=0;i<rows;i++){const cur=(days[d]&&days[d].sets[id]||[])[i];if(valid(t,cur)||!tl[i])continue;const s=setRow(d,id,i);s.w=tl[i].w!=null?tl[i].w:null;s.r=tl[i].r!=null?tl[i].r:null;s.t=tl[i].t!=null?tl[i].t:null;s.done=true;last=i}
       if(last<0)return;reopenIf(d);stamp(d);active[d]=id;bumpSession(d);touchDay(d);buzz();justDone=d+'|'+id+'|'+last;moreOpen=null;render();return}
     case 'focus':{const y=b.getBoundingClientRect().top,fromRow=b.classList.contains('row');
@@ -1452,11 +1486,11 @@ function act(a,b){
       if(!isWide()&&smoothOK()&&document.startViewTransition){vtBusy=true;const vt=document.startViewTransition(apply);vt.finished.finally(()=>{vtBusy=false;after()})}
       else{apply();after()}
       return}
-    case 'done':{const i=+b.dataset.i,it=visibleItems(d).find(x=>x.ex===id);if(!it)return;const rows=rowsFor(d,it),tv=rowTargets(d,id,it,rows).rowList[i];if(!tv)return;
+    case 'done':{if(locked(d)){nudgeStart();return}const i=+b.dataset.i,it=visibleItems(d).find(x=>x.ex===id);if(!it)return;const rows=rowsFor(d,it),tv=rowTargets(d,id,it,rows).rowList[i];if(!tv)return;
       const before=days[d]?clone(days[d]):null;
       reopenIf(d);const s=setRow(d,id,i);s.w=tv.w!=null?tv.w:null;s.r=tv.r!=null?tv.r:null;s.t=tv.t!=null?tv.t:null;s.done=true;editor=null;
       stamp(d);active[d]=id;bumpSession(d);touchDay(d);buzz();justDone=d+'|'+id+'|'+i;render();return}
-    case 'editset':editor={d,ex:id,i:+b.dataset.i};render();if(window.matchMedia&&matchMedia('(pointer:fine)').matches){const f=document.querySelector('.editor input');f&&f.focus()}return;
+    case 'editset':if(locked(d)){nudgeStart();return}editor={d,ex:id,i:+b.dataset.i};render();if(window.matchMedia&&matchMedia('(pointer:fine)').matches){const f=document.querySelector('.editor input');f&&f.focus()}return;
     case 'step':{const el=$('#ed-'+b.dataset.f),dir=+b.dataset.dir,st=b.dataset.f==='w'?stepU(editor.ex):b.dataset.f==='t'?5:1;const v=num(el.value)||0;el.value=String(Math.max(0,Math.round((v+dir*st)*100)/100));return}
     case 'edsave':{const t=exType(editor.ex),w=readEd('w'),r=readEd('r'),tt=readEd('t');
       if(t==='weight'&&(w==null||w<0||r==null)){toast('Enter the weight (0 for bodyweight) and the reps.');return}
@@ -1513,6 +1547,12 @@ function act(a,b){
     case 'reorderdone':reorderOpen=false;swapAnim='#view .acc, #view .tgrid';break;
     case 'guideskip':LS.set('guide','done');break;
     case 'gosettings':setView('settings');window.scrollTo(0,0);break;
+    case 'startwk':{const x=getDay(d,true);x.plan=clone(weekItems(d));x.title=plan.week[parse(d).getDay()].name||'';x.planAck=null;x.started=Date.now();x.finished=false;touchDay(d);bumpSession(d);render();return}
+    case 'resumewk':{const x=getDay(d,true);x.finished=false;x.started=x.started||Date.now();x.t1=Date.now();touchDay(d);bumpSession(d);render();return}
+    case 'plannew':{const x=getDay(d,true);x.plan=clone(weekItems(d));x.title=plan.week[parse(d).getDay()].name||'';x.planAck=null;touchDay(d);break}
+    case 'plankeep':{const x=getDay(d,true);x.planAck=planSig(d);touchDay(d);break}
+    case 'unskipall':{const x=snap(d);x.skip=[];touchDay(d);break}
+    case 'combotoggle':{const inp=b.parentElement.querySelector('input');if(!inp)return;if(b.parentElement.classList.contains('open'))comboClose(inp);else{comboSel=-1;comboRender(inp)}return}
     case 'protclose':protArm=null;animOut('#sheetRoot .scrim, .protbox',()=>{protOpen=false;render()});return;
     case 'protgoal1':{const g=num($('#pgoal1').value);if(!(g>0)){toast('Type your daily goal in grams.');return}plan.protein.goal=Math.round(g);savePlan();break}
     case 'protadd':{const f=plan.protein.foods.find(x=>x.id===b.dataset.f);if(!f)return;const x=getDay(viewKey,true);x.protein.push({id:newId(),name:f.name,g:f.g});touchDay(viewKey);protKeepInputs=true;break}
