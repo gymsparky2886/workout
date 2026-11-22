@@ -578,6 +578,8 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 .addsheet .formgrid{margin-top:4px}
 html.locked,html.locked body{overscroll-behavior:none}
 .mlist,.musbox,.askbox,.protbox{overscroll-behavior:contain}
+.link[data-lock]{opacity:.4}
+.h2d.foldable{cursor:pointer}
 .combo{position:relative}
 .combo .inp{padding-right:36px}
 
@@ -663,7 +665,7 @@ html.locked,html.locked body{overscroll-behavior:none}
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=63, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=64, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Chest','Shoulders','Traps','Back','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs']],['Legs',['Glutes','Inner thighs','Quads','Hamstrings','Calves']]];
 const MUSCLES=MGROUPS.flatMap(g=>g[1]);
@@ -698,6 +700,7 @@ const I={
 let plan, days={};
 const VIEWS=['today','plan','progress','settings'];
 let view=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'today', viewKey=today(), weekOff=0, active={}, editor=null, addOpen=false, noteOpen=null, sheet=false;
+let folded={};
 let addSheet=false,justAdded=null,dayFlash=null;
 const DAYNAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 let planDay=new Date().getDay(), progEx=null, pendingRender=false, planEditing=false, editSnap=null, exOpen=null, exDraft=null, savedFlash=null, tagOpen=null, psOpen=false, psQ='', fromSearch=false, lastSearchView=false, cmpOpen=null, cmpA=null, cmpB=null, dnOpen=null, reorderOpen=false, swapAnim=null, openAnim=null, justDone=null, justTick=null, chartAnim=false, barW={}, musOpen=null, newMus=[], newMain=null, musTap=null, moreOpen=null, yearSel=null, protOpen=false, protArm=null, protArmT=null, protKeepInputs=false, vtBusy=false, protDayOpen=null, wuOpen={}, wpOpen=false, prSeen=new Set(), prReady=false, newType='weight', lastView=null, lastOpen={}, askState=null, bkCloudList=null;
@@ -1099,7 +1102,8 @@ function todayHtml(){
   h+=planChangeCard(d);
   if(x&&x.finished)h+=doneCard(d);
   else if(liveDay(d)&&items.length&&!(x&&x.off)){if(x&&x.started)h+='<div class="inprog"><span class="dotlive"></span>Workout in progress</div>';else h+='<button class="startbtn" id="startbtn" data-act="startwk">▶ Start workout</button><p class="starthint" id="starthint" hidden>Tap Start workout first</p>'}
-  if(parse(d).getDay()===0&&hasContent(plan))h+=recapHtml(ymd(addDays(parse(d),-6)));
+  const sunRecap=parse(d).getDay()===0&&hasContent(plan),recapLater=sunRecap&&plannedItems(d).length>0&&!isOff(d);
+  if(sunRecap&&!recapLater)h+=recapHtml(ymd(addDays(parse(d),-6)));
   if(isT&&parse(d).getDate()<=3&&hasContent(plan)){const pm=ymd(addDays(parse(d.slice(0,8)+'01'),-1)).slice(0,7);if(LS.get('wrapSeen')!==pm&&plan.startedOn&&plan.startedOn.slice(0,7)<=pm)h+=wrapHtml(pm,true)}
   h+=guideHtml();
   if(!hasContent(plan)&&!items.length&&LS.get('guide')!=='on'){h+='<div class="empty"><p>Set up your week first: name each day and add its exercises.</p><button class="btn primary" data-act="goplan">Set up my week</button></div>';return h}
@@ -1113,10 +1117,11 @@ function todayHtml(){
   }
   const act=activeFor(d,items);
   if(isWide())h+='<div class="tgrid"><div class="focus">'+cardHtml(d,act,items)+'</div><div class="list">'+items.map(it=>rowHtml(d,it,it.ex===act.ex)).join('');
-  else h+='<div class="acc">'+items.map(it=>it.ex===act.ex?cardHtml(d,it,items):rowHtml(d,it,false)).join('');
+  else h+='<div class="acc">'+items.map(it=>it.ex===act.ex&&folded[d]!==it.ex?cardHtml(d,it,items):rowHtml(d,it,false)).join('');
   h+=skippedLine(d);
   h+=addOpen?addForm(d):'<button class="ghost" data-act="openadd">+ Add an exercise</button>';
   h+=dayNoteHtml(d);
+  if(recapLater)h+=recapHtml(ymd(addDays(parse(d),-6)));
   if(canFinish(d))h+='<div class="small-center"><button class="btn primary finbtn" data-act="finish">Finish workout</button></div>';
   if(st.n)h+='<div class="small-center"><button class="link" data-act="sharewk" data-d="'+d+'">Share this workout</button></div>';
   if(isT&&!st.n)h+='<div class="small-center"><button class="link muted" data-act="off">Gym closed or packed? Mark today as rest</button></div>';
@@ -1187,7 +1192,7 @@ function cardHtml(d,it,items){
   const id=it.ex,t=exType(id),x=days[d],sets=(x&&x.sets[id])||[],rows=rowsFor(d,it),tg=rowTargets(d,id,it,rows),e=ex(id);
   let first=-1;for(let i=0;i<rows;i++){if(!valid(t,sets[i])){first=i;break}}
   const isNew=lastOpen['card']!==d+'|'+id;lastOpen['card']=d+'|'+id;
-  let h='<section class="card'+(locked(d)?' lockd':'')+(isWide()?'':' dragi')+(isNew&&!vtBusy?' enter':'')+'" data-card="'+id+'" data-ex="'+id+'"'+(isWide()?'':' style="view-transition-name:vx-'+id+'"')+' aria-label="'+esc(exName(id))+'"><div class="card-head">'+(isWide()?'':'<button class="handle" aria-label="Drag to reorder '+esc(exName(id))+'">'+I.grip+'</button>')+'<h2 class="h2d">'+esc(exName(id))+'</h2><span class="goal">Goal '+goalTxt(t,it)+'</span></div>';
+  let h='<section class="card'+(locked(d)?' lockd':'')+(isWide()?'':' dragi')+(isNew&&!vtBusy?' enter':'')+'" data-card="'+id+'" data-ex="'+id+'"'+(isWide()?'':' style="view-transition-name:vx-'+id+'"')+' aria-label="'+esc(exName(id))+'"><div class="card-head">'+(isWide()?'':'<button class="handle" aria-label="Drag to reorder '+esc(exName(id))+'">'+I.grip+'</button>')+'<h2 class="h2d'+(isWide()?'':' foldable')+'"'+(isWide()?'':' data-act="fold" data-ex="'+id+'" role="button" tabindex="0" aria-expanded="true"')+'>'+esc(exName(id))+'</h2><span class="goal">Goal '+goalTxt(t,it)+'</span></div>';
   h+='<div class="chips">'+(tg.has?'<span class="chip">Last '+esc(dname(tg.lastDate))+': '+esc(listTxt(t,tg.last))+'</span>':'<span class="chip">First time. This sets the bar.</span>')+'</div>';
   if(tg.has)h+='<div class="why">'+esc(tg.why)+'</div>';
   if(plateau(id,d))h+='<span class="flag">No progress in 3 weeks</span>';
@@ -1204,14 +1209,14 @@ function cardHtml(d,it,items){
   if(first<0){const nx=(items||[]).find(o=>o.ex!==id&&doneSets(d,o.ex).length<rowsFor(d,o));
     h+=nx?'<div class="donebox'+(justDone&&justDone.indexOf('|'+id+'|')>0?' slide':'')+'"><b>'+esc(exName(id))+' done</b><button class="btn primary" data-act="focus" data-ex="'+nx.ex+'">Next: '+esc(exName(nx.ex))+'</button></div>'
       :'<div class="donebox'+(justDone&&justDone.indexOf('|'+id+'|')>0?' slide':'')+'"><b>All exercises done</b>'+(canFinish(d)?'<button class="btn primary" data-act="finish">Finish workout</button>':'')+'</div>'}
-  let sec='';{let unl=0,withT=0;for(let i=0;i<rows;i++){if(!valid(t,sets[i])){unl++;if(tg.rowList[i])withT++}}if(unl>=2&&withT===unl)sec+='<button class="link" data-act="logall" data-ex="'+id+'">Log all '+unl+' at target</button>'}
-  if(rows>1&&!valid(t,sets[rows-1]))sec+='<button class="link muted" data-act="dropset" data-ex="'+id+'" data-rows="'+rows+'">Remove set</button>';
+  let sec='';{let unl=0,withT=0;for(let i=0;i<rows;i++){if(!valid(t,sets[i])){unl++;if(tg.rowList[i])withT++}}if(unl>=2&&withT===unl)sec+='<button class="link" data-act="logall" data-ex="'+id+'"'+(locked(d)?' data-lock="1"':'')+'>Log all '+unl+' at target</button>'}
+  if(rows>1&&!valid(t,sets[rows-1]))sec+='<button class="link muted" data-act="dropset" data-ex="'+id+'" data-rows="'+rows+'"'+(locked(d)?' data-lock="1"':'')+'>Remove set</button>';
   if(!e.note&&noteOpen!==id)sec+='<button class="link muted" data-act="note" data-ex="'+id+'">Add note</button>';
   sec+='<button class="link muted" data-act="skip" data-ex="'+id+'">Skip</button>';
   const showSec=isWide()||moreOpen===id;
   h+='<div class="links">';
-  if(first>=0&&!edHere)h+='<button class="link" data-act="editset" data-ex="'+id+'" data-i="'+first+'">Change numbers</button>';
-  h+='<button class="link" data-act="addset" data-ex="'+id+'" data-rows="'+rows+'">Add set</button>';
+  if(first>=0&&!edHere)h+='<button class="link" data-act="editset" data-ex="'+id+'" data-i="'+first+'"'+(locked(d)?' data-lock="1"':'')+'>Change numbers</button>';
+  h+='<button class="link" data-act="addset" data-ex="'+id+'" data-rows="'+rows+'"'+(locked(d)?' data-lock="1"':'')+'>Add set</button>';
   if(noteOpen===id)h+='<button class="link" data-act="noteclose">Done with note</button>';
   if(isWide())h+=sec;else h+='<button class="link muted" data-act="more" data-ex="'+id+'" aria-expanded="'+showSec+'">'+(showSec?'Less':'More')+'</button>';
   h+='</div>';
@@ -1550,7 +1555,8 @@ function act(a,b){
     case 'logall':{if(locked(d)){nudgeStart();return}const it=visibleItems(d).find(x=>x.ex===id);if(!it)return;const rows=rowsFor(d,it),tl=rowTargets(d,id,it,rows).rowList,t=exType(id);let last=-1;
       for(let i=0;i<rows;i++){const cur=(days[d]&&days[d].sets[id]||[])[i];if(valid(t,cur)||!tl[i])continue;const s=setRow(d,id,i);s.w=tl[i].w!=null?tl[i].w:null;s.r=tl[i].r!=null?tl[i].r:null;s.t=tl[i].t!=null?tl[i].t:null;s.done=true;last=i}
       if(last<0)return;reopenIf(d);stamp(d);active[d]=id;bumpSession(d);touchDay(d);buzz();justDone=d+'|'+id+'|'+last;moreOpen=null;render();return}
-    case 'focus':{const y=b.getBoundingClientRect().top,fromRow=b.classList.contains('row');
+    case 'fold':{const c=document.querySelector('.card[data-card="'+id+'"]'),y=c?c.getBoundingClientRect().top:0;folded[d]=id;editor=null;moreOpen=null;noteOpen=null;render();const r=document.querySelector('.dragi[data-ex="'+id+'"]');if(r)window.scrollBy(0,r.getBoundingClientRect().top-y);return}
+    case 'focus':{if(folded[d]===id)delete folded[d];else if(folded[d])delete folded[d];const y=b.getBoundingClientRect().top,fromRow=b.classList.contains('row');
       const apply=()=>{active[d]=id;editor=null;noteOpen=null;moreOpen=null;render();
         if(!isWide()){const c=document.querySelector('.card[data-card="'+id+'"]');if(c&&fromRow)window.scrollBy(0,c.getBoundingClientRect().top-y)}};
       const after=()=>{if(!isWide()&&!fromRow){const c=document.querySelector('.card[data-card="'+id+'"]');if(c){const t=c.getBoundingClientRect().top;if(t<0||t>window.innerHeight*0.45)c.scrollIntoView({block:'start',behavior:smoothOK()?'smooth':'auto'})}}};
@@ -1577,8 +1583,8 @@ function act(a,b){
     case 'finish':{const x=getDay(d,true);x.finished=true;x.reopened=false;finishSession();touchDay(d);editor=null;moreOpen=null;render();window.scrollTo({top:0,behavior:smoothOK()?'smooth':'auto'});return}
     case 'hidesignin':LS.set('hideSignin',true);break;
     case 'edcancel':animOut('.editor',()=>{editor=null;render()});return;
-    case 'addset':{const x=snap(d);x.rows[id]=+b.dataset.rows+1;touchDay(d);break}
-    case 'dropset':{const x=snap(d),n=+b.dataset.rows-1;x.rows[id]=n;x.sets[id]=(x.sets[id]||[]).slice(0,n);if(editor&&editor.i>=n)editor=null;touchDay(d);break}
+    case 'addset':{if(locked(d)){nudgeStart();return}const x=snap(d);x.rows[id]=+b.dataset.rows+1;touchDay(d);break}
+    case 'dropset':{if(locked(d)){nudgeStart();return}const x=snap(d),n=+b.dataset.rows-1;x.rows[id]=n;x.sets[id]=(x.sets[id]||[]).slice(0,n);if(editor&&editor.i>=n)editor=null;touchDay(d);break}
     case 'skip':{const nDone=doneSets(d,id).length,nm=exName(id);
       const doSkip=()=>withUndo('Skipped '+nm+'.',()=>{const x=snap(d),inPlan=(x.plan||[]).some(i=>i.ex===id),k=x.extra.findIndex(e=>e.ex===id);delete x.sets[id];delete x.rows[id];
         if(!inPlan&&k>-1)x.extra.splice(k,1);else if(!x.skip.includes(id))x.skip.push(id);delete active[d];if(editor&&editor.ex===id)editor=null;touchDay(d,true)});
