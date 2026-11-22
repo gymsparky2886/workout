@@ -545,7 +545,7 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 .allskip{margin-top:12px;gap:10px}
 .skipc{margin-top:10px;gap:2px}
 .skipc .rr{align-items:center}
-@media (max-width:520px){.seg:has(> :nth-child(4)){grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.seg:has(> :nth-child(4)):not(:has(> :nth-child(5))){grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr))}}
 .pchg{position:sticky;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:30;background:var(--surface);transition:padding .2s ease,box-shadow .2s ease}
 .pchg.stuck{box-shadow:0 12px 28px rgba(0,0,0,.22);padding-top:10px;padding-bottom:10px}
 .pchg.stuck .help{display:none}
@@ -558,6 +558,16 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 .pseg{margin:14px 0 0}
 .expick{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px 16px;font-size:17px;font-weight:600;color:var(--ink);min-height:52px}
 .psheet .psres{margin-top:8px}
+.exopen:not(.dirty){box-shadow:inset 0 0 0 1.5px var(--line)!important}
+.exopen.dirty{box-shadow:inset 0 0 0 2px var(--accent)}
+.exad{display:grid!important;grid-template-columns:1fr 1fr;gap:8px}
+.unsaved{display:inline-flex;align-items:center;gap:6px;margin-left:8px;font-family:var(--body,inherit);font-size:12px;font-weight:500;color:var(--muted)}
+.unsaved[hidden]{display:none}
+.udot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.exfoot{display:grid;grid-template-columns:1fr;gap:8px;border-top:1px solid var(--hair);padding-top:12px;margin-top:4px}
+.exfoot:has(.btn+.btn){grid-template-columns:1fr 1fr}
+.exr.saved{background:var(--done-tint);transition:background-color .6s ease}
+.savedok{color:var(--done-text);font-weight:700;font-size:13px;white-space:nowrap;animation:fIn .2s ease-out}
 .combo{position:relative}
 .combo .inp{padding-right:36px}
 
@@ -643,7 +653,7 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=58, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=60, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Chest','Shoulders','Traps','Back','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs']],['Legs',['Glutes','Inner thighs','Quads','Hamstrings','Calves']]];
 const MUSCLES=MGROUPS.flatMap(g=>g[1]);
@@ -678,7 +688,7 @@ const I={
 let plan, days={};
 const VIEWS=['today','plan','progress','settings'];
 let view=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'today', viewKey=today(), weekOff=0, active={}, editor=null, addOpen=false, noteOpen=null, sheet=false;
-let planDay=new Date().getDay(), progEx=null, pendingRender=false, planEditing=false, editSnap=null, exOpen=null, tagOpen=null, psOpen=false, psQ='', fromSearch=false, lastSearchView=false, cmpOpen=null, cmpA=null, cmpB=null, dnOpen=null, reorderOpen=false, swapAnim=null, openAnim=null, justDone=null, justTick=null, chartAnim=false, barW={}, musOpen=null, newMus=[], newMain=null, musTap=null, moreOpen=null, yearSel=null, protOpen=false, protArm=null, protArmT=null, protKeepInputs=false, vtBusy=false, protDayOpen=null, wuOpen={}, wpOpen=false, prSeen=new Set(), prReady=false, newType='weight', lastView=null, lastOpen={}, askState=null, bkCloudList=null;
+let planDay=new Date().getDay(), progEx=null, pendingRender=false, planEditing=false, editSnap=null, exOpen=null, exDraft=null, savedFlash=null, tagOpen=null, psOpen=false, psQ='', fromSearch=false, lastSearchView=false, cmpOpen=null, cmpA=null, cmpB=null, dnOpen=null, reorderOpen=false, swapAnim=null, openAnim=null, justDone=null, justTick=null, chartAnim=false, barW={}, musOpen=null, newMus=[], newMain=null, musTap=null, moreOpen=null, yearSel=null, protOpen=false, protArm=null, protArmT=null, protKeepInputs=false, vtBusy=false, protDayOpen=null, wuOpen={}, wpOpen=false, prSeen=new Set(), prReady=false, newType='weight', lastView=null, lastOpen={}, askState=null, bkCloudList=null;
 function emptyWeek(){const w={};for(let i=0;i<7;i++)w[i]={name:'',rest:false,items:[]};return w}
 function normPlan(p){
   p=p||{};const o={v:3,unit:p.unit==='lb'?'lb':'kg',theme:(p.theme==='light'||p.theme==='dark')?p.theme:'auto',startedOn:p.startedOn||null,library:{},week:emptyWeek()};
@@ -884,7 +894,7 @@ function exMuscles(id){const e=plan.library[id];return e&&Array.isArray(e.muscle
 function exMain(id){const e=plan.library[id],m=exMuscles(id);return e&&e.main&&m.includes(e.main)?e.main:(m[0]||null)}
 function musSummary(list,main){if(!list.length)return '<span class="ph-t">Tap to pick muscles</span>';const ord=[main].concat(list.filter(x=>x!==main));
   return ord.slice(0,3).map(m=>esc(m)+(m===main?' <span class="mstar-i">★</span>':'')).join(', ')+(ord.length>3?' <span class="help" style="display:inline">+'+(ord.length-3)+'</span>':'')}
-function musField(t){const nw=t==='new',list=nw?newMus:exMuscles(t),main=nw?newMain:exMain(t);return '<button type="button" class="musfield" data-act="musopen" data-t="'+t+'" id="mf-'+t+'"><span>'+musSummary(list,main)+'</span><span class="chev" aria-hidden="true">›</span></button>'}
+function musField(t){const nw=t==='new',dr=t==='draft'&&exDraft,list=nw?newMus:dr?exDraft.muscles:exMuscles(t),main=nw?newMain:dr?exDraft.main:exMain(t);return '<button type="button" class="musfield" data-act="musopen" data-t="'+t+'" id="mf-'+t+'"><span>'+musSummary(list,main)+'</span><span class="chev" aria-hidden="true">›</span></button>'}
 function dayVol(d,ids){const x=days[d];let v=0;if(!x)return 0;Object.entries(x.sets).forEach(([id,a])=>{if(ids&&!ids.includes(id))return;if(hasVol(id))(a||[]).forEach(s=>{if(valid('weight',s))v+=toU(wkg(id,s))*s.r})});return v}
 function lastSameDay(d){const nm=weekPlanName(d);if(!nm)return null;const ds=Object.keys(days).filter(k=>k<d&&weekPlanName(k)===nm&&Object.keys(days[k].sets||{}).some(id=>doneSets(k,id).length)).sort();return ds.length?ds[ds.length-1]:null}
 function race(d){const L=lastSameDay(d),x=days[d];if(!L||!x)return null;let diff=0,cmp=false,tt=0,lt=0;
@@ -915,6 +925,13 @@ const TAGS={fail:['🔥','failure','To failure'],drop:['↓','drop','Drop set'],
 function tagBadge(t){const x=TAGS[t];return x?' <span class="tagb t-'+t+'">'+x[0]+' '+x[1]+'</span>':''}
 function fmtSetT(t,s){if(s.tag!=='fail'||t==='time')return fmtSet(t,s);if(t==='pin')return 'Pin '+s.w+' × ~'+s.r;if(t==='reps')return '~'+s.r+' reps'+(s.w?' +'+fw(s.w)+' '+plan.unit:'');return fw(s.w)+' '+plan.unit+' × ~'+s.r}
 function buzz(){try{navigator.vibrate&&navigator.vibrate(18)}catch(e){}}
+function newDraft(id){const e=plan.library[id];return {id,name:e.name,type:e.type,step:e.step||null,pinW:e.pinW||null,muscles:exMuscles(id).slice(),main:exMain(id)}}
+function draftDirty(){const D=exDraft;if(!D)return false;const e=plan.library[D.id];if(!e)return false;return D.name.trim()!==e.name||D.type!==e.type||(D.step||null)!==(e.step||null)||(D.pinW||null)!==(e.pinW||null)||D.muscles.join('|')!==exMuscles(D.id).join('|')||(D.main||null)!==(exMain(D.id)||null)}
+function exFoot(id,dirty){return dirty?'<button class="btn" data-act="excancel" data-ex="'+id+'">Cancel</button><button class="btn primary" data-act="exsave" data-ex="'+id+'">Save</button>':'<button class="btn" data-act="exopen" data-ex="'+id+'">Close</button>'}
+function updDirty(){if(!exDraft)return;const id=exDraft.id,d=draftDirty(),box=document.querySelector('[data-exbox="'+id+'"]');if(!box)return;box.classList.toggle('dirty',d);const u=$('#exu-'+id);if(u)u.hidden=!d;const f=$('#exb-'+id);if(f&&f.dataset.d!==String(d)){f.innerHTML=exFoot(id,d);f.dataset.d=String(d)}}
+function flashSaved(id){savedFlash=id;clearTimeout(flashSaved.t);flashSaved.t=setTimeout(()=>{savedFlash=null;const r=document.querySelector('.exr.saved[data-ex="'+id+'"]');if(r){r.classList.remove('saved');const ok=r.querySelector('.savedok');if(ok)ok.outerHTML='<span class="chev" aria-hidden="true">›</span>'}},2200)}
+function applyDraft(skipName){const D=exDraft,e=plan.library[D.id];if(!skipName&&D.name.trim())e.name=D.name.trim();e.type=D.type;e.step=D.step||null;e.pinW=D.pinW||null;e.muscles=D.muscles.slice();e.main=D.main||null;savePlan()}
+function closeEx(id){const ob=document.querySelector('[data-exbox="'+id+'"]'),y=ob?ob.getBoundingClientRect().top:null;exOpen=null;exDraft=null;render();const r=document.querySelector('.exr[data-ex="'+id+'"]');if(r&&y!=null)window.scrollBy(0,r.getBoundingClientRect().top-y)}
 function plateau(id,at){
   const t=exType(id),cut=ymd(addDays(parse(at),-21)),ss=sessions(id).filter(x=>x.d<=at);
   const recent=ss.filter(x=>x.d>=cut),older=ss.filter(x=>x.d<cut);
@@ -966,9 +983,9 @@ function renderProt(){if(askState)return;const r=$('#sheetRoot');if(!protOpen){i
     if(!protKeepInputs){}else{if($('#pname'))$('#pname').value=keep.pname||'';if($('#pother'))$('#pother').value=keep.pother||'';if($('#psave'))$('#psave').checked=!!keep.psave}
     protKeepInputs=false;if(aid&&document.getElementById(aid))document.getElementById(aid).focus({preventScroll:true});return}
   r.innerHTML='<div class="scrim" data-act="protclose"></div><section class="askbox protbox" role="dialog" aria-modal="true" aria-labelledby="ptitle">'+h+'</section>'}
-function musRows(t){const nw=t==='new',list=nw?newMus:exMuscles(t),main=nw?newMain:exMain(t);
+function musRows(t){const nw=t==='new',dr=t==='draft'&&exDraft,list=nw?newMus:dr?exDraft.muscles:exMuscles(t),main=nw?newMain:dr?exDraft.main:exMain(t);
   return MGROUPS.map(([g,ms])=>'<div class="mgrp">'+g+'</div>'+ms.map(m=>{const on=list.includes(m);return '<div class="mrow"><button type="button" class="mtick'+(justTick===m&&on?' tickpop':'')+'" data-act="mtog" data-v="'+m+'" aria-pressed="'+on+'"><span class="mbox" aria-hidden="true">'+(on?'✓':'')+'</span>'+m+'</button>'+(on?'<button type="button" class="mstar'+(m===main?' on':'')+'" data-act="mmain" data-v="'+m+'" aria-label="'+(m===main?m+' is the main muscle':'Make '+m+' the main muscle')+'">'+(m===main?'★':'☆')+'</button>':'<span class="mstar off"></span>')+'</div>'}).join('')).join('')}
-function renderMus(){if(!musOpen||askState)return;const r=$('#sheetRoot'),t=musOpen,nm=t==='new'?((($('#pName')||$('#addName')||{}).value||'').trim()||'new exercise'):exName(t);
+function renderMus(){if(!musOpen||askState)return;const r=$('#sheetRoot'),t=musOpen,nm=t==='draft'&&exDraft?(exDraft.name.trim()||'exercise'):t==='new'?((($('#pName')||$('#addName')||{}).value||'').trim()||'new exercise'):exName(t);
   const inner='<div class="grab"></div><div class="ph"><h2 class="h2d" id="mtitle" style="font-size:24px">Muscles for '+esc(nm)+'</h2><button class="link" data-act="musclose">Done</button></div><p class="help" style="margin:0">Tick all that apply. ★ marks the main muscle: it counts 1 set, the others count half.</p><div class="mlist">'+musRows(t)+'</div>';
   const box=r.querySelector('.musbox');if(box){const l=box.querySelector('.mlist'),sc=l?l.scrollTop:0;box.innerHTML=inner;const l2=box.querySelector('.mlist');if(l2)l2.scrollTop=sc;return}
   r.innerHTML='<div class="scrim" data-act="musclose"></div><section class="musbox" role="dialog" aria-modal="true" aria-labelledby="mtitle">'+inner+'</section>'}
@@ -1006,9 +1023,9 @@ window.addEventListener('popstate',()=>{
   if(psOpen){psOpen=false;$('#sheetRoot').innerHTML='';rearm();return}
   if(view==='progress'&&fromSearch){psOpen=true;fromSearch=false;rearm();renderPS();return}
   if(protOpen){protOpen=false;rearm();render();return}
-  if(musOpen){const t=musOpen;musOpen=null;$('#sheetRoot').innerHTML='';rearm();if(t==='new')updAdd();else render();return}
+  if(musOpen){const t=musOpen;musOpen=null;$('#sheetRoot').innerHTML='';rearm();if(t==='new')updAdd();else if(t==='draft')updDirty();else render();return}
   if(editor||addOpen||noteOpen){editor=null;addOpen=false;noteOpen=null;rearm();render();return}
-  if(view==='plan'&&exOpen){const id=exOpen,el=document.querySelector('[data-exbox="'+id+'"]'),y=el?el.getBoundingClientRect().top:null;exOpen=null;rearm();render();
+  if(view==='plan'&&exOpen){exDraft=null;const id=exOpen,el=document.querySelector('[data-exbox="'+id+'"]'),y=el?el.getBoundingClientRect().top:null;exOpen=null;rearm();render();
     const r=document.querySelector('.exr[data-ex="'+id+'"]');if(r&&y!=null)window.scrollBy(0,r.getBoundingClientRect().top-y);return}
   if(view==='plan'&&musOpen){musOpen=null;$('#sheetRoot').innerHTML='';rearm();render();return}
   if(planEditing){rearm();keepPlace(()=>{finishEdit();render()});return}
@@ -1256,20 +1273,22 @@ function exListHtml(editing){
   const by=(a,b)=>exName(a).localeCompare(exName(b)),all=Object.keys(plan.library);
   const act=all.filter(id=>!plan.library[id].archived).sort(by),inW=act.filter(id=>exDays(id).length),notW=act.filter(id=>!exDays(id).length),arc=all.filter(id=>plan.library[id].archived).sort(by);
   const segB=(a,id,cur,opts)=>'<div class="seg" role="radiogroup">'+opts.map(([v,l,on])=>'<button role="radio" data-act="'+a+'" data-ex="'+id+'" data-v="'+v+'" aria-checked="'+on+'">'+l+'</button>').join('')+'</div>';
+  const rowBtn=(id,actn)=>'<button class="exr'+(savedFlash===id?' saved':'')+'" data-act="'+actn+'" data-ex="'+id+'"'+(actn==='exopen'?' aria-expanded="false"':'')+'><span><b>'+esc(exName(id))+'</b><small'+(exMuscles(id).length?'':' class="nomus"')+'>'+esc(exSub(id))+'</small></span>'+(savedFlash===id?'<span class="savedok">Saved ✓</span>':'<span class="chev" aria-hidden="true">›</span>')+'</button>';
   const row=id=>{
-    if(!editing)return '<button class="exr" data-act="exedit" data-ex="'+id+'"><span><b>'+esc(exName(id))+'</b><small'+(exMuscles(id).length?'':' class="nomus"')+'>'+esc(exSub(id))+'</small></span><span class="chev" aria-hidden="true">›</span></button>';
-    if(exOpen!==id)return '<button class="exr" data-act="exopen" data-ex="'+id+'" aria-expanded="false"><span><b>'+esc(exName(id))+'</b><small'+(exMuscles(id).length?'':' class="nomus"')+'>'+esc(exSub(id))+'</small></span><span class="chev" aria-hidden="true">›</span></button>';
-    const t=exType(id),opts=plan.unit==='lb'?STEPS_LB.map(v=>[v/KG_LB,v]):STEPS_KG.map(v=>[v,v]),cur=exStep(id);let bi=0;opts.forEach((o,i)=>{if(Math.abs(o[0]-cur)<Math.abs(opts[bi][0]-cur))bi=i});
-    const isNewEx=lastOpen['ex']!==id;lastOpen['ex']=id;
-    return '<div class="exopen'+(isNewEx?' enter':'')+'" data-exbox="'+id+'"><button class="exhead" data-act="exopen" data-ex="'+id+'" aria-expanded="true"><b>'+esc(exName(id))+'</b><span class="chev" aria-hidden="true">⌄</span></button>'+
-      '<div class="field"><label for="exn-'+id+'">Name</label><input class="inp" id="exn-'+id+'" data-ren="'+id+'" value="'+esc(exName(id))+'" autocomplete="off"></div>'+
+    if(exOpen!==id)return rowBtn(id,editing?'exopen':'exedit');
+    if(!exDraft||exDraft.id!==id)exDraft=newDraft(id);const D=exDraft;
+    const t=D.type,opts=plan.unit==='lb'?STEPS_LB.map(v=>[v/KG_LB,v]):STEPS_KG.map(v=>[v,v]),cur=D.step||exStep(id);let bi=0;opts.forEach((o,i)=>{if(Math.abs(o[0]-cur)<Math.abs(opts[bi][0]-cur))bi=i});
+    const isNewEx=lastOpen['ex']!==id;lastOpen['ex']=id;const dirty=draftDirty();
+    return '<div class="exopen'+(isNewEx?' enter':'')+(dirty?' dirty':'')+'" data-exbox="'+id+'"><button class="exhead" data-act="exopen" data-ex="'+id+'" aria-expanded="true"><b>'+esc(exName(id))+'<span class="unsaved" id="exu-'+id+'"'+(dirty?'':' hidden')+'><span class="udot"></span>unsaved changes</span></b><span class="chev" aria-hidden="true">⌄</span></button>'+
+      '<div class="field"><label for="exn-'+id+'">Name</label><input class="inp" id="exn-'+id+'" data-dname="'+id+'" value="'+esc(D.name)+'" autocomplete="off"></div>'+
       '<div><span class="flabel">Type</span>'+segB('extype',id,t,Object.entries(TYPES).map(([k,v])=>[k,v,k===t]))+'</div>'+
-      (t==='pin'?'<div class="field"><label for="pinw-'+id+'">Each hole weighs about ('+plan.unit+', optional)</label><input class="inp" id="pinw-'+id+'" data-pinw="'+id+'" inputmode="decimal" value="'+(plan.library[id].pinW?fw(plan.library[id].pinW):'')+'" placeholder="Leave empty if unknown"><p class="help">With a weight, this machine counts toward '+plan.unit+' lifted. Targets go up one pin at a time.</p></div>':t==='time'?'':'<div><span class="flabel">Next adds</span>'+segB('exstep',id,cur,opts.map((o,i)=>[o[0],o[1],i===bi]))+'<p class="help">'+plan.unit+', when you hit every rep</p></div>')+
-      '<div><span class="flabel">Muscles <span class="help" style="display:inline">(★ main counts 1 set, others half)</span></span>'+musField(id)+'</div>'+
-      '<div class="btns"><button class="btn" data-act="archive" data-ex="'+id+'">Archive</button><button class="btn danger" data-act="delex" data-ex="'+id+'">Delete</button><button class="btn" data-act="exopen" data-ex="'+id+'">Close</button></div><p class="help">Archive keeps its history in Progress. Delete removes it and its history for good.</p></div>';
+      (t==='pin'?'<div class="field"><label for="pinw-'+id+'">Each hole weighs about ('+plan.unit+', optional)</label><input class="inp" id="pinw-'+id+'" data-pinw="'+id+'" inputmode="decimal" value="'+(D.pinW?fw(D.pinW):'')+'" placeholder="Leave empty if unknown"><p class="help">With a weight, this machine counts toward '+plan.unit+' lifted. Targets go up one pin at a time.</p></div>':t==='time'?'':'<div><span class="flabel">Next adds</span>'+segB('exstep',id,cur,opts.map((o,i)=>[o[0],o[1],i===bi]))+'<p class="help">'+plan.unit+', when you hit every rep</p></div>')+
+      '<div><span class="flabel">Muscles <span class="help" style="display:inline">(★ main counts 1 set, others half)</span></span>'+musField('draft')+'</div>'+
+      '<div class="btns exad"><button class="btn" data-act="archive" data-ex="'+id+'">Archive</button><button class="btn danger" data-act="delex" data-ex="'+id+'">Delete</button></div><p class="help">Archive keeps its history in Progress. Delete removes it and its history for good.</p>'+
+      '<div class="exfoot" id="exb-'+id+'">'+exFoot(id,dirty)+'</div></div>';
   };
   const untag=editing?act.filter(id=>!exMuscles(id).length).sort(by):[];
-  let h='<div class="card" data-sec="ex"><strong>Your exercises</strong>'+(untag.length?'<div class="mcheck"><b>Pick muscles for '+untag.length+(untag.length===1?' exercise':' exercises')+'</b><p class="help" style="margin:2px 0 0">They don\'t show on the body map until you do.</p>'+untag.map(id=>'<button class="rrb" data-act="musopen" data-t="'+id+'"><span>'+esc(exName(id))+'</span><span class="pickl">Pick ›</span></button>').join('')+'</div>':'')+'<p class="help">'+(editing?'Tap one to rename, change type or step, or archive. Rename to an existing name to merge them, history included.':(act.length?'Tap one to change it.':''))+'</p>';
+  let h='<div class="card" data-sec="ex"><strong>Your exercises</strong>'+(untag.length?'<div class="mcheck"><b>Pick muscles for '+untag.length+(untag.length===1?' exercise':' exercises')+'</b><p class="help" style="margin:2px 0 0">They don\'t show on the body map until you do.</p>'+untag.map(id=>'<button class="rrb" data-act="musopen" data-t="'+id+'"><span>'+esc(exName(id))+'</span><span class="pickl">Pick ›</span></button>').join('')+'</div>':'')+'<p class="help">'+(editing?'Tap one to change it. Rename to an existing name to merge them, history included.':(act.length?'Tap one to change it.':''))+'</p>';
   if(!act.length&&!arc.length)h+='<p class="help">None yet. Add one to a day first.</p>';
   if(!act.length&&arc.length&&!editing)h+='<p class="help">No active exercises. Tap Edit week to add some.</p>';
   if(inW.length)h+='<div class="exgrp">In your week</div>'+inW.map(row).join('');
@@ -1446,6 +1465,7 @@ function renderTag(){if(!tagOpen||askState)return;const r=$('#sheetRoot'),x=days
   (cur?'<button class="tagopt" data-act="settag" data-v=""><span class="ti">✕</span><span><b>No tag</b></span></button>':'')+'</section>'}
 
 document.addEventListener('input',e=>{
+  {const t=e.target;if(t.dataset&&t.dataset.dname){if(exDraft&&exDraft.id===t.dataset.dname){exDraft.name=t.value;updDirty()}return}if(t.dataset&&t.dataset.pinw&&exDraft&&exDraft.id===t.dataset.pinw){const v=num(t.value);exDraft.pinW=v&&v>0?fromU(v):null;updDirty();return}}
   const t=e.target;
   if(t.getAttribute('role')==='combobox'){comboSel=-1;comboRender(t);updAdd();return}
   if(t.dataset.note!=null){ex(t.dataset.note).note=t.value.trim();savePlan();return}
@@ -1456,7 +1476,8 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('change',e=>{
   const t=e.target;
-  if(t.dataset&&t.dataset.pinw){const v=num(t.value);plan.library[t.dataset.pinw].pinW=v&&v>0?fromU(v):null;savePlan();return}
+  if(t.dataset&&t.dataset.pinw){const v=num(t.value),pw=v&&v>0?fromU(v):null;if(exDraft&&exDraft.id===t.dataset.pinw){exDraft.pinW=pw;updDirty();return}plan.library[t.dataset.pinw].pinW=pw;savePlan();return}
+  if(t.dataset&&t.dataset.dname){if(exDraft&&exDraft.id===t.dataset.dname){exDraft.name=t.value;updDirty()}return}
   if(t.id==='awakeT'){LS.set('awake',t.checked);syncWake();return}
   if(t.id==='drest'){plan.week[planDay].rest=t.checked;savePlan();render();return}
   if(t.dataset.type){const id=t.dataset.type,n=sessions(id).reduce((a,x)=>a+x.sets.length,0);
@@ -1566,11 +1587,12 @@ function act(a,b){
     case 'protopen':protOpen=true;render();setTimeout(()=>{const f=$('#pgoal1')||$('.protbox .food')||$('#pother');f&&f.focus()},30);return;
     case 'protday':protDayOpen=protDayOpen===b.dataset.d?null:b.dataset.d;break;
     case 'musopen':musOpen=b.dataset.t;renderMus();return;
-    case 'musclose':{const t=musOpen;animOut('#sheetRoot .scrim, .musbox',()=>{musOpen=null;$('#sheetRoot').innerHTML='';if(t==='new')updAdd();else render()});return}
+    case 'musclose':{const t=musOpen;animOut('#sheetRoot .scrim, .musbox',()=>{musOpen=null;$('#sheetRoot').innerHTML='';if(t==='new')updAdd();else if(t==='draft')updDirty();else render()});return}
     case 'mtog':{const t=musOpen,m=b.dataset.v;if(!t)return;justTick=m;
+      if(t==='draft'&&exDraft){const l=exDraft.muscles,k=l.indexOf(m);if(k>-1)l.splice(k,1);else l.push(m);if(!l.includes(exDraft.main))exDraft.main=l[0]||null;renderMus();const f=$('#mf-draft');if(f)f.querySelector('span').innerHTML=musSummary(l,exDraft.main);updDirty();return}
       if(t==='new'){const k=newMus.indexOf(m);if(k>-1)newMus.splice(k,1);else newMus.push(m);if(!newMus.includes(newMain))newMain=newMus[0]||null;renderMus();updAdd();return}
       const e=plan.library[t];if(!e)return;const l=exMuscles(t).slice(),k=l.indexOf(m);if(k>-1)l.splice(k,1);else l.push(m);e.muscles=l;if(!l.includes(e.main))e.main=l[0]||null;savePlan();renderMus();return}
-    case 'mmain':{const t=musOpen,m=b.dataset.v;if(t==='new'){newMain=m;renderMus();updAdd();return}const e=plan.library[t];if(e){e.main=m;savePlan();renderMus()}return}
+    case 'mmain':{const t=musOpen,m=b.dataset.v;if(t==='draft'&&exDraft){exDraft.main=m;renderMus();const f=$('#mf-draft');if(f)f.querySelector('span').innerHTML=musSummary(exDraft.muscles,m);updDirty();return}if(t==='new'){newMain=m;renderMus();updAdd();return}const e=plan.library[t];if(e){e.main=m;savePlan();renderMus()}return}
     case 'mtap':musTap=musTap===b.dataset.v?null:b.dataset.v;break;
     case 'settag':{const tg=tagOpen;if(!tg)return;const s=setRow(tg.d,tg.ex,tg.i);if(b.dataset.v)s.tag=b.dataset.v;else delete s.tag;touchDay(tg.d,true);animOut('#sheetRoot .scrim, .tagbox',()=>{tagOpen=null;$('#sheetRoot').innerHTML='';render()});return}
     case 'tagclose':animOut('#sheetRoot .scrim, .tagbox',()=>{tagOpen=null;$('#sheetRoot').innerHTML='';render()});return;
@@ -1586,6 +1608,13 @@ function act(a,b){
     case 'plankeep':{const x=getDay(d,true);x.planAck=planSig(d);touchDay(d);break}
     case 'unskipall':{const x=snap(d);x.skip=[];touchDay(d);break}
     case 'combotoggle':{const inp=b.parentElement.querySelector('input');if(!inp)return;if(b.parentElement.classList.contains('open'))comboClose(inp);else{comboSel=-1;comboRender(inp)}return}
+    case 'excancel':closeEx(id);return;
+    case 'exsave':{const D=exDraft;if(!D||D.id!==id)return;const nn=D.name.trim();if(!nn){toast('Give it a name first.');return}
+      const finish=()=>{applyDraft();exOpen=null;exDraft=null;flashSaved(id);keepPlace(()=>render())};
+      const typeOk=()=>{const n=doneSets(today(),id).length;if(D.type!==exType(id)&&n)return ask({title:'Sets already logged today',msg:'You logged '+n+(n===1?' set':' sets')+' of '+exName(id)+' today. Changing the type changes how '+(n===1?'it shows':'they show')+' on Today.',buttons:[{v:'yes',label:'Change type anyway',style:'primary'},{v:'cancel',label:'Keep '+TYPES[exType(id)]}]}).then(v=>v==='yes');return Promise.resolve(true)};
+      const other=findEx(nn);
+      if(other&&other!==id){confirmAsk('Merge exercises?','"'+exName(other)+'" already exists. Merge "'+exName(id)+'" into it, history included?','Merge','primary').then(ok=>{if(!ok)return;applyDraft(true);exOpen=null;exDraft=null;mergeEx(id,other);flashSaved(other);render()});return}
+      typeOk().then(ok=>{if(ok)finish()});return}
     case 'protclose':protArm=null;animOut('#sheetRoot .scrim, .protbox',()=>{protOpen=false;render()});return;
     case 'protgoal1':{const g=num($('#pgoal1').value);if(!(g>0)){toast('Type your daily goal in grams.');return}plan.protein.goal=Math.round(g);savePlan();break}
     case 'protadd':{const f=plan.protein.foods.find(x=>x.id===b.dataset.f);if(!f)return;const x=getDay(viewKey,true);x.protein.push({id:newId(),name:f.name,g:f.g});touchDay(viewKey);protKeepInputs=true;break}
@@ -1608,12 +1637,12 @@ function act(a,b){
     case 'addtype':{newType=b.dataset.v;b.parentElement.querySelectorAll('button').forEach(x=>x.setAttribute('aria-checked',String(x===b)));return}
     case 'combopick':{const box=b.closest('.combo'),inp=box.querySelector('input');inp.value=b.dataset.v;comboClose(inp);comboHint(inp);updAdd();inp.focus();return}
     case 'editweek':swapAnim='#view > *';keepPlace(()=>{startEdit();render()});return;
-    case 'exedit':{const y=b.getBoundingClientRect().top;startEdit();exOpen=id;render();const box=document.querySelector('[data-exbox="'+id+'"]');if(box){window.scrollBy(0,box.getBoundingClientRect().top-y);requestAnimationFrame(()=>box.scrollIntoView({block:'center',behavior:smoothOK()?'smooth':'auto'}))}return}
-    case 'exopen':{const ob=document.querySelector('[data-exbox="'+id+'"]'),y=(exOpen===id&&ob?ob:b).getBoundingClientRect().top,opening=exOpen!==id;exOpen=opening?id:null;render();
+    case 'exedit':{const y=b.getBoundingClientRect().top;exOpen=id;exDraft=newDraft(id);render();const box=document.querySelector('[data-exbox="'+id+'"]');if(box){window.scrollBy(0,box.getBoundingClientRect().top-y);requestAnimationFrame(()=>box.scrollIntoView({block:'center',behavior:smoothOK()?'smooth':'auto'}))}return}
+    case 'exopen':{const ob=document.querySelector('[data-exbox="'+id+'"]'),y=(exOpen===id&&ob?ob:b).getBoundingClientRect().top,opening=exOpen!==id;exOpen=opening?id:null;exDraft=opening?newDraft(id):null;render();
       if(opening){const box=document.querySelector('[data-exbox="'+id+'"]');if(box){const r=document.querySelector('.exr[data-ex="'+id+'"]');window.scrollBy(0,box.getBoundingClientRect().top-y);requestAnimationFrame(()=>box.scrollIntoView({block:'center',behavior:smoothOK()?'smooth':'auto'}))}}
       else{const el=document.querySelector('.exr[data-ex="'+id+'"]');if(el)window.scrollBy(0,el.getBoundingClientRect().top-y)}
       return}
-    case 'extype':{const want=b.dataset.v;if(want===exType(id))return;const n=doneSets(today(),id).length;
+    case 'extype':{if(exDraft&&exDraft.id===id){exDraft.type=b.dataset.v;keepPlace(()=>render());return}const want=b.dataset.v;if(want===exType(id))return;const n=doneSets(today(),id).length;
       const go=()=>{plan.library[id].type=want;savePlan();render()};
       if(n)ask({title:'Sets already logged today',msg:'You logged '+n+(n===1?' set':' sets')+' of '+exName(id)+' today. Changing the type changes how '+(n===1?'it shows':'they show')+' on Today.',buttons:[{v:'yes',label:'Change type anyway',style:'primary'},{v:'cancel',label:'Keep '+TYPES[exType(id)]}]}).then(v=>{if(v==='yes')go()});else go();return}
     case 'delex':{const nm=exName(id),n=sessions(id).reduce((a,x)=>a+x.sets.length,0);
@@ -1625,9 +1654,9 @@ function act(a,b){
           if(ch)touchDay(d,true)});
           Object.values(plan.week).forEach(w=>{w.items=w.items.filter(i=>i.ex!==id)});delete plan.library[id];
           if(progEx===id)progEx=null;if(exOpen===id)exOpen=null;Object.keys(active).forEach(k=>{if(active[k]===id)delete active[k]});savePlan()})});return}
-    case 'exstep':plan.library[id].step=num(b.dataset.v);savePlan();break;
-    case 'doneedit':swapAnim='#view > *';keepPlace(()=>{finishEdit();render()});return;
-    case 'canceledit':swapAnim='#view > *';keepPlace(()=>{const sn=editSnap;planEditing=false;editSnap=null;if(sn&&(JSON.stringify(sn.plan)!==JSON.stringify(plan)||JSON.stringify(sn.days)!==JSON.stringify(days)))restoreSnap(sn);render()});return;
+    case 'exstep':if(exDraft&&exDraft.id===id){exDraft.step=num(b.dataset.v);keepPlace(()=>render());return}plan.library[id].step=num(b.dataset.v);savePlan();break;
+    case 'doneedit':swapAnim='#view > *';keepPlace(()=>{exOpen=null;exDraft=null;finishEdit();render()});return;
+    case 'canceledit':swapAnim='#view > *';keepPlace(()=>{exOpen=null;exDraft=null;const sn=editSnap;planEditing=false;editSnap=null;if(sn&&(JSON.stringify(sn.plan)!==JSON.stringify(plan)||JSON.stringify(sn.days)!==JSON.stringify(days)))restoreSnap(sn);render()});return;
     case 'pday':planDay=+b.dataset.d;swapAnim='.daypills ~ *';break;
     case 'padd':{const pin=$('#pName'),pf=findEx(pin.value||'');if(pf&&weekDaysOf(pf).length){comboClose(pin);comboHint(pin);pin.focus();return}
       if(pin.value.trim()&&!pf&&!newMus.length){musOpen='new';renderMus();return}
@@ -1637,7 +1666,7 @@ function act(a,b){
       w.items.push({ex:nid,sets:Math.max(1,Math.round(num($('#pSets').value)||3)),reps:Math.max(1,Math.round(num($('#pReps').value)||10))});
       savePlan();render();{const p=$('#pName');if(p){comboClose(p);p.blur()}}return}
     case 'rm':plan.week[planDay].items.splice(+b.dataset.i,1);savePlan();break;
-    case 'archive':Object.values(plan.week).forEach(w=>{w.items=w.items.filter(i=>i.ex!==id)});plan.library[id].archived=true;if(exOpen===id)exOpen=null;savePlan();break;
+    case 'archive':if(exDraft&&exDraft.id===id&&draftDirty()){const o=findEx(exDraft.name.trim());applyDraft(!!(o&&o!==id)||!exDraft.name.trim())}exDraft=null;Object.values(plan.week).forEach(w=>{w.items=w.items.filter(i=>i.ex!==id)});plan.library[id].archived=true;if(exOpen===id)exOpen=null;savePlan();break;
     case 'restore':plan.library[id].archived=false;savePlan();break;
     case 'psearch':psOpen=true;lastSearchView=true;renderPS();return;
     case 'pscancel':animOut('#sheetRoot .scrim, .psheet',()=>{psOpen=false;$('#sheetRoot').innerHTML=''});return;
