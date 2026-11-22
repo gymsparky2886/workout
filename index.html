@@ -642,7 +642,7 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=56, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=57, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Chest','Shoulders','Traps','Back','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs']],['Legs',['Glutes','Inner thighs','Quads','Hamstrings','Calves']]];
 const MUSCLES=MGROUPS.flatMap(g=>g[1]);
@@ -1485,15 +1485,21 @@ document.addEventListener('keydown',e=>{
   else if(id==='nfName'||id==='nfG'){e.preventDefault();act('foodadd')}
   else if(id&&id.startsWith('ed-')){e.preventDefault();act('edsave')}
 });
+function placeAnchor(){
+  const rows=[...document.querySelectorAll('#view .exr[data-ex],#view [data-exbox],#view .exgrp,#view .prow')];
+  const onScr=rows.filter(e=>{const r=e.getBoundingClientRect();return r.height>0&&r.bottom>80&&r.top<window.innerHeight-80});
+  const box=onScr.find(e=>e.dataset.exbox),mid=window.innerHeight*0.38;
+  const vis=box||onScr.filter(e=>!e.classList.contains('exgrp')).sort((a,b)=>Math.abs(a.getBoundingClientRect().top-mid)-Math.abs(b.getBoundingClientRect().top-mid))[0]||onScr[0];
+  if(vis){const key=vis.dataset.ex?'ex:'+vis.dataset.ex:vis.dataset.exbox?'ex:'+vis.dataset.exbox:vis.classList.contains('exgrp')?'grp:'+vis.textContent.trim():'row:'+vis.dataset.row;return {key,top:vis.getBoundingClientRect().top}}
+  const sec=[...document.querySelectorAll('#view [data-sec]')].find(e=>{const r=e.getBoundingClientRect();return r.bottom>80&&r.top<window.innerHeight});
+  return sec?{key:'sec:'+sec.dataset.sec,top:Math.max(sec.getBoundingClientRect().top,12)}:null}
+function findAnchor(k){if(k.startsWith('ex:')){const id=k.slice(3);return document.querySelector('#view [data-exbox="'+id+'"]')||document.querySelector('#view .exr[data-ex="'+id+'"]')}
+  if(k.startsWith('grp:')){const t=k.slice(4);return [...document.querySelectorAll('#view .exgrp')].find(e=>e.textContent.trim()===t)||document.querySelector('#view [data-sec="ex"]')}
+  if(k.startsWith('row:'))return document.querySelector('#view .prow[data-row="'+k.slice(4)+'"]')||document.querySelector('#view [data-sec="day"]');
+  return document.querySelector('#view [data-sec="'+k.slice(4)+'"]')}
 function keepPlace(fn){
-  const ex=document.querySelector('[data-sec="ex"]'),day=document.querySelector('[data-sec="day"]');
-  let sec='day',el=day;if(ex&&ex.getBoundingClientRect().top<window.innerHeight*0.5&&(!isWide())){sec='ex';el=ex}
-  if(isWide()&&ex&&day&&ex.getBoundingClientRect().top<window.innerHeight*0.5&&day.getBoundingClientRect().bottom<0){sec='ex';el=ex}
-  const off=el?Math.min(Math.max(el.getBoundingClientRect().top,12),window.innerHeight*0.4):null;
-  fn();
-  const n=document.querySelector('[data-sec="'+sec+'"]');
-  if(n&&off!=null)window.scrollBy(0,n.getBoundingClientRect().top-off);else window.scrollTo(0,0);
-}
+  const a=placeAnchor();fn();
+  if(!a)return;const n=findAnchor(a.key);if(n)window.scrollBy(0,n.getBoundingClientRect().top-a.top)}
 function startEdit(){if(planEditing)return;editSnap=takeSnap();planEditing=true;exOpen=null}
 function finishEdit(){if(!planEditing)return;planEditing=false;editSnap=null}
 function readEd(f){const el=$('#ed-'+f);return el?num(el.value):null}
