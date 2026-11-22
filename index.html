@@ -666,7 +666,7 @@ html.locked,html.locked body{overscroll-behavior:none}
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=67, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=68, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Chest','Shoulders','Traps','Back','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs']],['Legs',['Glutes','Inner thighs','Quads','Hamstrings','Calves']]];
 const MUSCLES=MGROUPS.flatMap(g=>g[1]);
@@ -686,6 +686,7 @@ const newId=()=>Date.now().toString(36).slice(-4)+Math.random().toString(36).sli
 const dname=s=>DAYS[parse(s).getDay()];
 const fmtDate=s=>dname(s)+' '+s;
 const num=v=>{if(v==null||v==='')return null;const n=parseFloat(String(v).replace(',','.'));return isFinite(n)?n:null};
+const r1=v=>Math.round(v*10)/10;
 const clone=o=>JSON.parse(JSON.stringify(o));
 const today=()=>ymd(new Date());
 const I={
@@ -710,7 +711,7 @@ function normPlan(p){
   p=p||{};const o={v:3,unit:p.unit==='lb'?'lb':'kg',theme:(p.theme==='light'||p.theme==='dark')?p.theme:'auto',startedOn:p.startedOn||null,library:{},week:emptyWeek()};
   Object.entries(p.library||{}).forEach(([k,v])=>{if(v&&typeof v==='object')o.library[k]={name:String(v.name||'Exercise'),type:TYPES[v.type]?v.type:'weight',note:String(v.note||''),archived:!!v.archived,step:num(v.step)||null,warm:v.warm===false?false:true,muscles:Array.isArray(v.muscles)?[...new Set(v.muscles.map(m=>m==='Core'?'Abs':m).filter(m=>MUSCLES.includes(m)))]:[],main:typeof v.main==='string'?v.main:null,pinW:num(v.pinW)||null}});
   for(let i=0;i<7;i++){const w=(p.week||{})[i];if(w)o.week[i]={name:String(w.name||''),rest:!!w.rest,items:(w.items||[]).filter(x=>x&&x.ex).map(x=>({ex:x.ex,sets:x.sets||3,reps:x.reps||10}))}}
-  const pr=p.protein||{};o.protein={goal:num(pr.goal)||null,foods:(pr.foods||[]).filter(f=>f&&f.name).map(f=>({id:String(f.id||newId()),name:String(f.name),g:Math.round(num(f.g)||0)}))};
+  const pr=p.protein||{};o.protein={goal:num(pr.goal)||null,foods:(pr.foods||[]).filter(f=>f&&f.name).map(f=>({id:String(f.id||newId()),name:String(f.name),g:r1(num(f.g)||0)}))};
   o.deload={};Object.entries(p.deload||{}).forEach(([k,v])=>{if(v&&v.until)o.deload[k]={from:String(v.from||v.until),until:String(v.until)}});
   o.snooze={};Object.entries(p.snooze||{}).forEach(([k,v])=>{if(typeof v==='string')o.snooze[k]=v});
   return o;
@@ -883,7 +884,7 @@ function rowTargets(d,id,it,rows){
 }
 function deloadOn(id,d){const x=plan.deload[id];return x&&d>=x.from&&d<=x.until?x:null}
 function e1rm(s){return s&&s.w!=null&&s.r?s.w*(1+Math.min(s.r,15)/30):0}
-const protOf=d=>((days[d]&&days[d].protein)||[]).reduce((a,e)=>a+(e.g||0),0);
+const protOf=d=>r1(((days[d]&&days[d].protein)||[]).reduce((a,e)=>a+(e.g||0),0));
 function warmSets(id,W){if(!W)return [];const st=exStep(id),minW=plan.unit==='lb'?45/KG_LB:20;if(W<minW)return [];const out=[];
   [[0.5,8],[0.7,5],[0.85,2]].forEach(([p,r])=>{const w=Math.max(st,Math.round(W*p/st)*st);if(w<W-1e-6&&!out.some(o=>Math.abs(o.w-w)<1e-6))out.push({w,r})});return out}
 function weekRecap(mon){const t0=today(),ds=[0,1,2,3,4,5,6].map(i=>ymd(addDays(parse(mon),i))).filter(d=>d<=t0);
@@ -988,9 +989,9 @@ function renderAsk(){const r=$('#sheetRoot');if(!askState){r.innerHTML='';return
 function renderProt(){if(askState)return;if(view!=='plan'&&addSheet){addSheet=false;renderAddSheet()}const r=$('#sheetRoot');if(!protOpen){if(!musOpen&&!tagOpen&&!cmpOpen&&!psOpen)r.innerHTML='';return}
   const d=viewKey,list=(days[d]&&days[d].protein)||[];
   let h='<div class="grab"></div><div class="ph"><h2 id="ptitle" class="h2d" style="font-size:26px">Add protein</h2><button class="link" data-act="protclose">Close</button></div>';
-  if(!plan.protein.goal)h+='<div class="field"><label for="pgoal1">First, your daily goal in grams</label><div class="inl"><input class="inp" id="pgoal1" inputmode="numeric" placeholder="150"><button class="btn primary" data-act="protgoal1">Save</button></div></div>';
+  if(!plan.protein.goal)h+='<div class="field"><label for="pgoal1">First, your daily goal in grams</label><div class="inl"><input class="inp" id="pgoal1" inputmode="decimal" placeholder="150"><button class="btn primary" data-act="protgoal1">Save</button></div></div>';
   h+=plan.protein.foods.length?plan.protein.foods.map(f=>'<button class="food" data-act="protadd" data-f="'+f.id+'"><b>'+esc(f.name)+'</b><span class="g">+'+f.g+' g</span></button>').join(''):'<p class="help">Save your usual foods in Settings, Protein, for one-tap adding.</p>';
-  h+='<div><span class="flabel">Something else</span><div class="foodrow" style="margin-top:0"><input class="inp" id="pname" placeholder="Name (optional)" aria-label="Food name, optional" autocapitalize="sentences"><input class="inp" id="pother" inputmode="numeric" placeholder="30" aria-label="Grams of protein"><span class="x">g</span><button class="btn primary" data-act="protother">Add</button></div><label class="tickrow"><input type="checkbox" id="psave"> Save to my foods</label></div>';
+  h+='<div><span class="flabel">Something else</span><div class="foodrow" style="margin-top:0"><input class="inp" id="pname" placeholder="Name (optional)" aria-label="Food name, optional" autocapitalize="sentences"><input class="inp" id="pother" inputmode="decimal" placeholder="30" aria-label="Grams of protein"><span class="x">g</span><button class="btn primary" data-act="protother">Add</button></div><label class="tickrow"><input type="checkbox" id="psave"> Save to my foods</label></div>';
   h+='<div><span class="flabel">'+(d===today()?'Today':esc(fmtDate(d)))+': '+protOf(d)+' g'+(plan.protein.goal?' of '+plan.protein.goal:'')+'</span>'+(list.length?list.map((e,i)=>'<div class="rr"><span>'+esc(e.name)+'</span><span>'+e.g+' g '+(protArm===e.id?'<button class="rmconf" data-act="protdel" data-i="'+i+'" data-id="'+e.id+'">Remove</button>':'<button class="rm" data-act="protarm" data-id="'+e.id+'" aria-label="Remove '+esc(e.name)+'">✕</button>')+'</span></div>').join(''):'<p class="help">Nothing logged yet.</p>')+'</div></section>';
   h=h.replace(/<\/section>$/,'');
   const box=r.querySelector('.protbox');
@@ -1365,9 +1366,9 @@ function settingsHtml(){
   else acct='<button class="btn primary" data-act="signin">Sign in with Google</button><p class="help">Optional. Sign in on each device to see the same workouts.</p>';
   return '<h1 class="big sm">Settings</h1><div class="setpage">'+
     '<div class="card sec"><h3>Account and sync</h3>'+acct+'</div>'+
-    '<div class="card sec"><h3>Protein</h3><div class="field"><label for="pgoal">Daily goal (grams)</label><input class="inp" id="pgoal" inputmode="numeric" value="'+(plan.protein.goal||'')+'" placeholder="150"></div><span class="flabel">Your foods (one-tap add on Today)</span>'+
-      plan.protein.foods.map(f=>'<div class="foodrow"><input class="inp" data-fname="'+f.id+'" value="'+esc(f.name)+'" aria-label="Food name"><input class="inp" data-fg="'+f.id+'" inputmode="numeric" value="'+f.g+'" aria-label="Grams of protein"><span class="x">g</span><button class="rm" data-act="fooddel" data-f="'+f.id+'" aria-label="Delete '+esc(f.name)+'">✕</button></div>').join('')+
-      '<div class="foodrow"><input class="inp" id="nfName" placeholder="e.g. Protein shake" aria-label="New food name"><input class="inp" id="nfG" inputmode="numeric" placeholder="25" aria-label="Grams of protein"><span class="x">g</span><button class="btn primary" data-act="foodadd">Add</button></div></div>'+
+    '<div class="card sec"><h3>Protein</h3><div class="field"><label for="pgoal">Daily goal (grams)</label><input class="inp" id="pgoal" inputmode="decimal" value="'+(plan.protein.goal||'')+'" placeholder="150"></div><span class="flabel">Your foods (one-tap add on Today)</span>'+
+      plan.protein.foods.map(f=>'<div class="foodrow"><input class="inp" data-fname="'+f.id+'" value="'+esc(f.name)+'" aria-label="Food name"><input class="inp" data-fg="'+f.id+'" inputmode="decimal" value="'+f.g+'" aria-label="Grams of protein"><span class="x">g</span><button class="rm" data-act="fooddel" data-f="'+f.id+'" aria-label="Delete '+esc(f.name)+'">✕</button></div>').join('')+
+      '<div class="foodrow"><input class="inp" id="nfName" placeholder="e.g. Protein shake" aria-label="New food name"><input class="inp" id="nfG" inputmode="decimal" placeholder="25" aria-label="Grams of protein"><span class="x">g</span><button class="btn primary" data-act="foodadd">Add</button></div></div>'+
     '<div class="card sec"><h3>During workouts</h3><label class="toggle-row"><span>Keep screen on</span><input type="checkbox" class="sw" id="awakeT"'+(LS.get('awake')!==false?' checked':'')+'></label><p class="help">While a workout is going on Today, your screen won\'t dim or lock. This device only.</p></div>'+
     '<div class="card sec"><h3>Weight unit</h3>'+seg('unit',plan.unit,[['kg','kg'],['lb','lb']],'Weight unit')+'<p class="help">Switching converts all your numbers.</p></div>'+
     '<div class="card sec"><h3>Theme</h3>'+seg('theme',plan.theme,[['auto','Auto'],['light','Light'],['dark','Dark']],'Theme')+'<p class="help">Auto follows your device.</p></div>'+
@@ -1375,7 +1376,7 @@ function settingsHtml(){
     '<div class="card sec"><h3>Backup file</h3><button class="listbtn" data-act="export">Save backup file'+I.chev+'</button>'+(canShareFile()?'<button class="listbtn" data-act="share">Share backup file (Drive, email…)'+I.chev+'</button>':'')+'<button class="listbtn" data-act="import">Load backup file'+I.chev+'</button><p class="help">Save puts the file in your Downloads folder. Share sends it to Google Drive or another app.</p></div><p class="help small-center">Version '+APP_VERSION+'</p></div>';
 }
 function proteinProgress(){const g=plan.protein.goal,t0=today(),ds=[];for(let i=13;i>=0;i--)ds.push(ymd(addDays(parse(t0),-i)));
-  const vals=ds.map(d=>protOf(d)),logged=vals.filter(v=>v>0),avg=logged.length?Math.round(logged.reduce((a,b)=>a+b,0)/logged.length):0,hit=g?vals.filter(v=>v>=g).length:0,mx=Math.max(g||0,...vals,1);
+  const vals=ds.map(d=>protOf(d)),logged=vals.filter(v=>v>0),avg=logged.length?r1(logged.reduce((a,b)=>a+b,0)/logged.length):0,hit=g?vals.filter(v=>v>=g).length:0,mx=Math.max(g||0,...vals,1);
   let h='<div class="pgrid"><div class="hero"><div class="top"><div><div class="lbl">Days goal hit, last 14</div><div class="val">'+(g?hit+' of 14':'No goal')+'</div></div><div style="text-align:right"><div class="lbl">Daily average</div><div class="val" style="font-size:clamp(26px,8vw,36px)">'+avg+' g</div></div></div>';
   h+='<div class="pbars" role="img" aria-label="Protein per day, last 14 days">'+(g?'<div class="gline" style="bottom:'+Math.round(g/mx*100)+'%"></div>':'')+vals.map((v,i)=>'<i class="'+(g&&v>=g?'hit':'')+'" style="height:'+Math.max(3,Math.round(v/mx*100))+'%" title="'+esc(ds[i])+': '+v+' g"></i>').join('')+'</div>';
   h+='<div class="pb-l"><span>'+parse(ds[0]).getDate()+' '+MONTHS[parse(ds[0]).getMonth()]+'</span><span>Today</span></div>'+(g?'<p class="lbl" style="margin:0">Orange: goal hit. Dashed line: your '+g+' g goal.</p>':'<p class="lbl" style="margin:0">Set a daily goal in Settings, Protein.</p>')+'</div>';
@@ -1521,9 +1522,9 @@ document.addEventListener('change',e=>{
     const want=t.value;
     if(n){t.value=exType(id);confirmAsk('Change the type?',exName(id)+' has '+n+' logged sets. Changing the type changes how they show.','Change type','primary').then(ok=>{if(ok)withUndo('Type changed.',()=>{plan.library[id].type=want;savePlan()})});return}
     plan.library[id].type=want;savePlan();pendingRender=false;render();return}
-  if(t.id==='pgoal'){const g=num(t.value);plan.protein.goal=g>0?Math.round(g):null;savePlan();return}
+  if(t.id==='pgoal'){const g=num(t.value);plan.protein.goal=g>0?r1(g):null;savePlan();return}
   if(t.dataset.fname){const f=plan.protein.foods.find(x=>x.id===t.dataset.fname);if(f&&t.value.trim()){f.name=t.value.trim();savePlan()}return}
-  if(t.dataset.fg){const f=plan.protein.foods.find(x=>x.id===t.dataset.fg),g=num(t.value);if(f&&g>0){f.g=Math.round(g);savePlan()}return}
+  if(t.dataset.fg){const f=plan.protein.foods.find(x=>x.id===t.dataset.fg),g=num(t.value);if(f&&g>0){f.g=r1(g);savePlan()}return}
   if(t.dataset.step){plan.library[t.dataset.step].step=num(t.value);savePlan();return}
   if(t.dataset.ren){const id=t.dataset.ren,nn=t.value.trim();if(!nn){t.value=exName(id);return}
     const other=findEx(nn);
@@ -1656,15 +1657,15 @@ function act(a,b){
     case 'addsheet':addSheet=true;newMus=[];newMain=null;renderAddSheet();return;
     case 'addclose':animOut('#addRoot .scrim, .addsheet',()=>{addSheet=false;renderAddSheet()});return;
     case 'protclose':protArm=null;animOut('#sheetRoot .scrim, .protbox',()=>{protOpen=false;render()});return;
-    case 'protgoal1':{const g=num($('#pgoal1').value);if(!(g>0)){toast('Type your daily goal in grams.');return}plan.protein.goal=Math.round(g);savePlan();break}
+    case 'protgoal1':{const g=num($('#pgoal1').value);if(!(g>0)){toast('Type your daily goal in grams.');return}plan.protein.goal=r1(g);savePlan();break}
     case 'protadd':{const f=plan.protein.foods.find(x=>x.id===b.dataset.f);if(!f)return;const x=getDay(viewKey,true);x.protein.push({id:newId(),name:f.name,g:f.g});touchDay(viewKey);protKeepInputs=true;break}
     case 'protother':{const g=num($('#pother').value);if(!(g>0)){toast('Type the grams.');$('#pother').focus();return}
-      const nm=($('#pname').value||'').trim(),gg=Math.round(g),x=getDay(viewKey,true);x.protein.push({id:newId(),name:nm||'Other',g:gg});touchDay(viewKey);
+      const nm=($('#pname').value||'').trim(),gg=r1(g),x=getDay(viewKey,true);x.protein.push({id:newId(),name:nm||'Other',g:gg});touchDay(viewKey);
       if(nm&&$('#psave').checked&&!plan.protein.foods.some(f=>f.name.toLowerCase()===nm.toLowerCase())){plan.protein.foods.push({id:newId(),name:nm,g:gg});savePlan()}
       break}
     case 'protarm':{protArm=b.dataset.id;clearTimeout(protArmT);protArmT=setTimeout(()=>{protArm=null;if(protOpen)renderProt()},3000);protKeepInputs=true;renderProt();return}
     case 'protdel':{clearTimeout(protArmT);protArm=null;const x=getDay(viewKey,true),k=x.protein.findIndex(e=>e.id===b.dataset.id);if(k>-1)x.protein.splice(k,1);touchDay(viewKey,true);protKeepInputs=true;render();return}
-    case 'foodadd':{const n=($('#nfName').value||'').trim(),g=num($('#nfG').value);if(!n||!(g>0)){toast('Type a food name and its grams of protein.');return}plan.protein.foods.push({id:newId(),name:n,g:Math.round(g)});savePlan();break}
+    case 'foodadd':{const n=($('#nfName').value||'').trim(),g=num($('#nfG').value);if(!n||!(g>0)){toast('Type a food name and its grams of protein.');return}plan.protein.foods.push({id:newId(),name:n,g:r1(g)});savePlan();break}
     case 'fooddel':plan.protein.foods=plan.protein.foods.filter(f=>f.id!==b.dataset.f);savePlan();break;
     case 'wutoggle':{const k=viewKey+'|'+id;if(wuOpen[k]){animOut('.set.wurow',()=>{wuOpen[k]=false;render()});return}wuOpen[k]=true;openAnim='warm';break}
     case 'wutick':{const x=getDay(viewKey,true),a=x.warm[id]=x.warm[id]||[];a[+b.dataset.i]=!a[+b.dataset.i];touchDay(viewKey);break}
