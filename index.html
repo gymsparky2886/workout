@@ -557,7 +557,7 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 .list .row.part{background:var(--amber-tint)}
 .pseg{margin:14px 0 0}
 .expick{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px 16px;font-size:17px;font-weight:600;color:var(--ink);min-height:52px}
-.psheet .psres{margin-top:8px}
+.psheet .psres{margin-top:8px;overflow-y:auto;overscroll-behavior:contain;border-radius:12px}
 .exopen:not(.dirty){box-shadow:inset 0 0 0 1.5px var(--line)!important}
 .exopen.dirty{box-shadow:inset 0 0 0 2px var(--accent)}
 .exad{display:grid!important;grid-template-columns:1fr 1fr;gap:8px}
@@ -580,6 +580,7 @@ html.locked,html.locked body{overscroll-behavior:none}
 .mlist,.musbox,.askbox,.protbox{overscroll-behavior:contain}
 .link[data-lock]{opacity:.4}
 .h2d.foldable{cursor:pointer}
+@media (max-width:899px){.musbox .grab,.protbox .grab,.tagbox .grab,.musbox>.ph,.protbox>.ph{touch-action:none;cursor:grab}.musbox .grab,.protbox .grab,.tagbox .grab{width:44px;height:5px;margin:0 auto 10px;padding:0;position:relative}.musbox .grab::after,.protbox .grab::after,.tagbox .grab::after{content:'';position:absolute;left:-20px;right:-20px;top:-12px;bottom:-12px}}
 .combo{position:relative}
 .combo .inp{padding-right:36px}
 
@@ -665,7 +666,7 @@ html.locked,html.locked body{overscroll-behavior:none}
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=66, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=67, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Chest','Shoulders','Traps','Back','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs']],['Legs',['Glutes','Inner thighs','Quads','Hamstrings','Calves']]];
 const MUSCLES=MGROUPS.flatMap(g=>g[1]);
@@ -1066,12 +1067,25 @@ function checkLock(){const open=!!(document.querySelector('#sheetRoot').children
 const lockObs=new MutationObserver(checkLock);
 setTimeout(()=>{['sheetRoot','addRoot'].forEach(id=>{const el=document.getElementById(id);if(el)lockObs.observe(el,{childList:true})})},0);
 document.addEventListener('touchmove',e=>{if(lockY!=null&&!e.target.closest('.musbox,.askbox,.protbox,.tagbox,.mlist,.combo-list')){e.preventDefault()}},{passive:false});
+let sdrag=null;
+const SHEETS='.musbox,.protbox,.tagbox';
+document.addEventListener('pointerdown',e=>{if(window.innerWidth>=900)return;const sh=e.target.closest(SHEETS);if(!sh)return;
+  const zone=e.target.closest('.grab,.ph,h2');if(!zone||!sh.contains(zone)||e.target.closest('button,input,a,.link'))return;
+  const sc=sh.previousElementSibling&&sh.previousElementSibling.classList.contains('scrim')?sh.previousElementSibling:null;
+  sdrag={sh,sc,y0:e.clientY,t0:performance.now(),dy:0,h:sh.getBoundingClientRect().height};sh.style.transition='none';sh.style.animation='none';if(sc)sc.style.transition='none';try{zone.setPointerCapture(e.pointerId)}catch(x){}},true);
+document.addEventListener('pointermove',e=>{if(!sdrag)return;const dy=Math.max(0,e.clientY-sdrag.y0);sdrag.dy=dy;sdrag.sh.style.transform='translateY('+dy+'px)';if(sdrag.sc)sdrag.sc.style.opacity=String(Math.max(0,1-dy/sdrag.h));e.preventDefault()},{passive:false});
+function endSheetDrag(){if(!sdrag)return;const {sh,sc,dy,h,t0}=sdrag;sdrag=null;const v=dy/Math.max(1,performance.now()-t0);
+  if(dy>h*0.33||(v>0.6&&dy>40)){sh.style.transition='transform .18s ease-in';sh.style.transform='translateY('+(h+40)+'px)';if(sc){sc.style.transition='opacity .18s';sc.style.opacity='0'}
+    setTimeout(()=>{const a=sc&&sc.dataset.act;if(a){noAnimOnce=true;act(a,sc);noAnimOnce=false}},180)}
+  else{sh.style.transition='transform .22s cubic-bezier(.2,.8,.2,1)';sh.style.transform='';if(sc){sc.style.transition='opacity .22s';sc.style.opacity=''}}}
+document.addEventListener('pointerup',endSheetDrag);document.addEventListener('pointercancel',endSheetDrag);
 function postRender(){checkLock();stickCheck();syncWake();updDot();
   document.querySelectorAll('[data-k]').forEach(el=>{const k=el.dataset.k,to=el.style.width;if(smoothOK()&&barW[k]!=null&&barW[k]!==to){el.style.transition='none';el.style.width=barW[k];void el.offsetWidth;el.style.transition='';el.style.width=to}barW[k]=to});
   if(swapAnim&&smoothOK())document.querySelectorAll(swapAnim).forEach(e=>{e.classList.remove('enter');void e.offsetWidth;e.classList.add('enter')});swapAnim=null;
   if(chartAnim){const v=$('#view');v.classList.add('grow');setTimeout(()=>v.classList.remove('grow'),800);chartAnim=false}
   openAnim=null;justDone=null;justTick=null}
-function animOut(sel,cb){const els=[...document.querySelectorAll(sel)];if(!els.length||!smoothOK()){cb();return}els.forEach(e=>e.classList.add('closing'));setTimeout(cb,170)}
+let noAnimOnce=false;
+function animOut(sel,cb){if(noAnimOnce){noAnimOnce=false;cb();return}const els=[...document.querySelectorAll(sel)];if(!els.length||!smoothOK()){cb();return}els.forEach(e=>e.classList.add('closing'));setTimeout(cb,170)}
 function render(){document.body.classList.remove('editing');setTimeout(()=>{renderProt();renderMus();updAdd()},0);
   const now=today();if(viewKey>now)viewKey=now;
   document.querySelectorAll('.tabbar button').forEach(b=>{if(b.dataset.view===view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
