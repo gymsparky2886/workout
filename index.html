@@ -526,8 +526,9 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 .reopenhint{color:var(--accent-text)!important;font-weight:600}
 .finbtn{min-width:200px}
 .combo .inp{padding-right:44px}
-.combo-arrow{position:absolute;right:4px;top:4px;width:38px;height:calc(100% - 8px);max-height:44px;border:0;background:none;color:var(--muted);font-size:18px;border-radius:10px;transition:transform .2s ease}
-.combo.open .combo-arrow{transform:rotate(180deg)}
+.combo-arrow{position:absolute;right:4px;top:4px;width:40px;height:calc(100% - 8px);max-height:44px;border:0;background:none;border-radius:10px;display:grid;place-items:center}
+.combo-arrow i{width:8px;height:8px;border-right:2px solid var(--faint);border-bottom:2px solid var(--faint);transform:translateY(-25%) rotate(45deg);transition:transform .2s ease}
+.combo.open .combo-arrow i{transform:translateY(25%) rotate(225deg)}
 .lockd .set{opacity:.42}
 .lockd .set .r,.lockd .set .tap{visibility:hidden}
 .lockd .set.next{border-style:solid;border-color:var(--line)}
@@ -559,7 +560,7 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 .psheet .psres{margin-top:8px}
 .combo{position:relative}
 .combo .inp{padding-right:36px}
-.combo::after{content:"";position:absolute;right:14px;top:22px;width:8px;height:8px;border-right:2px solid var(--faint);border-bottom:2px solid var(--faint);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+
 .combo.open .inp{border-color:var(--accent);border-radius:12px 12px 0 0}
 .combo-list{position:absolute;left:0;right:0;top:100%;z-index:19;background:var(--surface);border:1px solid var(--accent);border-top:1px solid var(--line);border-radius:0 0 12px 12px;max-height:min(280px,42vh);overflow-y:auto;box-shadow:0 12px 28px rgba(0,0,0,.22);padding:4px 0}
 .combo .inp{scroll-margin-top:16px}
@@ -642,7 +643,7 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=57, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=58, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Chest','Shoulders','Traps','Back','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs']],['Legs',['Glutes','Inner thighs','Quads','Hamstrings','Calves']]];
 const MUSCLES=MGROUPS.flatMap(g=>g[1]);
@@ -1195,7 +1196,7 @@ function skippedLine(d){const x=days[d];if(!x||!x.skip.length)return '';const in
 function stepSelect(id){const opts=plan.unit==='lb'?STEPS_LB.map(v=>[v/KG_LB,v]):STEPS_KG.map(v=>[v,v]),cur=exStep(id);let bi=0;opts.forEach((o,i)=>{if(Math.abs(o[0]-cur)<Math.abs(opts[bi][0]-cur))bi=i});
   return '<select class="inp" aria-label="Weight step for '+esc(exName(id))+'" data-step="'+id+'">'+opts.map((o,i)=>'<option value="'+o[0]+'"'+(i===bi?' selected':'')+'>+'+o[1]+' '+plan.unit+' step</option>').join('')+'</select>'}
 function typeSeg(){return '<div class="seg" role="radiogroup" aria-label="Type">'+Object.entries(TYPES).map(([k,v])=>'<button type="button" role="radio" data-act="addtype" data-v="'+k+'" aria-checked="'+(k===newType)+'">'+v+'</button>').join('')+'</div>'}
-function comboHtml(id,ph){return '<div class="combo" data-combo="'+id+'"><input class="inp" id="'+id+'" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="cl-'+id+'" autocomplete="off" autocapitalize="words" placeholder="'+esc(ph)+'"><button type="button" class="combo-arrow" data-act="combotoggle" aria-label="Show exercises" tabindex="-1">⌄</button><div class="combo-list" id="cl-'+id+'" role="listbox" hidden></div></div><p class="help combo-hint" id="hint-'+id+'" aria-live="polite"></p>'}
+function comboHtml(id,ph){return '<div class="combo" data-combo="'+id+'"><input class="inp" id="'+id+'" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="cl-'+id+'" autocomplete="off" autocapitalize="words" placeholder="'+esc(ph)+'"><button type="button" class="combo-arrow" data-act="combotoggle" aria-label="Show exercises" tabindex="-1"><i></i></button><div class="combo-list" id="cl-'+id+'" role="listbox" hidden></div></div><p class="help combo-hint" id="hint-'+id+'" aria-live="polite"></p>'}
 function weekDaysOf(id){return ORDER.filter(i=>plan.week[i].items.some(x=>x.ex===id)).map(i=>DAYS[i])}
 function hintInfo(inp){const raw=inp.value.trim(),f=raw?findEx(raw):null;if(!f)return null;
   if(inp.id==='pName'){const wd=weekDaysOf(f);if(wd.length)return {id:f,warn:true,m:exName(f)+' is already on '+wd.join(', ')+'. Each exercise can be on one day only.'}}
@@ -1608,7 +1609,7 @@ function act(a,b){
     case 'combopick':{const box=b.closest('.combo'),inp=box.querySelector('input');inp.value=b.dataset.v;comboClose(inp);comboHint(inp);updAdd();inp.focus();return}
     case 'editweek':swapAnim='#view > *';keepPlace(()=>{startEdit();render()});return;
     case 'exedit':{const y=b.getBoundingClientRect().top;startEdit();exOpen=id;render();const box=document.querySelector('[data-exbox="'+id+'"]');if(box){window.scrollBy(0,box.getBoundingClientRect().top-y);requestAnimationFrame(()=>box.scrollIntoView({block:'center',behavior:smoothOK()?'smooth':'auto'}))}return}
-    case 'exopen':{const y=b.getBoundingClientRect().top,opening=exOpen!==id;exOpen=opening?id:null;render();
+    case 'exopen':{const ob=document.querySelector('[data-exbox="'+id+'"]'),y=(exOpen===id&&ob?ob:b).getBoundingClientRect().top,opening=exOpen!==id;exOpen=opening?id:null;render();
       if(opening){const box=document.querySelector('[data-exbox="'+id+'"]');if(box){const r=document.querySelector('.exr[data-ex="'+id+'"]');window.scrollBy(0,box.getBoundingClientRect().top-y);requestAnimationFrame(()=>box.scrollIntoView({block:'center',behavior:smoothOK()?'smooth':'auto'}))}}
       else{const el=document.querySelector('.exr[data-ex="'+id+'"]');if(el)window.scrollBy(0,el.getBoundingClientRect().top-y)}
       return}
