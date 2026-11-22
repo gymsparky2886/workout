@@ -665,7 +665,7 @@ html.locked,html.locked body{overscroll-behavior:none}
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=64, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=65, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Chest','Shoulders','Traps','Back','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs']],['Legs',['Glutes','Inner thighs','Quads','Hamstrings','Calves']]];
 const MUSCLES=MGROUPS.flatMap(g=>g[1]);
@@ -700,7 +700,7 @@ const I={
 let plan, days={};
 const VIEWS=['today','plan','progress','settings'];
 let view=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'today', viewKey=today(), weekOff=0, active={}, editor=null, addOpen=false, noteOpen=null, sheet=false;
-let folded={};
+let folded={},peek={};
 let addSheet=false,justAdded=null,dayFlash=null;
 const DAYNAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 let planDay=new Date().getDay(), progEx=null, pendingRender=false, planEditing=false, editSnap=null, exOpen=null, exDraft=null, savedFlash=null, tagOpen=null, psOpen=false, psQ='', fromSearch=false, lastSearchView=false, cmpOpen=null, cmpA=null, cmpB=null, dnOpen=null, reorderOpen=false, swapAnim=null, openAnim=null, justDone=null, justTick=null, chartAnim=false, barW={}, musOpen=null, newMus=[], newMain=null, musTap=null, moreOpen=null, yearSel=null, protOpen=false, protArm=null, protArmT=null, protKeepInputs=false, vtBusy=false, protDayOpen=null, wuOpen={}, wpOpen=false, prSeen=new Set(), prReady=false, newType='weight', lastView=null, lastOpen={}, askState=null, bkCloudList=null;
@@ -1117,7 +1117,7 @@ function todayHtml(){
   }
   const act=activeFor(d,items);
   if(isWide())h+='<div class="tgrid"><div class="focus">'+cardHtml(d,act,items)+'</div><div class="list">'+items.map(it=>rowHtml(d,it,it.ex===act.ex)).join('');
-  else h+='<div class="acc">'+items.map(it=>it.ex===act.ex&&folded[d]!==it.ex?cardHtml(d,it,items):rowHtml(d,it,false)).join('');
+  else h+='<div class="acc">'+items.map(it=>it.ex===act.ex&&folded[d]!==it.ex&&!(locked(d)&&!peek[d])?cardHtml(d,it,items):rowHtml(d,it,false)).join('');
   h+=skippedLine(d);
   h+=addOpen?addForm(d):'<button class="ghost" data-act="openadd">+ Add an exercise</button>';
   h+=dayNoteHtml(d);
@@ -1556,7 +1556,7 @@ function act(a,b){
       for(let i=0;i<rows;i++){const cur=(days[d]&&days[d].sets[id]||[])[i];if(valid(t,cur)||!tl[i])continue;const s=setRow(d,id,i);s.w=tl[i].w!=null?tl[i].w:null;s.r=tl[i].r!=null?tl[i].r:null;s.t=tl[i].t!=null?tl[i].t:null;s.done=true;last=i}
       if(last<0)return;reopenIf(d);stamp(d);active[d]=id;bumpSession(d);touchDay(d);buzz();justDone=d+'|'+id+'|'+last;moreOpen=null;render();return}
     case 'fold':{const c=document.querySelector('.card[data-card="'+id+'"]'),y=c?c.getBoundingClientRect().top:0;folded[d]=id;editor=null;moreOpen=null;noteOpen=null;render();const r=document.querySelector('.dragi[data-ex="'+id+'"]');if(r)window.scrollBy(0,r.getBoundingClientRect().top-y);return}
-    case 'focus':{if(folded[d]===id)delete folded[d];else if(folded[d])delete folded[d];const y=b.getBoundingClientRect().top,fromRow=b.classList.contains('row');
+    case 'focus':{if(folded[d])delete folded[d];if(locked(d))peek[d]=true;const y=b.getBoundingClientRect().top,fromRow=b.classList.contains('row');
       const apply=()=>{active[d]=id;editor=null;noteOpen=null;moreOpen=null;render();
         if(!isWide()){const c=document.querySelector('.card[data-card="'+id+'"]');if(c&&fromRow)window.scrollBy(0,c.getBoundingClientRect().top-y)}};
       const after=()=>{if(!isWide()&&!fromRow){const c=document.querySelector('.card[data-card="'+id+'"]');if(c){const t=c.getBoundingClientRect().top;if(t<0||t>window.innerHeight*0.45)c.scrollIntoView({block:'start',behavior:smoothOK()?'smooth':'auto'})}}};
@@ -1626,7 +1626,7 @@ function act(a,b){
     case 'reorderdone':reorderOpen=false;swapAnim='#view .acc, #view .tgrid';break;
     case 'guideskip':LS.set('guide','done');break;
     case 'gosettings':setView('settings');window.scrollTo(0,0);break;
-    case 'startwk':{const x=getDay(d,true);x.plan=clone(weekItems(d));x.title=plan.week[parse(d).getDay()].name||'';x.planAck=null;x.started=Date.now();x.finished=false;touchDay(d);bumpSession(d);render();return}
+    case 'startwk':{delete folded[d];delete peek[d];delete active[d];const x=getDay(d,true);x.plan=clone(weekItems(d));x.title=plan.week[parse(d).getDay()].name||'';x.planAck=null;x.started=Date.now();x.finished=false;touchDay(d);bumpSession(d);render();return}
     case 'resumewk':{const x=getDay(d,true);x.finished=false;x.started=x.started||Date.now();x.t1=Date.now();touchDay(d);bumpSession(d);render();return}
     case 'plannew':{const x=getDay(d,true);x.plan=clone(weekItems(d));x.title=plan.week[parse(d).getDay()].name||'';x.planAck=null;touchDay(d);break}
     case 'plankeep':{const x=getDay(d,true);x.planAck=planSig(d);touchDay(d);break}
