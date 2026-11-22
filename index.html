@@ -568,6 +568,14 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 .exfoot:has(.btn+.btn){grid-template-columns:1fr 1fr}
 .exr.saved{background:var(--done-tint);transition:background-color .6s ease}
 .savedok{color:var(--done-text);font-weight:700;font-size:13px;white-space:nowrap;animation:fIn .2s ease-out}
+.dayedit{box-shadow:inset 0 0 0 2px var(--accent);gap:12px}
+.deh{font-weight:600;font-size:15px}
+.dhr{display:inline-flex;align-items:center;gap:12px}
+.prow.new{background:var(--accent-tint);border-radius:12px}
+.newtag{font-size:10px;font-weight:700;color:var(--accent-text);letter-spacing:.04em;margin-left:4px}
+.card.dsaved{box-shadow:inset 0 0 0 2px var(--done);transition:box-shadow .6s ease}
+.addgo{width:100%;margin-top:14px;min-height:50px;font-size:16px}
+.addsheet .formgrid{margin-top:4px}
 .combo{position:relative}
 .combo .inp{padding-right:36px}
 
@@ -646,14 +654,14 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
   <button data-view="settings"><span class="tbadge" id="tbadge" aria-hidden="true"></span><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
 </nav>
 <main id="view"><p class="help">Loading…</p></main>
-<div id="sheetRoot"></div>
+<div id="addRoot"></div><div id="sheetRoot"></div>
 <div id="toast" role="status" aria-live="polite"></div>
 <input type="file" id="impfile" accept=".json,.txt,application/json,text/plain" hidden>
 <script>
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=60, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=61, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Chest','Shoulders','Traps','Back','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs']],['Legs',['Glutes','Inner thighs','Quads','Hamstrings','Calves']]];
 const MUSCLES=MGROUPS.flatMap(g=>g[1]);
@@ -688,6 +696,8 @@ const I={
 let plan, days={};
 const VIEWS=['today','plan','progress','settings'];
 let view=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'today', viewKey=today(), weekOff=0, active={}, editor=null, addOpen=false, noteOpen=null, sheet=false;
+let addSheet=false,justAdded=null,dayFlash=null;
+const DAYNAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 let planDay=new Date().getDay(), progEx=null, pendingRender=false, planEditing=false, editSnap=null, exOpen=null, exDraft=null, savedFlash=null, tagOpen=null, psOpen=false, psQ='', fromSearch=false, lastSearchView=false, cmpOpen=null, cmpA=null, cmpB=null, dnOpen=null, reorderOpen=false, swapAnim=null, openAnim=null, justDone=null, justTick=null, chartAnim=false, barW={}, musOpen=null, newMus=[], newMain=null, musTap=null, moreOpen=null, yearSel=null, protOpen=false, protArm=null, protArmT=null, protKeepInputs=false, vtBusy=false, protDayOpen=null, wuOpen={}, wpOpen=false, prSeen=new Set(), prReady=false, newType='weight', lastView=null, lastOpen={}, askState=null, bkCloudList=null;
 function emptyWeek(){const w={};for(let i=0;i<7;i++)w[i]={name:'',rest:false,items:[]};return w}
 function normPlan(p){
@@ -969,7 +979,7 @@ function ask(o){return new Promise(res=>{askState=Object.assign({},o,{res});rend
 function confirmAsk(title,msg,yes,style){return ask({title,msg,buttons:[{v:'yes',label:yes,style:style||'danger'},{v:'cancel',label:'Cancel'}]}).then(v=>v==='yes')}
 function renderAsk(){const r=$('#sheetRoot');if(!askState){r.innerHTML='';return}const a=askState;
   r.innerHTML='<div class="scrim" data-askv="cancel"></div><div class="askbox" id="askBox" role="alertdialog" aria-modal="true" aria-labelledby="askT"'+(a.msg?' aria-describedby="askM"':'')+'><h2 id="askT" class="h2d" style="font-size:26px">'+esc(a.title)+'</h2>'+(a.msg?'<p id="askM">'+esc(a.msg)+'</p>':'')+'<div class="askbtns">'+a.buttons.map(b=>'<button class="btn'+(b.style?' '+b.style:'')+'" data-askv="'+b.v+'">'+esc(b.label)+'</button>').join('')+'</div></div>'}
-function renderProt(){if(askState)return;const r=$('#sheetRoot');if(!protOpen){if(!musOpen&&!tagOpen&&!cmpOpen&&!psOpen)r.innerHTML='';return}
+function renderProt(){if(askState)return;if(view!=='plan'&&addSheet){addSheet=false;renderAddSheet()}const r=$('#sheetRoot');if(!protOpen){if(!musOpen&&!tagOpen&&!cmpOpen&&!psOpen)r.innerHTML='';return}
   const d=viewKey,list=(days[d]&&days[d].protein)||[];
   let h='<div class="grab"></div><div class="ph"><h2 id="ptitle" class="h2d" style="font-size:26px">Add protein</h2><button class="link" data-act="protclose">Close</button></div>';
   if(!plan.protein.goal)h+='<div class="field"><label for="pgoal1">First, your daily goal in grams</label><div class="inl"><input class="inp" id="pgoal1" inputmode="numeric" placeholder="150"><button class="btn primary" data-act="protgoal1">Save</button></div></div>';
@@ -989,7 +999,7 @@ function renderMus(){if(!musOpen||askState)return;const r=$('#sheetRoot'),t=musO
   const inner='<div class="grab"></div><div class="ph"><h2 class="h2d" id="mtitle" style="font-size:24px">Muscles for '+esc(nm)+'</h2><button class="link" data-act="musclose">Done</button></div><p class="help" style="margin:0">Tick all that apply. ★ marks the main muscle: it counts 1 set, the others count half.</p><div class="mlist">'+musRows(t)+'</div>';
   const box=r.querySelector('.musbox');if(box){const l=box.querySelector('.mlist'),sc=l?l.scrollTop:0;box.innerHTML=inner;const l2=box.querySelector('.mlist');if(l2)l2.scrollTop=sc;return}
   r.innerHTML='<div class="scrim" data-act="musclose"></div><section class="musbox" role="dialog" aria-modal="true" aria-labelledby="mtitle">'+inner+'</section>'}
-function updAdd(){[['pName','padd'],['addName','addday']].forEach(([i,a])=>{const inp=$('#'+i),btn=$('[data-act="'+a+'"]');if(!inp||!btn)return;const nm=inp.value.trim(),need=nm&&!findEx(nm)&&!newMus.length;btn.classList.toggle('off',!!need);btn.textContent=need?'Pick muscles first':'Add'});
+function updAdd(){[['pName','padd'],['addName','addday']].forEach(([i,a])=>{const inp=$('#'+i),btn=$('[data-act="'+a+'"]');if(!inp||!btn)return;const nm=inp.value.trim(),need=nm&&!findEx(nm)&&!newMus.length;btn.classList.toggle('off',!!need);btn.textContent=need?'Pick muscles first':(btn.dataset.label||'Add')});
   const f=$('#mf-new');if(f)f.querySelector('span').innerHTML=musSummary(newMus,newMain)}
 function closeAsk(v){if(!askState||askClosing)return;askClosing=true;const r=askState.res;animOut('#sheetRoot .scrim, .askbox:not(.protbox)',()=>{askClosing=false;askState=null;renderAsk();renderProt();r(v)})}
 let askClosing=false;
@@ -1023,12 +1033,13 @@ window.addEventListener('popstate',()=>{
   if(psOpen){psOpen=false;$('#sheetRoot').innerHTML='';rearm();return}
   if(view==='progress'&&fromSearch){psOpen=true;fromSearch=false;rearm();renderPS();return}
   if(protOpen){protOpen=false;rearm();render();return}
+  if(addSheet&&!musOpen){addSheet=false;renderAddSheet();rearm();return}
   if(musOpen){const t=musOpen;musOpen=null;$('#sheetRoot').innerHTML='';rearm();if(t==='new')updAdd();else if(t==='draft')updDirty();else render();return}
   if(editor||addOpen||noteOpen){editor=null;addOpen=false;noteOpen=null;rearm();render();return}
   if(view==='plan'&&exOpen){exDraft=null;const id=exOpen,el=document.querySelector('[data-exbox="'+id+'"]'),y=el?el.getBoundingClientRect().top:null;exOpen=null;rearm();render();
     const r=document.querySelector('.exr[data-ex="'+id+'"]');if(r&&y!=null)window.scrollBy(0,r.getBoundingClientRect().top-y);return}
   if(view==='plan'&&musOpen){musOpen=null;$('#sheetRoot').innerHTML='';rearm();render();return}
-  if(planEditing){rearm();keepPlace(()=>{finishEdit();render()});return}
+  if(planEditing){rearm();if(dayDirty()){ask({title:'Discard changes?',msg:'Your changes to '+DAYNAMES[planDay]+' haven\'t been saved.',buttons:[{v:'discard',label:'Discard changes',style:'danger'},{v:'stay',label:'Keep editing'}]}).then(v=>{if(v==='discard')act('canceledit',document.body)});return}act('canceledit',document.body);return}
   if(view!=='today'){setView('today');rearm();render();window.scrollTo(0,0);return}
   saveNow();toast('Press back again to exit. Everything is saved.');
   clearTimeout(exitT);exitT=setTimeout(()=>{if(document.visibilityState==='visible')rearm()},2500);
@@ -1049,7 +1060,7 @@ function postRender(){stickCheck();syncWake();updDot();
   if(chartAnim){const v=$('#view');v.classList.add('grow');setTimeout(()=>v.classList.remove('grow'),800);chartAnim=false}
   openAnim=null;justDone=null;justTick=null}
 function animOut(sel,cb){const els=[...document.querySelectorAll(sel)];if(!els.length||!smoothOK()){cb();return}els.forEach(e=>e.classList.add('closing'));setTimeout(cb,170)}
-function render(){document.body.classList.toggle('editing',view==='plan'&&planEditing);setTimeout(()=>{renderProt();renderMus();updAdd()},0);
+function render(){document.body.classList.remove('editing');setTimeout(()=>{renderProt();renderMus();updAdd()},0);
   const now=today();if(viewKey>now)viewKey=now;
   document.querySelectorAll('.tabbar button').forEach(b=>{if(b.dataset.view===view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
   const v=$('#view');if(view==='progress'&&(lastView!==view||swapAnim))chartAnim=true;if(lastView!==view){v.classList.remove('vin');void v.offsetWidth;v.classList.add('vin');lastView=view}
@@ -1254,19 +1265,33 @@ document.addEventListener('keydown',e=>{const t=e.target;if(!t.getAttribute||t.g
 function typeSelect(attr,sel){return '<select class="inp" '+attr+'>'+Object.entries(TYPES).map(([k,v])=>'<option value="'+k+'"'+(k===sel?' selected':'')+'>'+v+'</option>').join('')+'</select>'}
 
 function planHtml(){
-  if(planEditing)return planEditHtml();
   const w=plan.week[planDay],items=w.items.filter(i=>ex(i.ex));
   let h=signinBar()+'<h1 class="big sm">Your week</h1>';
-  if(!hasContent(plan))return h+'<div class="empty"><p>Your week is empty. Tap Edit week, pick a day, name it, and add its exercises.</p><button class="btn primary" data-act="editweek">Edit week</button></div>';
+  if(!hasContent(plan)&&!planEditing)return h+'<div class="empty"><p>Your week is empty. Pick a day, name it, and add its exercises.</p><button class="btn primary" data-act="dayedit">Set up '+DAYNAMES[planDay]+'</button></div>';
   h+='<div class="daypills">'+ORDER.map(i=>{const x=plan.week[i];return '<button class="dp" data-act="pday" data-d="'+i+'" aria-pressed="'+(i===planDay)+'">'+DAYS[i]+'<small>'+esc(x.rest?'Rest':(x.name||(x.items.length?'Workout':'Empty')))+'</small></button>'}).join('')+'</div>';
-  h+='<div class="pgrid"><div class="card" data-sec="day"><div class="card-head"><h2 class="h2d">'+esc(w.rest?'Rest day':(w.name||'No name'))+'</h2></div>';
-  if(w.rest)h+='<p class="help">Nothing planned. Rest days keep your streak.</p>';
-  else if(!items.length)h+='<p class="help">No exercises on '+DAYS[planDay]+'. Tap Edit week to add some, or leave it empty as a rest day.</p>';
-  else h+='<div class="ro">'+items.map(it=>{const t=exType(it.ex);return '<div class="rorow"><span><b>'+esc(exName(it.ex))+'</b><small>'+TYPES[t]+'</small></span><span class="g">'+goalTxt(t,it)+'</span></div>'}).join('')+'</div>';
-  h+='<button class="btn primary" data-act="editweek">Edit week</button></div>';
-  h+=exListHtml(false);
+  h+='<div class="pgrid">';
+  if(planEditing)h+=dayEditCard();
+  else{h+='<div class="card'+(dayFlash===planDay?' dsaved':'')+'" data-sec="day"><div class="card-head"><h2 class="h2d">'+esc(w.rest?'Rest day':(w.name||'No name'))+'</h2>'+'<span class="dhr">'+(dayFlash===planDay?'<span class="savedok">Saved ✓</span>':'')+'<button class="link" data-act="dayedit">✎ Edit</button></span>'+'</div>';
+    if(w.rest)h+='<p class="help">Nothing planned. Rest days keep your streak.</p>';
+    else if(!items.length)h+='<p class="help">No exercises on '+DAYNAMES[planDay]+'. Tap Edit to add some, or leave it empty as a rest day.</p>';
+    else h+='<div class="ro">'+items.map(it=>{const t=exType(it.ex);return '<div class="rorow"><span><b>'+esc(exName(it.ex))+'</b><small>'+TYPES[t]+'</small></span><span class="g">'+goalTxt(t,it)+'</span></div>'}).join('')+'</div>';
+    h+='</div>'}
+  h+=exListHtml(true);
   return h+'</div>';
 }
+function dayEditCard(){const w=plan.week[planDay];
+  let h='<div class="card dayedit" data-sec="day"><b class="deh">Editing '+DAYNAMES[planDay]+'</b><div class="field"><label for="dname">Day name</label><input class="inp" id="dname" value="'+esc(w.name)+'" placeholder="Push, Pull, Legs…"></div>';
+  h+='<label class="toggle-row"><span>Rest day</span><input type="checkbox" class="sw" id="drest"'+(w.rest?' checked':'')+'></label>';
+  if(!w.rest){const items=w.items.filter(i=>ex(i.ex));
+    h+='<span class="flabel">Exercises'+(items.length>1?' <span class="help" style="display:inline">(drag ⠿ to reorder)</span>':'')+'</span>';
+    if(!items.length)h+='<p class="help">No exercises yet.</p>';
+    else h+='<div class="plist">'+w.items.map((it,idx)=>{if(!ex(it.ex))return '';const t=exType(it.ex),nw=justAdded===it.ex;return '<div class="prow'+(nw?' new':'')+'" data-row="'+idx+'"><button class="handle" data-i="'+idx+'" aria-label="Drag to reorder">'+I.grip+'</button><span class="nm">'+esc(exName(it.ex))+(nw?' <span class="newtag">NEW</span>':'')+'<small>'+TYPES[t]+'</small></span><input inputmode="numeric" aria-label="Sets" data-pi="'+idx+'" data-pf="sets" value="'+it.sets+'"><span class="x">×</span><input inputmode="numeric" aria-label="'+(t==='time'?'Seconds':'Reps')+'" data-pi="'+idx+'" data-pf="'+(t==='time'?'secs':'reps')+'" value="'+(t==='time'?(it.secs||it.reps||30):it.reps)+'">'+(t==='time'?'<span class="x">s</span>':'<span></span>')+'<button class="rm" data-act="rm" data-i="'+idx+'" aria-label="Remove '+esc(exName(it.ex))+'">✕</button></div>'}).join('')+'</div>';
+    h+='<button class="ghost" data-act="addsheet">+ Add exercise</button>'}
+  return h+'<div class="exfoot"><button class="btn" data-act="canceledit">Cancel</button><button class="btn primary" data-act="doneedit">Save</button></div></div>'}
+function renderAddSheet(){const r=$('#addRoot');if(!addSheet){r.innerHTML='';return}if(r.querySelector('.addsheet'))return;
+  r.innerHTML='<div class="scrim" data-act="addclose" style="z-index:39"></div><section class="musbox addsheet" role="dialog" aria-modal="true" aria-labelledby="adt" style="z-index:40"><div class="grab"></div><div class="ph"><h2 class="h2d" id="adt" style="font-size:24px">Add to '+DAYNAMES[planDay]+'</h2><button class="link" data-act="addclose">Cancel</button></div><div class="mlist"><div class="formgrid"><div class="field wide"><label for="pName">Exercise</label>'+comboHtml('pName','Exercise name')+'</div><div class="field wide"><span class="flabel">Type, for a new exercise</span>'+typeSeg()+'<p class="help">'+typeHelp()+'</p></div><div class="field wide"><span class="flabel">Muscles, for a new exercise</span>'+musField('new')+'</div><div class="field"><label for="pSets">Sets</label><input class="inp" id="pSets" inputmode="numeric" value="3"></div><div class="field"><label for="pReps">Reps or seconds</label><input class="inp" id="pReps" inputmode="numeric" value="10"></div></div><button class="btn primary addgo" data-act="padd" data-label="Add to '+DAYNAMES[planDay]+'">Add to '+DAYNAMES[planDay]+'</button></div></section>';updAdd()}
+function dayDirty(){if(!editSnap)return false;const a=editSnap.plan.week[planDay],b=plan.week[planDay];return JSON.stringify({n:a.name,r:!!a.rest,i:a.items})!==JSON.stringify({n:b.name,r:!!b.rest,i:b.items})}
+function snapSyncLib(){if(!planEditing||!editSnap)return;editSnap.plan.library=clone(plan.library);Object.values(editSnap.plan.week).forEach(w=>{w.items=w.items.filter(i=>plan.library[i.ex]&&!plan.library[i.ex].archived)});editSnap.days=clone(days)}
 function exDays(id){return ORDER.filter(i=>!plan.week[i].rest&&plan.week[i].items.some(x=>x.ex===id)).map(i=>DAYS[i])}
 function exSub(id){const ms=exMuscles(id),mn=exMain(id),dd=exDays(id);const m=ms.length?[mn].concat(ms.filter(x=>x!==mn)).map(x=>x===mn?x+' ★':x).join(', '):'No muscles yet, tap to pick';return m+(dd.length?' · '+dd.join(' '):'')}
 function exListHtml(editing){
@@ -1275,7 +1300,7 @@ function exListHtml(editing){
   const segB=(a,id,cur,opts)=>'<div class="seg" role="radiogroup">'+opts.map(([v,l,on])=>'<button role="radio" data-act="'+a+'" data-ex="'+id+'" data-v="'+v+'" aria-checked="'+on+'">'+l+'</button>').join('')+'</div>';
   const rowBtn=(id,actn)=>'<button class="exr'+(savedFlash===id?' saved':'')+'" data-act="'+actn+'" data-ex="'+id+'"'+(actn==='exopen'?' aria-expanded="false"':'')+'><span><b>'+esc(exName(id))+'</b><small'+(exMuscles(id).length?'':' class="nomus"')+'>'+esc(exSub(id))+'</small></span>'+(savedFlash===id?'<span class="savedok">Saved ✓</span>':'<span class="chev" aria-hidden="true">›</span>')+'</button>';
   const row=id=>{
-    if(exOpen!==id)return rowBtn(id,editing?'exopen':'exedit');
+    if(exOpen!==id)return rowBtn(id,'exedit');
     if(!exDraft||exDraft.id!==id)exDraft=newDraft(id);const D=exDraft;
     const t=D.type,opts=plan.unit==='lb'?STEPS_LB.map(v=>[v/KG_LB,v]):STEPS_KG.map(v=>[v,v]),cur=D.step||exStep(id);let bi=0;opts.forEach((o,i)=>{if(Math.abs(o[0]-cur)<Math.abs(opts[bi][0]-cur))bi=i});
     const isNewEx=lastOpen['ex']!==id;lastOpen['ex']=id;const dirty=draftDirty();
@@ -1297,22 +1322,6 @@ function exListHtml(editing){
     if(!editing)h+='<p class="help" style="margin-top:12px">Archived: '+arc.map(id=>esc(exName(id))).join(', ')+'. Restore or delete them in Edit week.</p>';
     else h+='<div class="exgrp">Archived (history kept)</div>'+arc.map(id=>'<div class="exr"><span><b>'+esc(exName(id))+'</b><small>'+TYPES[exType(id)]+'</small></span><span class="acts"><button class="link" data-act="restore" data-ex="'+id+'">Restore</button><span class="sep" aria-hidden="true">|</span><button class="link" style="color:var(--warn)" data-act="delex" data-ex="'+id+'">Delete</button></span></div>').join('');
   }
-  return h+'</div>';
-}
-function planEditHtml(){
-  const w=plan.week[planDay];const untag=Object.keys(plan.library).filter(id=>!plan.library[id].archived&&!exMuscles(id).length);
-  let h='<h1 class="big sm">Your week</h1>'+'<div class="editbar"><span class="eb-l">Editing your week</span><span class="eb-b"><button class="btn" data-act="canceledit">Cancel</button><button class="btn primary" data-act="doneedit">Done editing</button></span></div>';
-  h+='<div class="daypills">'+ORDER.map(i=>{const x=plan.week[i];return '<button class="dp" data-act="pday" data-d="'+i+'" aria-pressed="'+(i===planDay)+'">'+DAYS[i]+'<small>'+esc(x.rest?'Rest':(x.name||(x.items.length?'Workout':'Empty')))+'</small></button>'}).join('')+'</div>';
-  h+='<div class="pgrid"><div class="card" data-sec="day"><div class="field"><label for="dname">Name for '+DAYS[planDay]+'</label><input class="inp" id="dname" value="'+esc(w.name)+'" placeholder="Push, Pull, Legs…"></div>';
-  h+='<label class="toggle-row"><span>Rest day</span><input type="checkbox" class="sw" id="drest"'+(w.rest?' checked':'')+'></label>';
-  if(!w.rest){
-    const items=w.items.filter(i=>ex(i.ex));
-    if(!items.length)h+='<p class="help">No exercises yet. Add one below.</p>';
-    else h+='<div class="plist">'+w.items.map((it,idx)=>{if(!ex(it.ex))return '';const t=exType(it.ex);return '<div class="prow" data-row="'+idx+'"><button class="handle" data-i="'+idx+'" aria-label="Drag to reorder, or use arrow keys">'+I.grip+'</button><span class="nm">'+esc(exName(it.ex))+'<small>'+TYPES[t]+'</small></span><input inputmode="numeric" aria-label="Sets" data-pi="'+idx+'" data-pf="sets" value="'+(it.sets||3)+'"><span class="x">×</span><input inputmode="numeric" aria-label="'+(t==='time'?'Seconds':'Reps')+'" data-pi="'+idx+'" data-pf="reps" value="'+(it.reps||10)+'"><span class="x">'+(t==='time'?'s':'')+'</span><button class="rm" data-act="rm" data-i="'+idx+'" aria-label="Remove from '+DAYS[planDay]+'">✕</button></div>'}).join('')+'</div>';
-    h+='<div class="formgrid" style="margin-top:6px"><div class="field wide"><label for="pName">Add exercise to '+DAYS[planDay]+'</label>'+comboHtml('pName','Exercise name')+'</div><div class="field wide"><span class="flabel">Type, for a new exercise</span>'+typeSeg()+'<p class="help">'+typeHelp()+'</p></div><div class="field wide"><span class="flabel">Muscles, for a new exercise</span>'+musField('new')+'</div><div class="field"><label for="pSets">Sets</label><input class="inp" id="pSets" inputmode="numeric" value="3"></div><div class="field"><label for="pReps">Reps or seconds</label><input class="inp" id="pReps" inputmode="numeric" value="10"></div><div class="field" style="display:flex;align-items:flex-end"><button class="btn primary" data-act="padd" style="width:100%">Add</button></div></div>';
-  }
-  h+='</div>';
-  h+=exListHtml(true);
   return h+'</div>';
 }
 function bkHtml(){loadCloudBackups();const l=backupList();
@@ -1583,7 +1592,7 @@ function act(a,b){
     case 'today':viewKey=today();weekOff=0;editor=null;addOpen=false;break;
     case 'wkprev':weekOff--;break;
     case 'wknext':if(weekOff<0)weekOff++;break;
-    case 'goplan':setView('plan');planDay=new Date().getDay();startEdit();break;
+    case 'goplan':setView('plan');planDay=new Date().getDay();startEdit();justAdded=null;break;
     case 'protopen':protOpen=true;render();setTimeout(()=>{const f=$('#pgoal1')||$('.protbox .food')||$('#pother');f&&f.focus()},30);return;
     case 'protday':protDayOpen=protDayOpen===b.dataset.d?null:b.dataset.d;break;
     case 'musopen':musOpen=b.dataset.t;renderMus();return;
@@ -1610,11 +1619,13 @@ function act(a,b){
     case 'combotoggle':{const inp=b.parentElement.querySelector('input');if(!inp)return;if(b.parentElement.classList.contains('open'))comboClose(inp);else{comboSel=-1;comboRender(inp)}return}
     case 'excancel':closeEx(id);return;
     case 'exsave':{const D=exDraft;if(!D||D.id!==id)return;const nn=D.name.trim();if(!nn){toast('Give it a name first.');return}
-      const finish=()=>{applyDraft();exOpen=null;exDraft=null;flashSaved(id);keepPlace(()=>render())};
+      const finish=()=>{applyDraft();snapSyncLib();exOpen=null;exDraft=null;flashSaved(id);keepPlace(()=>render())};
       const typeOk=()=>{const n=doneSets(today(),id).length;if(D.type!==exType(id)&&n)return ask({title:'Sets already logged today',msg:'You logged '+n+(n===1?' set':' sets')+' of '+exName(id)+' today. Changing the type changes how '+(n===1?'it shows':'they show')+' on Today.',buttons:[{v:'yes',label:'Change type anyway',style:'primary'},{v:'cancel',label:'Keep '+TYPES[exType(id)]}]}).then(v=>v==='yes');return Promise.resolve(true)};
       const other=findEx(nn);
-      if(other&&other!==id){confirmAsk('Merge exercises?','"'+exName(other)+'" already exists. Merge "'+exName(id)+'" into it, history included?','Merge','primary').then(ok=>{if(!ok)return;applyDraft(true);exOpen=null;exDraft=null;mergeEx(id,other);flashSaved(other);render()});return}
+      if(other&&other!==id){confirmAsk('Merge exercises?','"'+exName(other)+'" already exists. Merge "'+exName(id)+'" into it, history included?','Merge','primary').then(ok=>{if(!ok)return;applyDraft(true);exOpen=null;exDraft=null;mergeEx(id,other);snapSyncLib();flashSaved(other);render()});return}
       typeOk().then(ok=>{if(ok)finish()});return}
+    case 'addsheet':addSheet=true;newMus=[];newMain=null;renderAddSheet();return;
+    case 'addclose':animOut('#addRoot .scrim, .addsheet',()=>{addSheet=false;renderAddSheet()});return;
     case 'protclose':protArm=null;animOut('#sheetRoot .scrim, .protbox',()=>{protOpen=false;render()});return;
     case 'protgoal1':{const g=num($('#pgoal1').value);if(!(g>0)){toast('Type your daily goal in grams.');return}plan.protein.goal=Math.round(g);savePlan();break}
     case 'protadd':{const f=plan.protein.foods.find(x=>x.id===b.dataset.f);if(!f)return;const x=getDay(viewKey,true);x.protein.push({id:newId(),name:f.name,g:f.g});touchDay(viewKey);protKeepInputs=true;break}
@@ -1636,7 +1647,7 @@ function act(a,b){
     case 'more':if(moreOpen===id){animOut('.links.more',()=>{moreOpen=null;render()});return}moreOpen=id;openAnim='more';break;
     case 'addtype':{newType=b.dataset.v;b.parentElement.querySelectorAll('button').forEach(x=>x.setAttribute('aria-checked',String(x===b)));return}
     case 'combopick':{const box=b.closest('.combo'),inp=box.querySelector('input');inp.value=b.dataset.v;comboClose(inp);comboHint(inp);updAdd();inp.focus();return}
-    case 'editweek':swapAnim='#view > *';keepPlace(()=>{startEdit();render()});return;
+    case 'editweek':case 'dayedit':keepPlace(()=>{exOpen=null;exDraft=null;justAdded=null;startEdit();render()});{const c=document.querySelector('.dayedit');if(c&&c.getBoundingClientRect().top<0)c.scrollIntoView({block:'start',behavior:smoothOK()?'smooth':'auto'})}return;
     case 'exedit':{const y=b.getBoundingClientRect().top;exOpen=id;exDraft=newDraft(id);render();const box=document.querySelector('[data-exbox="'+id+'"]');if(box){window.scrollBy(0,box.getBoundingClientRect().top-y);requestAnimationFrame(()=>box.scrollIntoView({block:'center',behavior:smoothOK()?'smooth':'auto'}))}return}
     case 'exopen':{const ob=document.querySelector('[data-exbox="'+id+'"]'),y=(exOpen===id&&ob?ob:b).getBoundingClientRect().top,opening=exOpen!==id;exOpen=opening?id:null;exDraft=opening?newDraft(id):null;render();
       if(opening){const box=document.querySelector('[data-exbox="'+id+'"]');if(box){const r=document.querySelector('.exr[data-ex="'+id+'"]');window.scrollBy(0,box.getBoundingClientRect().top-y);requestAnimationFrame(()=>box.scrollIntoView({block:'center',behavior:smoothOK()?'smooth':'auto'}))}}
@@ -1655,18 +1666,21 @@ function act(a,b){
           Object.values(plan.week).forEach(w=>{w.items=w.items.filter(i=>i.ex!==id)});delete plan.library[id];
           if(progEx===id)progEx=null;if(exOpen===id)exOpen=null;Object.keys(active).forEach(k=>{if(active[k]===id)delete active[k]});savePlan()})});return}
     case 'exstep':if(exDraft&&exDraft.id===id){exDraft.step=num(b.dataset.v);keepPlace(()=>render());return}plan.library[id].step=num(b.dataset.v);savePlan();break;
-    case 'doneedit':swapAnim='#view > *';keepPlace(()=>{exOpen=null;exDraft=null;finishEdit();render()});return;
-    case 'canceledit':swapAnim='#view > *';keepPlace(()=>{exOpen=null;exDraft=null;const sn=editSnap;planEditing=false;editSnap=null;if(sn&&(JSON.stringify(sn.plan)!==JSON.stringify(plan)||JSON.stringify(sn.days)!==JSON.stringify(days)))restoreSnap(sn);render()});return;
-    case 'pday':planDay=+b.dataset.d;swapAnim='.daypills ~ *';break;
+    case 'doneedit':{const ch=dayDirty();keepPlace(()=>{exOpen=null;exDraft=null;justAdded=null;finishEdit();if(ch){dayFlash=planDay;clearTimeout(window.__dft);window.__dft=setTimeout(()=>{dayFlash=null;if(view==='plan'&&!planEditing)keepPlace(()=>render())},2200)}render()});return}
+    case 'canceledit':keepPlace(()=>{exOpen=null;exDraft=null;justAdded=null;const sn=editSnap;planEditing=false;editSnap=null;if(sn&&(JSON.stringify(sn.plan)!==JSON.stringify(plan)||JSON.stringify(sn.days)!==JSON.stringify(days)))restoreSnap(sn);render()});return;
+    case 'pday':{const nd=+b.dataset.d;if(nd===planDay)return;
+      const go=()=>{planDay=nd;swapAnim='.daypills ~ *';render()};
+      if(planEditing&&dayDirty()){ask({title:'Save '+DAYNAMES[planDay]+' first?',msg:'You changed '+DAYNAMES[planDay]+'. Save those changes before switching days?',buttons:[{v:'save',label:'Save',style:'primary'},{v:'discard',label:'Discard changes'},{v:'stay',label:'Keep editing'}]}).then(v=>{if(v==='save'){finishEdit();justAdded=null;go()}else if(v==='discard'){const sn=editSnap;planEditing=false;editSnap=null;justAdded=null;if(sn)restoreSnap(sn);go()}});return}
+      if(planEditing){finishEdit();justAdded=null}go();return}
     case 'padd':{const pin=$('#pName'),pf=findEx(pin.value||'');if(pf&&weekDaysOf(pf).length){comboClose(pin);comboHint(pin);pin.focus();return}
       if(pin.value.trim()&&!pf&&!newMus.length){musOpen='new';renderMus();return}
       const nid=ensureEx(pin.value,newType);if(nid&&!pf&&newMus.length){plan.library[nid].muscles=newMus.slice();plan.library[nid].main=newMain;newMus=[];newMain=null}if(!nid){$('#pName').focus();return}
       if(!plan.startedOn)plan.startedOn=today();const w=plan.week[planDay];
       if(w.items.some(i=>i.ex===nid)){toast(exName(nid)+' is already on '+DAYS[planDay]+'.');return}
       w.items.push({ex:nid,sets:Math.max(1,Math.round(num($('#pSets').value)||3)),reps:Math.max(1,Math.round(num($('#pReps').value)||10))});
-      savePlan();render();{const p=$('#pName');if(p){comboClose(p);p.blur()}}return}
+      justAdded=nid;savePlan();animOut('#addRoot .scrim, .addsheet',()=>{addSheet=false;renderAddSheet();render();const r=document.querySelector('.prow.new');if(r)r.scrollIntoView({block:'center',behavior:smoothOK()?'smooth':'auto'})});return}
     case 'rm':plan.week[planDay].items.splice(+b.dataset.i,1);savePlan();break;
-    case 'archive':if(exDraft&&exDraft.id===id&&draftDirty()){const o=findEx(exDraft.name.trim());applyDraft(!!(o&&o!==id)||!exDraft.name.trim())}exDraft=null;Object.values(plan.week).forEach(w=>{w.items=w.items.filter(i=>i.ex!==id)});plan.library[id].archived=true;if(exOpen===id)exOpen=null;savePlan();break;
+    case 'archive':if(exDraft&&exDraft.id===id&&draftDirty()){const o=findEx(exDraft.name.trim());applyDraft(!!(o&&o!==id)||!exDraft.name.trim())}exDraft=null;Object.values(plan.week).forEach(w=>{w.items=w.items.filter(i=>i.ex!==id)});plan.library[id].archived=true;if(exOpen===id)exOpen=null;savePlan();snapSyncLib();break;
     case 'restore':plan.library[id].archived=false;savePlan();break;
     case 'psearch':psOpen=true;lastSearchView=true;renderPS();return;
     case 'pscancel':animOut('#sheetRoot .scrim, .psheet',()=>{psOpen=false;$('#sheetRoot').innerHTML=''});return;
