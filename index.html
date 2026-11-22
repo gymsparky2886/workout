@@ -661,7 +661,7 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=61, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=62, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Chest','Shoulders','Traps','Back','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs']],['Legs',['Glutes','Inner thighs','Quads','Hamstrings','Calves']]];
 const MUSCLES=MGROUPS.flatMap(g=>g[1]);
@@ -1596,7 +1596,7 @@ function act(a,b){
     case 'protopen':protOpen=true;render();setTimeout(()=>{const f=$('#pgoal1')||$('.protbox .food')||$('#pother');f&&f.focus()},30);return;
     case 'protday':protDayOpen=protDayOpen===b.dataset.d?null:b.dataset.d;break;
     case 'musopen':musOpen=b.dataset.t;renderMus();return;
-    case 'musclose':{const t=musOpen;animOut('#sheetRoot .scrim, .musbox',()=>{musOpen=null;$('#sheetRoot').innerHTML='';if(t==='new')updAdd();else if(t==='draft')updDirty();else render()});return}
+    case 'musclose':{const t=musOpen;animOut('#sheetRoot .scrim, #sheetRoot .musbox',()=>{musOpen=null;$('#sheetRoot').innerHTML='';if(t==='new')updAdd();else if(t==='draft')updDirty();else render()});return}
     case 'mtog':{const t=musOpen,m=b.dataset.v;if(!t)return;justTick=m;
       if(t==='draft'&&exDraft){const l=exDraft.muscles,k=l.indexOf(m);if(k>-1)l.splice(k,1);else l.push(m);if(!l.includes(exDraft.main))exDraft.main=l[0]||null;renderMus();const f=$('#mf-draft');if(f)f.querySelector('span').innerHTML=musSummary(l,exDraft.main);updDirty();return}
       if(t==='new'){const k=newMus.indexOf(m);if(k>-1)newMus.splice(k,1);else newMus.push(m);if(!newMus.includes(newMain))newMain=newMus[0]||null;renderMus();updAdd();return}
@@ -1687,8 +1687,8 @@ function act(a,b){
     case 'psel':progEx=id;lastEx=id;fromSearch=true;animOut('#sheetRoot .scrim, .psheet',()=>{psOpen=false;$('#sheetRoot').innerHTML='';swapAnim='.pbar ~ *';render();window.scrollTo(0,0)});return;
     case 'pseg':{const v=b.dataset.v;if(v===progSeg)return;if(v==='ov'){if(!SPECIALS.includes(progEx))lastEx=progEx;progEx=lastOv}else{if(SPECIALS.includes(progEx))lastOv=progEx;progEx=lastEx&&plan.library[lastEx]?lastEx:null}progSeg=v;swapAnim='.pseg ~ *';break}
     case 'cmppick':cmpOpen=b.dataset.k;renderCmp();return;
-    case 'cmpset':if(cmpOpen==='A')cmpA=id;else cmpB=id;animOut('#sheetRoot .scrim, .musbox',()=>{cmpOpen=null;$('#sheetRoot').innerHTML='';swapAnim='.pbar ~ *';render()});return;
-    case 'cmpclose':animOut('#sheetRoot .scrim, .musbox',()=>{cmpOpen=null;$('#sheetRoot').innerHTML=''});return;
+    case 'cmpset':if(cmpOpen==='A')cmpA=id;else cmpB=id;animOut('#sheetRoot .scrim, #sheetRoot .musbox',()=>{cmpOpen=null;$('#sheetRoot').innerHTML='';swapAnim='.pbar ~ *';render()});return;
+    case 'cmpclose':animOut('#sheetRoot .scrim, #sheetRoot .musbox',()=>{cmpOpen=null;$('#sheetRoot').innerHTML=''});return;
     case 'pex':fromSearch=false;progEx=id;if(SPECIALS.includes(id))lastOv=id;swapAnim='.pills ~ *';render();{const pl=$('.pills');if(pl){const t=pl.getBoundingClientRect().top;if(t<0)window.scrollTo(0,window.scrollY+t-12)}}return;
     case 'yearpick':yearSel=yearSel===b.dataset.d?null:b.dataset.d;{const w=$('#hmw'),sl=w?w.scrollLeft:null;render();const w2=$('#hmw');if(w2&&sl!=null)w2.scrollLeft=sl}return;
     case 'openday':{const k=b.dataset.d,t=parse(today()),mon=addDays(t,-((t.getDay()+6)%7)),km=addDays(parse(k),-((parse(k).getDay()+6)%7));weekOff=Math.round((km-mon)/(7*864e5));viewKey=k;setView('today');window.scrollTo(0,0);break}
