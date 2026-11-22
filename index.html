@@ -666,7 +666,7 @@ html.locked,html.locked body{overscroll-behavior:none}
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=68, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=69, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Chest','Shoulders','Traps','Back','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs']],['Legs',['Glutes','Inner thighs','Quads','Hamstrings','Calves']]];
 const MUSCLES=MGROUPS.flatMap(g=>g[1]);
@@ -1055,9 +1055,14 @@ window.addEventListener('pagehide',saveNow);
 function setView(v){view=v;try{history.replaceState(history.state,'',v==='today'?location.pathname+location.search:'#'+v)}catch(e){}}
 function pillsFade(){const p=$('.pills');if(!p)return;const sel=p.querySelector('[aria-pressed="true"]');if(sel&&(sel.offsetLeft+sel.offsetWidth>p.scrollLeft+p.clientWidth||sel.offsetLeft<p.scrollLeft))p.scrollLeft=Math.max(0,sel.offsetLeft-16);const f=()=>p.classList.toggle('fade',p.scrollWidth-p.clientWidth-p.scrollLeft>4);f();p.addEventListener('scroll',f,{passive:true})}
 function smoothOK(){return !(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)}
-let wakeLock=null;
-async function syncWake(){try{const d=viewKey,st=stats(d),want=LS.get('awake')!==false&&view==='today'&&document.visibilityState==='visible'&&liveDay(d)&&!!(days[d]&&days[d].started&&!days[d].finished);
-  if(want&&!wakeLock&&navigator.wakeLock){wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{wakeLock=null})}else if(!want&&wakeLock){const w=wakeLock;wakeLock=null;await w.release()}}catch(e){wakeLock=null}}
+let wakeLock=null,wakePending=false;
+function wakeWanted(){const d=viewKey;return LS.get('awake')!==false&&view==='today'&&document.visibilityState==='visible'&&liveDay(d)&&!!(days[d]&&days[d].started&&!days[d].finished)}
+async function syncWake(){try{
+  if(wakeWanted()){if(wakeLock||wakePending||!navigator.wakeLock)return;wakePending=true;let s=null;try{s=await navigator.wakeLock.request('screen')}finally{wakePending=false}
+    if(!s)return;if(!wakeWanted()||wakeLock){try{await s.release()}catch(e){}if(wakeWanted()&&!wakeLock)syncWake();return}
+    wakeLock=s;s.addEventListener&&s.addEventListener('release',()=>{if(wakeLock===s)wakeLock=null})}
+  else if(wakeLock){const w=wakeLock;wakeLock=null;await w.release()}
+}catch(e){}}
 document.addEventListener('visibilitychange',()=>syncWake());
 function stickCheck(){const c=$('#pchg');if(!c)return;const top=parseFloat(getComputedStyle(c).top)||0;c.classList.toggle('stuck',c.getBoundingClientRect().top<=top+1&&window.scrollY>40)}
 window.addEventListener('scroll',stickCheck,{passive:true});
