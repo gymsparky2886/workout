@@ -576,6 +576,8 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 .card.dsaved{box-shadow:inset 0 0 0 2px var(--done);transition:box-shadow .6s ease}
 .addgo{width:100%;margin-top:14px;min-height:50px;font-size:16px}
 .addsheet .formgrid{margin-top:4px}
+html.locked,html.locked body{overscroll-behavior:none}
+.mlist,.musbox,.askbox,.protbox{overscroll-behavior:contain}
 .combo{position:relative}
 .combo .inp{padding-right:36px}
 
@@ -661,7 +663,7 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=62, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=63, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Chest','Shoulders','Traps','Back','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs']],['Legs',['Glutes','Inner thighs','Quads','Hamstrings','Calves']]];
 const MUSCLES=MGROUPS.flatMap(g=>g[1]);
@@ -1054,7 +1056,14 @@ async function syncWake(){try{const d=viewKey,st=stats(d),want=LS.get('awake')!=
 document.addEventListener('visibilitychange',()=>syncWake());
 function stickCheck(){const c=$('#pchg');if(!c)return;const top=parseFloat(getComputedStyle(c).top)||0;c.classList.toggle('stuck',c.getBoundingClientRect().top<=top+1&&window.scrollY>40)}
 window.addEventListener('scroll',stickCheck,{passive:true});
-function postRender(){stickCheck();syncWake();updDot();
+let lockY=null;
+function scrollLock(on){const b=document.body;if(on&&lockY==null){lockY=window.scrollY;b.style.position='fixed';b.style.top=(-lockY)+'px';b.style.left='0';b.style.right='0';b.style.width='100%';document.documentElement.classList.add('locked')}
+  else if(!on&&lockY!=null){const y=lockY;lockY=null;b.style.position='';b.style.top='';b.style.left='';b.style.right='';b.style.width='';document.documentElement.classList.remove('locked');window.scrollTo(0,y)}}
+function checkLock(){const open=!!(document.querySelector('#sheetRoot').children.length||document.querySelector('#addRoot').children.length);scrollLock(open)}
+const lockObs=new MutationObserver(checkLock);
+setTimeout(()=>{['sheetRoot','addRoot'].forEach(id=>{const el=document.getElementById(id);if(el)lockObs.observe(el,{childList:true})})},0);
+document.addEventListener('touchmove',e=>{if(lockY!=null&&!e.target.closest('.musbox,.askbox,.protbox,.tagbox,.mlist,.combo-list')){e.preventDefault()}},{passive:false});
+function postRender(){checkLock();stickCheck();syncWake();updDot();
   document.querySelectorAll('[data-k]').forEach(el=>{const k=el.dataset.k,to=el.style.width;if(smoothOK()&&barW[k]!=null&&barW[k]!==to){el.style.transition='none';el.style.width=barW[k];void el.offsetWidth;el.style.transition='';el.style.width=to}barW[k]=to});
   if(swapAnim&&smoothOK())document.querySelectorAll(swapAnim).forEach(e=>{e.classList.remove('enter');void e.offsetWidth;e.classList.add('enter')});swapAnim=null;
   if(chartAnim){const v=$('#view');v.classList.add('grow');setTimeout(()=>v.classList.remove('grow'),800);chartAnim=false}
@@ -1288,7 +1297,7 @@ function dayEditCard(){const w=plan.week[planDay];
     else h+='<div class="plist">'+w.items.map((it,idx)=>{if(!ex(it.ex))return '';const t=exType(it.ex),nw=justAdded===it.ex;return '<div class="prow'+(nw?' new':'')+'" data-row="'+idx+'"><button class="handle" data-i="'+idx+'" aria-label="Drag to reorder">'+I.grip+'</button><span class="nm">'+esc(exName(it.ex))+(nw?' <span class="newtag">NEW</span>':'')+'<small>'+TYPES[t]+'</small></span><input inputmode="numeric" aria-label="Sets" data-pi="'+idx+'" data-pf="sets" value="'+it.sets+'"><span class="x">×</span><input inputmode="numeric" aria-label="'+(t==='time'?'Seconds':'Reps')+'" data-pi="'+idx+'" data-pf="'+(t==='time'?'secs':'reps')+'" value="'+(t==='time'?(it.secs||it.reps||30):it.reps)+'">'+(t==='time'?'<span class="x">s</span>':'<span></span>')+'<button class="rm" data-act="rm" data-i="'+idx+'" aria-label="Remove '+esc(exName(it.ex))+'">✕</button></div>'}).join('')+'</div>';
     h+='<button class="ghost" data-act="addsheet">+ Add exercise</button>'}
   return h+'<div class="exfoot"><button class="btn" data-act="canceledit">Cancel</button><button class="btn primary" data-act="doneedit">Save</button></div></div>'}
-function renderAddSheet(){const r=$('#addRoot');if(!addSheet){r.innerHTML='';return}if(r.querySelector('.addsheet'))return;
+function renderAddSheet(){const r=$('#addRoot');if(!addSheet){r.innerHTML='';checkLock();return}if(r.querySelector('.addsheet'))return;
   r.innerHTML='<div class="scrim" data-act="addclose" style="z-index:39"></div><section class="musbox addsheet" role="dialog" aria-modal="true" aria-labelledby="adt" style="z-index:40"><div class="grab"></div><div class="ph"><h2 class="h2d" id="adt" style="font-size:24px">Add to '+DAYNAMES[planDay]+'</h2><button class="link" data-act="addclose">Cancel</button></div><div class="mlist"><div class="formgrid"><div class="field wide"><label for="pName">Exercise</label>'+comboHtml('pName','Exercise name')+'</div><div class="field wide"><span class="flabel">Type, for a new exercise</span>'+typeSeg()+'<p class="help">'+typeHelp()+'</p></div><div class="field wide"><span class="flabel">Muscles, for a new exercise</span>'+musField('new')+'</div><div class="field"><label for="pSets">Sets</label><input class="inp" id="pSets" inputmode="numeric" value="3"></div><div class="field"><label for="pReps">Reps or seconds</label><input class="inp" id="pReps" inputmode="numeric" value="10"></div></div><button class="btn primary addgo" data-act="padd" data-label="Add to '+DAYNAMES[planDay]+'">Add to '+DAYNAMES[planDay]+'</button></div></section>';updAdd()}
 function dayDirty(){if(!editSnap)return false;const a=editSnap.plan.week[planDay],b=plan.week[planDay];return JSON.stringify({n:a.name,r:!!a.rest,i:a.items})!==JSON.stringify({n:b.name,r:!!b.rest,i:b.items})}
 function snapSyncLib(){if(!planEditing||!editSnap)return;editSnap.plan.library=clone(plan.library);Object.values(editSnap.plan.week).forEach(w=>{w.items=w.items.filter(i=>plan.library[i.ex]&&!plan.library[i.ex].archived)});editSnap.days=clone(days)}
