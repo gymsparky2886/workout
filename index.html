@@ -41,9 +41,9 @@
   --pr:#F2C230;--pr-tint:#3A3015;--pr-text:#F5D77A;--warn:#F08A6A;--warn-tint:#3A1E16;--warn-text:#F5B49E;
   --hero:#232935;--hero-ink:#EEF1F5;--hero-muted:#A3ACBA;--hero-bar:#3A4252;--pill:#EEF1F5;--pill-ink:#12151B;--scrim:rgba(0,0,0,.6);--danger:#F2B8B5;--danger-ink:#601410;--prot:#A98BF5;--prot-text:#B9A0F8;--prot-tint:#2A2342;--amber-tint:#3A2A12;--amber-text:#F5C77A;--b-body:#20252E;--b-edge:#2C3340;--b-mus:#272D38;--b-line:#363E4B;color-scheme:dark}
 *,*::before,*::after{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;overflow-y:scroll;overscroll-behavior-y:contain}
+html{-webkit-text-size-adjust:100%;overflow-y:scroll;overscroll-behavior-y:contain;background:var(--bg);min-height:100%}
 body{overscroll-behavior-y:contain}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent;min-height:100%}
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -306,7 +306,7 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 .grab{width:40px;height:5px;border-radius:999px;background:var(--line);align-self:center}
 .sec h3{margin:0 0 8px;font-size:14px;font-weight:600}
 .setpage{display:flex;flex-direction:column;gap:12px;margin-top:16px}
-@media (min-width:900px){.setpage{display:block;column-count:2;column-gap:16px}.setpage>*{break-inside:avoid;margin-bottom:16px;display:flex}.setpage>p{display:block;column-span:all}}
+@media (min-width:900px){.setpage{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:16px;row-gap:16px;align-items:start}.setpage>*{margin-bottom:0;display:flex;min-width:0}.setpage>p{grid-column:1/-1;display:block}}
 .setpage .card{gap:8px}
 .seg{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);background:var(--sunk);border-radius:12px;padding:4px;gap:4px}
 .seg button{border:0;background:none;min-height:42px;border-radius:9px;color:var(--muted)}
@@ -358,8 +358,9 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 .weeks{display:flex;flex-direction:column;gap:12px}
 .weeks .recap{margin-top:0}
 @media (min-width:900px){.weeks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}}
-.foodrow{display:grid;grid-template-columns:minmax(0,1fr) 60px 14px 64px;gap:6px;align-items:center;margin-top:6px}
-.foodrow .inp{min-height:40px}
+.foodrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:center;margin-top:6px;position:relative}
+.food-tail{display:grid;grid-template-columns:60px 14px 64px;gap:6px;align-items:center;position:relative;flex:0 0 auto}
+.foodrow .inp{min-height:40px;min-width:0;max-width:100%}
 .foodrow .rm{border:0;background:none;color:var(--faint);min-width:40px;min-height:40px;justify-self:center}
 .foodrow .btn{padding:0;min-height:40px}
 .pbars{position:relative;display:flex;align-items:flex-end;gap:4px;height:130px}
@@ -709,6 +710,50 @@ html.locked,html.locked body{overscroll-behavior:none}
   .afnote .btns{max-width:520px}
 }
 
+/* v75: theme fill + fade, large-screen scale, protein Remove fit */
+html.theme-anim,html.theme-anim body{transition:background-color .22s ease,color .22s ease}
+@media (prefers-reduced-motion:reduce){html.theme-anim,html.theme-anim body{transition:none}}
+/* fluid desktop scale is applied in applyScale() so 100vw is not circular with html zoom */
+/* Item 18: overlay Remove — covers the tail only, name never moves */
+.food-tail .rm-cover,.prot-tail .rm-cover{position:absolute;inset:0;margin:0;min-height:0;height:100%;border-radius:10px;z-index:2;animation:rmIn .18s ease-out;white-space:nowrap}
+.rm-cover.noanim{animation:none!important}
+.arm-out .rm-cover{animation:rmOut .16s ease-in forwards}
+@keyframes rmIn{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
+@keyframes rmOut{to{opacity:0;transform:translateX(12px)}}
+.rr.protline{position:relative;gap:10px}
+.prot-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prot-tail{position:relative;flex:0 0 auto;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.prot-tail .rm{position:relative;z-index:0}
+/* Settings / session accordion */
+.card.sec .secbody,.sess-extra{display:grid;grid-template-rows:1fr;min-width:0}
+.card.sec.collapsed .secbody,.sesscard.sess-collapsed .sess-extra{grid-template-rows:0fr}
+.card.sec .secinner,.sess-extra .secinner{overflow:hidden;min-height:0}
+.card.sec.sec-anim .secbody,.sesscard.sec-anim .sess-extra{transition:grid-template-rows .22s cubic-bezier(.2,.8,.2,1)}
+.card.sec:not(.collapsed) .secsum{display:none}
+.sectog .chev{width:10px;height:10px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-135deg);transition:transform .22s cubic-bezier(.2,.8,.2,1);flex:0 0 auto;color:var(--muted);margin-right:2px}
+.card.sec.collapsed .chev{transform:rotate(45deg)}
+.sesscard:not(.sess-collapsed) .sessmore{display:none}
+.combo-list.closing{animation:cOut .15s ease-in forwards}
+@keyframes cOut{to{opacity:0;transform:translateY(-4px)}}
+.set.closing,.edbar.closing,.dnote.closing,.note.closing,.addform.closing,.dayedit.closing,.prow.closing,.signin.closing,.offbar.closing,.pchg.closing,.wrap.closing,.afwarn.closing,.afnote.closing,.wdone.closing,.guide.closing,.startbtn.closing,.mtapl.closing,.hm-det.closing,.exopen.closing{animation:slideClose .16s ease-in forwards}
+#view,main,.setpage,.card,.foodrow,.food-tail,.rr,.set,.afwarn,.afnote,.inprogrow,.barrow,.th,.prot-name,.prot-tail,.sesscard,.tgrid{min-width:0;max-width:100%}
+html,body{overflow-x:clip}
+@media (prefers-reduced-motion:reduce){
+  .rm-cover,.arm-out .rm-cover{animation:none!important}
+  .card.sec.sec-anim .secbody,.sesscard.sec-anim .sess-extra,.sectog .chev{transition:none!important}
+}
+@media (max-width:359px){
+  .food-tail{grid-template-columns:52px 12px 48px;gap:4px}
+  .wk{grid-template-columns:24px minmax(0,1fr) 24px;gap:2px;margin:8px 0 2px}
+  .wd b{width:26px;height:26px;font-size:13px}
+  .wd{font-size:9px;gap:2px}
+  .wl{max-width:28px;font-size:8px}
+  .datebtn{padding:8px 10px;font-size:13px;gap:4px}
+  .startbtn{font-size:16px;padding:14px 12px}
+  .inprogrow{gap:6px}
+  .afwarn .btn{min-width:0;padding:0 10px}
+}
+
 </style>
 <script src="firebase-config.js"></script>
 </head>
@@ -727,7 +772,7 @@ html.locked,html.locked body{overscroll-behavior:none}
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=74, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=76, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Neck','Traps','Upper chest','Lower chest','Front delts','Side delts','Rear delts','Upper back','Lats','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs','Obliques','Hip flexors']],['Legs',['Glutes','Outer hips','Inner thighs','Quads','Hamstrings','Calves','Shins']]];
 const LEGACY={Chest:['Upper chest','Lower chest'],Shoulders:['Front delts','Side delts','Rear delts'],Back:['Upper back','Lats'],Core:['Abs']};
@@ -767,7 +812,7 @@ let view=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'today', 
 let folded={},peek={},sessSheet=null,wpAnim=false,editSess=null,sessOpen={};
 let addSheet=false,justAdded=null,dayFlash=null;
 const DAYNAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-let planDay=new Date().getDay(), progEx=null, pendingRender=false, planEditing=false, editSnap=null, exOpen=null, exDraft=null, savedFlash=null, tagOpen=null, psOpen=false, psQ='', fromSearch=false, lastSearchView=false, cmpOpen=null, cmpA=null, cmpB=null, dnOpen=null, reorderOpen=false, swapAnim=null, openAnim=null, justDone=null, justTick=null, chartAnim=false, barW={}, musOpen=null, newMus=[], newMain=null, musTap=null, moreOpen=null, yearSel=null, protOpen=false, protArm=null, protArmT=null, protKeepInputs=false, vtBusy=false, protDayOpen=null, wpOpen=false, prSeen=new Set(), prReady=false, newType='weight', lastView=null, lastOpen={}, askState=null, bkCloudList=null;
+let planDay=new Date().getDay(), progEx=null, pendingRender=false, planEditing=false, editSnap=null, exOpen=null, exDraft=null, savedFlash=null, tagOpen=null, psOpen=false, psQ='', fromSearch=false, lastSearchView=false, cmpOpen=null, cmpA=null, cmpB=null, dnOpen=null, reorderOpen=false, swapAnim=null, openAnim=null, justDone=null, justTick=null, chartAnim=false, barW={}, musOpen=null, newMus=[], newMain=null, musTap=null, moreOpen=null, yearSel=null, protOpen=false, protArm=null, protArmT=null, protArmAnim=false, foodArm=null, foodArmT=null, foodArmAnim=false, protKeepInputs=false, vtBusy=false, protDayOpen=null, wpOpen=false, prSeen=new Set(), prReady=false, newType='weight', lastView=null, lastOpen={}, askState=null, bkCloudList=null;
 function emptyWeek(){const w={};for(let i=0;i<7;i++)w[i]={name:'',rest:false,items:[]};return w}
 function normPlan(p){
   p=p||{};const o={musOff:Array.isArray(p.musOff)?p.musOff.filter(m=>typeof m==='string'):[],v:3,unit:p.unit==='lb'?'lb':'kg',theme:(p.theme==='light'||p.theme==='dark')?p.theme:'auto',startedOn:p.startedOn||null,library:{},week:emptyWeek()};
@@ -1018,7 +1063,7 @@ function monthWrap(ym){const [Y,M]=ym.split('-').map(Number),last=new Date(Y,M,0
   ds.forEach(d=>{if(complete(d))wo++;const x=days[d];if(x)Object.keys(x.sets).forEach(id=>{const n=doneSets(d,id).length;if(n){sets+=n;per[id]=(per[id]||0)+n}});vol+=dayVol(d);prs(d).forEach(p=>prl.push(exName(p.id)+' '+fmtSet(p.t,p.tp)));if(plan.protein.goal&&started(d)){pd++;if(protOf(d)>=plan.protein.goal)ph++}});
   const topId=Object.keys(per).sort((a,b)=>per[b]-per[a])[0];
   return {wo,sets,vol:Math.round(vol),top:topId?exName(topId)+', '+per[topId]+' sets':null,prl,ph,pd,name:['January','February','March','April','May','June','July','August','September','October','November','December'][M-1]}}
-function wrapHtml(ym,dismiss){const w=monthWrap(ym);let h='<div class="card recap wrap"><div class="ph"><b class="rt">Your '+w.name+'</b>'+(dismiss?'<button class="link muted" data-act="wrapdismiss" data-m="'+ym+'" aria-label="Hide">✕</button>':'')+'</div>';
+function wrapHtml(ym,dismiss){const w=monthWrap(ym);let h='<div class="card recap wrap'+enterCls(justShow('wrap',true))+'"><div class="ph"><b class="rt">Your '+w.name+'</b>'+(dismiss?'<button class="link muted" data-act="wrapdismiss" data-m="'+ym+'" aria-label="Hide">✕</button>':'')+'</div>';
   if(ym===today().slice(0,7))h=h.replace('</b>',', so far</b>');
   h+='<div class="wstats"><div><b>'+w.wo+'</b><span>workouts</span></div><div><b>'+w.sets+'</b><span>sets</span></div><div><b>'+w.vol.toLocaleString()+'</b><span>'+plan.unit+' lifted</span></div></div>';
   if(w.top)h+='<div class="rr"><span>Most trained</span><span>'+esc(w.top)+'</span></div>';
@@ -1036,7 +1081,7 @@ function exFoot(id,dirty){return dirty?'<button class="btn" data-act="excancel" 
 function updDirty(){if(!exDraft)return;const id=exDraft.id,d=draftDirty(),box=document.querySelector('[data-exbox="'+id+'"]');if(!box)return;box.classList.toggle('dirty',d);const u=$('#exu-'+id);if(u)u.hidden=!d;const f=$('#exb-'+id);if(f&&f.dataset.d!==String(d)){f.innerHTML=exFoot(id,d);f.dataset.d=String(d)}}
 function flashSaved(id){savedFlash=id;clearTimeout(flashSaved.t);flashSaved.t=setTimeout(()=>{savedFlash=null;const r=document.querySelector('.exr.saved[data-ex="'+id+'"]');if(r){r.classList.remove('saved');const ok=r.querySelector('.savedok');if(ok)ok.outerHTML='<span class="chev" aria-hidden="true">›</span>'}},2200)}
 function applyDraft(skipName){const D=exDraft,e=plan.library[D.id];if(!skipName&&D.name.trim())e.name=D.name.trim();e.type=D.type;e.step=D.step||null;e.pinW=D.pinW||null;e.muscles=D.muscles.slice();e.main=D.main||null;e.mainSet=D.mainSet&&D.mainSet.length?D.mainSet.slice():null;savePlan()}
-function closeEx(id){const ob=document.querySelector('[data-exbox="'+id+'"]'),y=ob?ob.getBoundingClientRect().top:null;exOpen=null;exDraft=null;render();const r=document.querySelector('.exr[data-ex="'+id+'"]');if(r&&y!=null)window.scrollBy(0,r.getBoundingClientRect().top-y)}
+function closeEx(id){const ob=document.querySelector('[data-exbox="'+id+'"]'),y=ob?ob.getBoundingClientRect().top:null,go=()=>{exOpen=null;exDraft=null;render();const r=document.querySelector('.exr[data-ex="'+id+'"]');if(r&&y!=null)window.scrollBy(0,r.getBoundingClientRect().top-y)};if(ob&&wantAnim())animOut('[data-exbox="'+id+'"]',go);else go()}
 function plateau(id,at){
   const t=exType(id),cut=ymd(addDays(parse(at),-21)),ss=sessions(id).filter(x=>x.d<=at);
   const recent=ss.filter(x=>x.d>=cut),older=ss.filter(x=>x.d<cut);
@@ -1079,8 +1124,8 @@ function renderProt(){if(askState)return;if(view!=='plan'&&addSheet){addSheet=fa
   let h='<div class="grab"></div><div class="ph"><h2 id="ptitle" class="h2d" style="font-size:26px">Add protein</h2><button class="link" data-act="protclose">Close</button></div>';
   if(!plan.protein.goal)h+='<div class="field"><label for="pgoal1">First, your daily goal in grams</label><div class="inl"><input class="inp" id="pgoal1" inputmode="decimal" placeholder="150"><button class="btn primary" data-act="protgoal1">Save</button></div></div>';
   h+=plan.protein.foods.length?plan.protein.foods.map(f=>'<button class="food" data-act="protadd" data-f="'+f.id+'"><b>'+esc(f.name)+'</b><span class="g">+'+f.g+' g</span></button>').join(''):'<p class="help">Save your usual foods in Settings, Protein, for one-tap adding.</p>';
-  h+='<div><span class="flabel">Something else</span><div class="foodrow" style="margin-top:0"><input class="inp" id="pname" placeholder="Name (optional)" aria-label="Food name, optional" autocapitalize="sentences"><input class="inp" id="pother" inputmode="decimal" placeholder="30" aria-label="Grams of protein"><span class="x">g</span><button class="btn primary" data-act="protother">Add</button></div><label class="tickrow"><input type="checkbox" id="psave"> Save to my foods</label></div>';
-  h+='<div><span class="flabel">'+(d===today()?'Today':esc(fmtDate(d)))+': '+protOf(d)+' g'+(plan.protein.goal?' of '+plan.protein.goal:'')+'</span>'+(list.length?list.map((e,i)=>'<div class="rr"><span>'+esc(e.name)+'</span><span>'+e.g+' g '+(protArm===e.id?'<button class="rmconf" data-act="protdel" data-i="'+i+'" data-id="'+e.id+'">Remove</button>':'<button class="rm" data-act="protarm" data-id="'+e.id+'" aria-label="Remove '+esc(e.name)+'">✕</button>')+'</span></div>').join(''):'<p class="help">Nothing logged yet.</p>')+'</div></section>';
+  h+='<div><span class="flabel">Something else</span><div class="foodrow" style="margin-top:0"><input class="inp" id="pname" placeholder="Name (optional)" aria-label="Food name, optional" autocapitalize="sentences"><div class="food-tail"><input class="inp" id="pother" inputmode="decimal" placeholder="30" aria-label="Grams of protein"><span class="x">g</span><button class="btn primary" data-act="protother">Add</button></div></div><label class="tickrow"><input type="checkbox" id="psave"> Save to my foods</label></div>';
+  h+='<div><span class="flabel">'+(d===today()?'Today':esc(fmtDate(d)))+': '+protOf(d)+' g'+(plan.protein.goal?' of '+plan.protein.goal:'')+'</span>'+(list.length?list.map((e,i)=>'<div class="rr protline'+(justProt===e.id?' enter':'')+'"><span class="prot-name">'+esc(e.name)+'</span><span class="prot-tail">'+e.g+' g <button class="rm" data-act="protarm" data-id="'+e.id+'" aria-label="Remove '+esc(e.name)+'">✕</button>'+(protArm===e.id?'<button class="rmconf rm-cover'+(protArmAnim?'':' noanim')+'" data-act="protdel" data-i="'+i+'" data-id="'+e.id+'">Remove</button>':'')+'</span></div>').join(''):'<p class="help">Nothing logged yet.</p>')+'</div></section>';
   h=h.replace(/<\/section>$/,'');
   const box=r.querySelector('.protbox');
   if(box){const sc=box.scrollTop,ae=document.activeElement,aid=ae&&ae.id,keep={pname:$('#pname')&&$('#pname').value,pother:$('#pother')&&$('#pother').value,psave:$('#psave')&&$('#psave').checked};
@@ -1112,13 +1157,17 @@ function restoreSnap(sn){
   if(JSON.stringify(plan)!==JSON.stringify(sn.plan)){plan=normPlan(sn.plan);applyTheme(plan.theme);savePlan()}
   render();
 }
-function withUndo(msg,fn){const snap=takeSnap();fn();render();toast(msg,()=>restoreSnap(snap))}
+function withUndo(msg,fn){fn();render()}
 let tt=null,undoFn=null;function toast(m,undo,opt){opt=opt||{};const t=$('#toast');t.innerHTML='<span>'+esc(m)+'</span>'+(undo?'<button class="tbtn" data-act="undo">Undo</button>':'')+(opt.close?'<button class="tx" data-act="toastx" aria-label="Dismiss">×</button>':'');undoFn=undo||null;t.classList.toggle('act',!!(undo||opt.close));t.classList.add('show');clearTimeout(tt);if(!opt.sticky)tt=setTimeout(()=>{t.classList.remove('show','act');undoFn=null},undo?7000:3200)}
 function hideToast(){const t=$('#toast');t.classList.remove('show','act');undoFn=null}
 function softRender(){const a=document.activeElement;if(a&&a.matches&&a.matches('input,select')&&a.id!=='impfile'){pendingRender=true;return}render()}
 document.addEventListener('focusout',()=>setTimeout(()=>{if(!pendingRender)return;const a=document.activeElement;if(!(a&&a.matches&&a.matches('input,select'))){pendingRender=false;render()}},60));
+let themeReady=false;
 function applyTheme(v){v=v==='light'||v==='dark'?v:'auto';const r=document.documentElement;if(v==='auto')r.removeAttribute('data-theme');else r.setAttribute('data-theme',v);
-  const ms=document.querySelectorAll('meta[name="theme-color"]');if(ms.length===2){ms[0].content=v==='dark'?'#12151B':'#F2F3F0';ms[1].content=v==='light'?'#F2F3F0':'#12151B'}}
+  const dk=v==='dark'||(v!=='light'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);
+  r.style.background=dk?'#12151B':'#F2F3F0';
+  const ms=document.querySelectorAll('meta[name="theme-color"]');if(ms.length===2){ms[0].content=v==='dark'?'#12151B':'#F2F3F0';ms[1].content=v==='light'?'#F2F3F0':'#12151B'}
+  if(themeReady&&smoothOK()){r.classList.add('theme-anim');clearTimeout(applyTheme.t);applyTheme.t=setTimeout(()=>r.classList.remove('theme-anim'),280)}themeReady=true}
 
 /* ---------------- render ---------------- */
 function saveNow(){clearTimeout(lt);LS.set('plan',plan);LS.set('days',days);LS.set('pending',{days:[...dirtyDays],replace:[...replaceDays],plan:planDirty,all:replaceAll});clearTimeout(ct);if(user&&fdb&&(planDirty||dirtyDays.size)){const base='users/'+user.uid;
@@ -1129,17 +1178,16 @@ window.addEventListener('popstate',()=>{
   if(exiting)return;
   const rearm=()=>{try{history.pushState({guard:1},'',location.href)}catch(e){}};
   if(askState){closeAsk('cancel');rearm();return}
-  if(sessSheet){sessSheet=null;$('#sheetRoot').innerHTML='';rearm();return}
-  if(tagOpen){tagOpen=null;$('#sheetRoot').innerHTML='';rearm();render();return}
-  if(cmpOpen){cmpOpen=null;$('#sheetRoot').innerHTML='';rearm();return}
-  if(psOpen){psOpen=false;psQ='';$('#sheetRoot').innerHTML='';rearm();return}
+  if(sessSheet){animOut('#sheetRoot .scrim, #sheetRoot .musbox',()=>{sessSheet=null;$('#sheetRoot').innerHTML='';rearm()});return}
+  if(tagOpen){animOut('#sheetRoot .scrim, .tagbox',()=>{tagOpen=null;$('#sheetRoot').innerHTML='';rearm();render()});return}
+  if(cmpOpen){animOut('#sheetRoot .scrim, #sheetRoot .musbox',()=>{cmpOpen=null;$('#sheetRoot').innerHTML='';rearm()});return}
+  if(psOpen){animOut('#sheetRoot .scrim, .psheet',()=>{psOpen=false;psQ='';$('#sheetRoot').innerHTML='';rearm()});return}
   if(view==='progress'&&fromSearch){psOpen=true;fromSearch=false;rearm();renderPS();return}
-  if(protOpen){protOpen=false;rearm();render();return}
-  if(addSheet&&!musOpen){addSheet=false;renderAddSheet();rearm();return}
-  if(musOpen){const t=musOpen;musOpen=null;$('#sheetRoot').innerHTML='';rearm();if(t==='new')updAdd();else if(t==='draft')updDirty();else render();return}
-  if(editor||addOpen||noteOpen){editor=null;addOpen=false;noteOpen=null;rearm();render();return}
-  if(view==='plan'&&exOpen){exDraft=null;const id=exOpen,el=document.querySelector('[data-exbox="'+id+'"]'),y=el?el.getBoundingClientRect().top:null;exOpen=null;rearm();render();
-    const r=document.querySelector('.exr[data-ex="'+id+'"]');if(r&&y!=null)window.scrollBy(0,r.getBoundingClientRect().top-y);return}
+  if(protOpen){animOut('#sheetRoot .scrim, .protbox',()=>{protOpen=false;protArm=null;rearm();render()});return}
+  if(addSheet&&!musOpen){animOut('#addRoot .scrim, .addsheet',()=>{addSheet=false;renderAddSheet();rearm()});return}
+  if(musOpen){const t=musOpen;animOut('#sheetRoot .scrim, #sheetRoot .musbox',()=>{musOpen=null;$('#sheetRoot').innerHTML='';rearm();if(t==='new')updAdd();else if(t==='draft')updDirty();else render()});return}
+  if(editor||addOpen||noteOpen){const sel=editor?'.editor':(addOpen?'.addform':'.note,#noteIn');animOut(sel,()=>{editor=null;addOpen=false;noteOpen=null;rearm();render()});return}
+  if(view==='plan'&&exOpen){const id=exOpen,el=document.querySelector('[data-exbox="'+id+'"]'),y=el?el.getBoundingClientRect().top:null,go=()=>{exDraft=null;exOpen=null;rearm();render();const r=document.querySelector('.exr[data-ex="'+id+'"]');if(r&&y!=null)window.scrollBy(0,r.getBoundingClientRect().top-y)};if(el&&wantAnim())animOut('[data-exbox="'+id+'"]',go);else go();return}
   if(view==='plan'&&musOpen){musOpen=null;$('#sheetRoot').innerHTML='';rearm();render();return}
   if(planEditing){rearm();if(dayDirty()){ask({title:'Discard changes?',msg:'Your changes to '+(curSess().name||'this session')+' haven\'t been saved.',buttons:[{v:'discard',label:'Discard changes',style:'danger'},{v:'stay',label:'Keep editing'}]}).then(v=>{if(v==='discard')act('canceledit',document.body)});return}act('canceledit',document.body);return}
   if(view!=='today'){setView('today');rearm();render();window.scrollTo(0,0);return}
@@ -1187,22 +1235,25 @@ function filterEx(lock){const card=document.querySelector('[data-sec=ex]');if(!c
   card.querySelectorAll('.mcheck,.exgrp').forEach(e=>{e.hidden=!!q});const nm=card.querySelector('.exnone');if(nm)nm.hidden=!q||any}
 function postRender(){filterEx(false);checkLock();stickCheck();syncWake();updDot();
   document.querySelectorAll('[data-k]').forEach(el=>{const k=el.dataset.k,to=el.style.width;if(smoothOK()&&barW[k]!=null&&barW[k]!==to){el.style.transition='none';el.style.width=barW[k];void el.offsetWidth;el.style.transition='';el.style.width=to}barW[k]=to});
-  if(swapAnim&&smoothOK())document.querySelectorAll(swapAnim).forEach(e=>{e.classList.remove('enter');void e.offsetWidth;e.classList.add('enter')});swapAnim=null;
+  if(swapAnim&&wantAnim())document.querySelectorAll(swapAnim).forEach(e=>{e.classList.remove('enter');void e.offsetWidth;e.classList.add('enter')});swapAnim=null;
   if(chartAnim){const v=$('#view');v.classList.add('grow');setTimeout(()=>v.classList.remove('grow'),800);chartAnim=false}
-  openAnim=null;justDone=null;justTick=null;wpAnim=false}
-let noAnimOnce=false;
-function animOut(sel,cb){if(noAnimOnce){noAnimOnce=false;cb();return}const els=[...document.querySelectorAll(sel)];if(!els.length||!smoothOK()){cb();return}els.forEach(e=>e.classList.add('closing'));setTimeout(cb,170)}
+  openAnim=null;justDone=null;justTick=null;wpAnim=false;justSet=null;justBar=false;justNote=null;justDn=false;justProt=null;uiReady=true}
+let noAnimOnce=false,skipLayoutAnim=false,justSet=null,justBar=false,justNote=null,justDn=false,justProt=null,uiReady=false;
+function wantAnim(){return !!(smoothOK()&&!noAnimOnce&&!skipLayoutAnim)}
+function justShow(key,shown){const was=!!lastOpen[key];lastOpen[key]=!!shown;return !!(uiReady&&shown&&!was&&wantAnim())}
+function enterCls(on){return on?' enter':''}
+function animOut(sel,cb){if(noAnimOnce||skipLayoutAnim){noAnimOnce=false;cb();return}const els=[...document.querySelectorAll(sel)];if(!els.length||!smoothOK()){cb();return}els.forEach(e=>e.classList.add('closing'));setTimeout(cb,170)}
 function render(){document.body.classList.remove('editing');setTimeout(()=>{renderProt();renderMus();updAdd()},0);
   const now=today();if(viewKey>now)viewKey=now;
   document.querySelectorAll('.tabbar button').forEach(b=>{if(b.dataset.view===view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
-  const v=$('#view');if(view==='progress'&&(lastView!==view||swapAnim))chartAnim=true;if(lastView!==view){v.classList.remove('vin');void v.offsetWidth;v.classList.add('vin');lastView=view}
+  const v=$('#view');if(view==='progress'&&(lastView!==view||swapAnim))chartAnim=true;if(lastView!==view){if(wantAnim()){v.classList.remove('vin');void v.offsetWidth;v.classList.add('vin')}lastView=view}
   if(!editor)lastOpen['ed']=null;if(!exOpen)lastOpen['ex']=null;
   setTimeout(postRender,0);
-  const off=!navigator.onLine?'<div class="offbar">Offline · saving on this phone</div>':'';
+  const offShow=!navigator.onLine,off=offShow?'<div class="offbar'+enterCls(justShow('offbar',true))+'">Offline · saving on this phone</div>':(justShow('offbar',false),'');
   if(view==='today')v.innerHTML=off+todayHtml();else if(view==='plan')v.innerHTML=off+planHtml();else if(view==='settings')v.innerHTML=off+settingsHtml();else{v.innerHTML=off+progressHtml();pillsFade();const hw=$('#hmw');if(hw&&!yearSel)hw.scrollLeft=hw.scrollWidth}
   armAfTimer();maybeAfToast();
 }
-function signinBar(){return fbOn&&authKnown&&!user&&fbState!=='failed'&&!LS.get('hideSignin')?'<div class="signin"><span>Sign in to sync your devices.</span><span><button class="link" data-act="signin">Sign in</button><button class="x" data-act="hidesignin" aria-label="Hide this. Sign in later from Settings.">✕</button></span></div>':''}
+function signinBar(){const show=fbOn&&authKnown&&!user&&fbState!=='failed'&&!LS.get('hideSignin');return show?'<div class="signin'+enterCls(justShow('signin',true))+'"><span>Sign in to sync your devices.</span><span><button class="link" data-act="signin">Sign in</button><button class="x" data-act="hidesignin" aria-label="Hide this. Sign in later from Settings.">✕</button></span></div>':(justShow('signin',false),'')}
 function todayHtml(){
   legacyStart(viewKey);autoEnd(viewKey);
   const d=viewKey,t0=today(),isT=d===t0,x=days[d],w={name:weekPlanName(d)},items=visibleItems(d),st=stats(d),sk=streak();
@@ -1221,8 +1272,8 @@ function todayHtml(){
   h+=protRow(d);
   h+=bn;
   h+=planChangeCard(d);
-  if(x&&x.finished){const af=afFor(d,x.started);if(af.kind==='done'&&!af.dismissed)h+='<div class="card afnote"><b>Your workout was auto-finished after 3 hours of inactivity.</b><div class="btns"><button class="btn primary" data-act="resumewk">Resume</button><button class="btn" data-act="afkeepfin">Keep finished</button></div></div>';h+=doneCard(d,af.kind==='done'&&!af.dismissed)}
-  else if(liveDay(d)&&items.length&&!(x&&x.off)){if(x&&x.started){h+='<div class="inprogrow"><div class="inprog"><span class="dotlive"></span>Workout in progress</div>'+(hasDone(d)?'':'<button class="link" data-act="cancelwk">Cancel workout</button>')+'</div>';const idle=Date.now()-lastAct(x);const af=afFor(d,x.started);if(idle>=AF_WARN_MS&&idle<=SESSION_MS&&!af.bannerHidden)h+='<div class="afwarn" role="status"><div class="afline"><span class="afmsg">This workout auto-finishes in 30 min unless you log a set.</span><button class="afx" data-act="afdismiss" aria-label="Dismiss">×</button></div><button class="btn" data-act="afkeep">Keep going</button></div>';}else h+=(sessList().length?'<div class="btns sessbtns"><button class="btn" data-act="sessopen">Change session</button><button class="btn" data-act="off">Rest today</button></div>':'')+'<button class="startbtn" id="startbtn" data-act="startwk">▶ Start workout</button><p class="starthint" id="starthint" hidden>Tap Start workout first</p>'}
+  if(x&&x.finished){const af=afFor(d,x.started);if(af.kind==='done'&&!af.dismissed)h+='<div class="card afnote'+enterCls(justShow('afnote',true))+'"><b>Your workout was auto-finished after 3 hours of inactivity.</b><div class="btns"><button class="btn primary" data-act="resumewk">Resume</button><button class="btn" data-act="afkeepfin">Keep finished</button></div></div>';h+=doneCard(d,af.kind==='done'&&!af.dismissed)}
+  else if(liveDay(d)&&items.length&&!(x&&x.off)){if(x&&x.started){h+='<div class="inprogrow"><div class="inprog"><span class="dotlive"></span>Workout in progress</div>'+(hasDone(d)?'':'<button class="link" data-act="cancelwk">Cancel workout</button>')+'</div>';const idle=Date.now()-lastAct(x);const af=afFor(d,x.started);if(idle>=AF_WARN_MS&&idle<=SESSION_MS&&!af.bannerHidden)h+='<div class="afwarn'+enterCls(justShow('afwarn',true))+'" role="status"><div class="afline"><span class="afmsg">This workout auto-finishes in 30 min unless you log a set.</span><button class="afx" data-act="afdismiss" aria-label="Dismiss">×</button></div><button class="btn" data-act="afkeep">Keep going</button></div>';}else h+=(sessList().length?'<div class="btns sessbtns"><button class="btn" data-act="sessopen">Change session</button><button class="btn" data-act="off">Rest today</button></div>':'')+'<button class="startbtn'+enterCls(justShow('startbtn',true))+'" id="startbtn" data-act="startwk">▶ Start workout</button><p class="starthint" id="starthint" hidden>Tap Start workout first</p>'}
   if(isT&&parse(d).getDate()<=3&&hasContent(plan)){const pm=ymd(addDays(parse(d.slice(0,8)+'01'),-1)).slice(0,7);if(LS.get('wrapSeen')!==pm&&plan.startedOn&&plan.startedOn.slice(0,7)<=pm)h+=wrapHtml(pm,true)}
   h+=(x&&x.started&&!x.finished?'':guideHtml());
   if(!sessList().length&&!items.length&&LS.get('guide')!=='on'){h+='<div class="empty"><p>Create your sessions first: name one (like Push) and add its exercises.</p><button class="btn primary" data-act="goplan">Create a session</button></div>';return h}
@@ -1247,27 +1298,29 @@ function todayHtml(){
 }
 const wideMQ=window.matchMedia?window.matchMedia('(min-width:900px)'):null;
 function isWide(){return !!(wideMQ&&wideMQ.matches)}
-if(wideMQ&&wideMQ.addEventListener)wideMQ.addEventListener('change',()=>softRender());
-window.addEventListener('resize',()=>{if(view==='progress')pillsFade()});
+if(wideMQ&&wideMQ.addEventListener)wideMQ.addEventListener('change',()=>{skipLayoutAnim=true;noAnimOnce=true;softRender();setTimeout(()=>{skipLayoutAnim=false;noAnimOnce=false},60)});
+function applyScale(){const w=window.innerWidth,r=document.documentElement;if(w<1280){if(r.style.zoom)r.style.zoom='';return}const z=Math.min(1.6,Math.max(1,w/1440));if(r.style.zoom!==String(z))r.style.zoom=String(z)}
+applyScale();
+window.addEventListener('resize',()=>{applyScale();if(view==='progress')pillsFade()});
 function protRow(d){const g=plan.protein.goal,n=protOf(d);if(!g&&!n&&!plan.protein.foods.length)return '<div class="prot-start"><button class="link muted" data-act="protopen">+ Track protein</button></div>';
   const pct=g?Math.min(100,Math.round(n/g*100)):0;
   return '<div class="barrow prot"><div class="bar pbar" role="progressbar" aria-label="Protein" aria-valuemin="0" aria-valuemax="'+(g||0)+'" aria-valuenow="'+n+'"><i data-k="prot" style="width:'+pct+'%"></i></div><span><b>'+n+'</b>'+(g?' / '+g:'')+' g protein</span><button class="plus" data-act="protopen" aria-label="Add protein">+</button></div>'}
 function dayNoteHtml(d){const n=(days[d]&&days[d].note)||'';
-  if(dnOpen===d)return '<div class="card dnote"><label class="flabel" for="dnIn">Note for '+(d===today()?'today':esc(fmtDate(d)))+'</label><div class="inl"><input class="inp" id="dnIn" value="'+esc(n)+'" maxlength="160" placeholder="Slept badly, new gym, felt strong…"><button class="btn primary" data-act="dnclose">Done</button></div></div>';
+  if(dnOpen===d)return '<div class="card dnote'+enterCls(justDn||justShow('dnote',true))+'"><label class="flabel" for="dnIn">Note for '+(d===today()?'today':esc(fmtDate(d)))+'</label><div class="inl"><input class="inp" id="dnIn" value="'+esc(n)+'" maxlength="160" placeholder="Slept badly, new gym, felt strong…"><button class="btn primary" data-act="dnclose">Done</button></div></div>';
   if(n)return '<div class="dnote-show"><span>📝 '+esc(n)+'</span><button class="link" data-act="dnopen">Edit</button></div>';
   return '<div class="small-center"><button class="link muted" data-act="dnopen">+ Add a note for '+(d===today()?'today':'this day')+'</button></div>'}
 function guideHtml(){const g=LS.get('guide');if(g==='done')return '';if(g!=='on'){if(hasContent(plan))return '';LS.set('guide','on')}
   const lib=Object.keys(plan.library).filter(id=>!plan.library[id].archived),s1=sessList().some(k=>plan.sessions[k].items.length),s2=s1&&lib.every(id=>exMuscles(id).length),s3=!!plan.protein.goal;
   if(s1&&s2&&s3){LS.set('guide','done');return ''}
   const st=(ok,n,t,sub,act,btn)=>'<div class="gstep'+(ok?' ok':'')+'"><span class="gn">'+(ok?'✓':n)+'</span><span><b>'+t+'</b><small>'+sub+'</small></span>'+(ok?'':'<button class="btn'+(n===[!s1?1:!s2?2:3][0]?' primary':'')+'" data-act="'+act+'">'+btn+'</button>')+'</div>';
-  return '<div class="card guide"><div class="ph"><strong>Get set up</strong><button class="link muted" data-act="guideskip">Skip</button></div>'+
+  return '<div class="card guide'+enterCls(justShow('guide',true))+'"><div class="ph"><strong>Get set up</strong><button class="link muted" data-act="guideskip">Skip</button></div>'+
     st(s1,1,'Create your sessions','Name a session (like Push) and add its exercises','goplan','Start')+
     st(s2,2,'Pick muscles','So the body map knows what you trained','goplan','Pick')+
     st(s3,3,'Protein goal','Optional: a daily target for the protein bar','gosettings','Set')+'</div>'}
 function planSig(d){const k=sessOfDay(d)||sessFor(d);return sessName(k)+'|'+(k?plan.sessions[k].items.filter(i=>ex(i.ex)&&!ex(i.ex).archived):[]).map(i=>i.ex+':'+i.sets+':'+(i.reps||i.secs||'')).join(',')}
 function snapSig(d){const x=days[d];return (x.title||'')+'|'+(x.plan||[]).filter(i=>ex(i.ex)&&!ex(i.ex).archived).map(i=>i.ex+':'+i.sets+':'+(i.reps||i.secs||'')).join(',')}
 function planChangeCard(d){const x=days[d];if(d!==today()||!x||!isFrozen(d)||x.finished)return '';const ps=planSig(d);if(ps===snapSig(d)||x.planAck===ps)return '';
-  return '<div class="card pchg" id="pchg"><b>'+esc(sessName(sessOfDay(d))||'Your session')+' changed.</b><p class="help" style="margin:0">Use the new version today? Sets you already logged stay.</p><div class="btns"><button class="btn primary" data-act="plannew">Use new version</button><button class="btn" data-act="plankeep">Keep today as is</button></div></div>'}
+  return '<div class="card pchg'+enterCls(justShow('pchg',true))+'" id="pchg"><b>'+esc(sessName(sessOfDay(d))||'Your session')+' changed.</b><p class="help" style="margin:0">Use the new version today? Sets you already logged stay.</p><div class="btns"><button class="btn primary" data-act="plannew">Use new version</button><button class="btn" data-act="plankeep">Keep today as is</button></div></div>'}
 function liveDay(d){return d===today()||d===sessionDay()}
 function canFinish(d){const x=days[d];return !!(x&&x.started&&!x.finished&&liveDay(d))}
 function locked(d){if(!liveDay(d))return false;const x=days[d];return !(x&&x.started&&!x.finished)}
@@ -1275,7 +1328,7 @@ function legacyStart(d){const x=days[d];if(x&&!x.started&&!x.finished&&hasDone(d
 function autoEnd(d){const x=days[d];if(!x||!x.started||x.finished)return;const last=lastAct(x);if(Date.now()-last<=SESSION_MS)return;const st=x.started;if(hasDone(d)){x.finished=true;finishSession();touchDay(d);backupOnFinish();afSet({date:d,started:st,kind:'done',dismissed:false,bannerHidden:true})}else{x.started=null;finishSession();touchDay(d);afSet({date:d,started:st,kind:'cleared',dismissed:false,bannerHidden:true})}}
 function nudgeStart(){const b=$('#startbtn')||$('#resumebtn');if(!b){return}b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');const h=$('#starthint');if(h){h.hidden=false;clearTimeout(nudgeStart.t);nudgeStart.t=setTimeout(()=>{h.hidden=true},2600)}buzz();b.scrollIntoView({block:'nearest',behavior:smoothOK()?'smooth':'auto'})}
 function doneCard(d,hideResume){const st=stats(d),vol=Math.round(dayVol(d)),pr=prs(d),r=race(d),nm=weekPlanName(d)||'Workout';
-  return '<div class="card wdone"><div class="ph"><b class="wdt">'+esc(nm)+' done ✓</b><span class="help" style="margin:0">'+esc(dname(d)+' '+parse(d).getDate()+' '+MONTHS[parse(d).getMonth()])+'</span></div>'+
+  return '<div class="card wdone'+enterCls(justShow('wdone',true))+'"><div class="ph"><b class="wdt">'+esc(nm)+' done ✓</b><span class="help" style="margin:0">'+esc(dname(d)+' '+parse(d).getDate()+' '+MONTHS[parse(d).getMonth()])+'</span></div>'+
     '<div class="wstats"><div><b>'+st.n+'</b><span>'+(st.n===1?'set':'sets')+'</span></div><div><b>'+vol.toLocaleString()+'</b><span>'+plan.unit+' lifted</span></div><div><b>'+pr.length+'</b><span>'+(pr.length===1?'PR':'PRs')+'</span></div></div>'+
     (r&&r.final?'<p class="wbeat'+(r.pct>=0?'':' down')+'">'+(r.pct>0?'Beat last '+esc(nm)+' by '+r.pct+'%':r.pct===0?'Matched last '+esc(nm):'Short of last '+esc(nm)+' by '+(-r.pct)+'%')+'</p>':'')+
     pr.slice(0,2).map(p=>'<p class="wpr">PR: '+esc(exName(p.id))+' '+esc(fmtSet(p.t,p.tp))+'</p>').join('')+
@@ -1302,7 +1355,7 @@ function rowHtml(d,it,isAct){
 function cardHtml(d,it,items){
   const id=it.ex,t=exType(id),x=days[d],sets=(x&&x.sets[id])||[],rows=rowsFor(d,it),tg=rowTargets(d,id,it,rows),e=ex(id);
   let first=-1;for(let i=0;i<rows;i++){if(!valid(t,sets[i])){first=i;break}}
-  const isNew=lastOpen['card']!==d+'|'+id;lastOpen['card']=d+'|'+id;
+  const isNew=wantAnim()&&lastOpen['card']!==d+'|'+id;lastOpen['card']=d+'|'+id;
   let h='<section class="card'+(locked(d)?' lockd':'')+(isWide()?'':' dragi')+(isNew&&!vtBusy?' enter':'')+'" data-card="'+id+'" data-ex="'+id+'"'+(isWide()?'':' style="view-transition-name:vx-'+id+'"')+' aria-label="'+esc(exName(id))+'"><div class="card-head">'+(isWide()?'':'<button class="handle" aria-label="Drag to reorder '+esc(exName(id))+'">'+I.grip+'</button>')+'<h2 class="h2d'+(isWide()?'':' foldable')+'"'+(isWide()?'':' data-act="fold" data-ex="'+id+'" role="button" tabindex="0" aria-expanded="true"')+'>'+esc(exName(id))+'</h2><span class="goal">Goal '+goalTxt(t,it)+'</span></div>';
   h+='<div class="chips">'+(tg.has?'<span class="chip">Last '+esc(dname(tg.lastDate))+': '+esc(listTxt(t,tg.last))+'</span>':'<span class="chip">First time. This sets the bar.</span>')+'</div>';
   if(tg.has)h+='<div class="why">'+esc(tg.why)+'</div>';
@@ -1315,7 +1368,7 @@ function cardHtml(d,it,items){
     if(edHere&&editor.i===i){h+=editorHtml(t,s,tv,i);continue}
     if(valid(t,s))h+='<button class="set done'+(edHere?' dim':'')+(justDone===d+'|'+id+'|'+i?' pop':'')+'" data-act="editset" data-ex="'+id+'" data-i="'+i+'" aria-label="Set '+(i+1)+' done, '+esc(fmtSet(t,s))+'. Tap to change."><span class="n">Set '+(i+1)+(s.tag?tagBadge(s.tag):'')+'</span><span class="v vwrap">'+esc(fmtSetT(t,s))+(t==='weight'&&exBar(id)?'<span class="barsub">incl. '+esc(fw(exBar(id))+' '+plan.unit)+' bar</span>':'')+'</span><span class="r">'+I.check+'</span></button>';
     else{const cls=i===first?'next':'later',act=tv?'done':'editset';
-      h+='<button class="set '+cls+(edHere?' dim':'')+'" data-act="'+act+'" data-ex="'+id+'" data-i="'+i+'" aria-label="Set '+(i+1)+(tv?', '+esc(fmtSet(t,tv))+'. Tap when done.':'. Tap to enter numbers.')+'"><span class="n">Set '+(i+1)+(s.tag?tagBadge(s.tag):'')+'</span><span class="v">'+(tv?esc(fmtSet(t,tv)):'Enter numbers')+'</span><span class="r">'+(i===first&&tv?'Tap when done':'')+'</span></button>'}
+      h+='<button class="set '+cls+(edHere?' dim':'')+(justSet===d+'|'+id+'|'+i?' enter':'')+'" data-act="'+act+'" data-ex="'+id+'" data-i="'+i+'" aria-label="Set '+(i+1)+(tv?', '+esc(fmtSet(t,tv))+'. Tap when done.':'. Tap to enter numbers.')+'"><span class="n">Set '+(i+1)+(s.tag?tagBadge(s.tag):'')+'</span><span class="v">'+(tv?esc(fmtSet(t,tv)):'Enter numbers')+'</span><span class="r">'+(i===first&&tv?'Tap when done':'')+'</span></button>'}
   }
   if(first<0){const nx=(items||[]).find(o=>o.ex!==id&&doneSets(d,o.ex).length<rowsFor(d,o));
     h+=nx?'<div class="donebox'+(justDone&&justDone.indexOf('|'+id+'|')>0?' slide':'')+'"><b>'+esc(exName(id))+' done</b><button class="btn primary" data-act="focus" data-ex="'+nx.ex+'">Next: '+esc(exName(nx.ex))+'</button></div>'
@@ -1341,7 +1394,7 @@ function editorHtml(t,s,tv,i){
   const f=t==='pin'?[['w','Pin'],['r','Reps']]:t==='weight'?[['w','Weight ('+plan.unit+')'],['r','Reps']]:t==='reps'?[['r','Reps'],['w','Extra '+plan.unit]]:[['t','Seconds']];
   const ek=i+'|'+t;const isNewEd=lastOpen['ed']!==ek;lastOpen['ed']=ek;
   let h='<div class="editor setedit'+(isNewEd?' enter':'')+'" role="group" aria-label="Set '+(i+1)+' numbers"><div class="seh"><b>Set '+(i+1)+(s.done?' <span class="setick">✓</span> · editing':' · entering')+'</b><span>'+(s.done?'was '+esc(fmtSetT(t,s)):(tv?'target '+esc(fmtSet(t,tv)):'first time'))+'</span></div>';
-  f.forEach(([k,l])=>{h+='<div class="stepper"><label for="ed-'+k+'">'+l+'</label><button data-act="step" data-f="'+k+'" data-dir="-1" aria-label="Less">−</button><input id="ed-'+k+'" inputmode="decimal" value="'+esc(pick(k))+'" autocomplete="off"><button data-act="step" data-f="'+k+'" data-dir="1" aria-label="More">+</button></div>';if(t==='weight'&&k==='w'){const br=editor?exBar(editor.ex):null;if(br)h+='<div class="edbar"><label for="ed-bar">Bar</label><input id="ed-bar" inputmode="decimal" value="'+esc(fw(br))+'" autocomplete="off"><span class="barunit">'+plan.unit+'</span><button class="barx" data-act="barclear" aria-label="Remove bar">×</button></div>';else h+='<button class="barlink" type="button" data-act="baradd">+ Bar</button>'}});
+  f.forEach(([k,l])=>{h+='<div class="stepper"><label for="ed-'+k+'">'+l+'</label><button data-act="step" data-f="'+k+'" data-dir="-1" aria-label="Less">−</button><input id="ed-'+k+'" inputmode="decimal" value="'+esc(pick(k))+'" autocomplete="off"><button data-act="step" data-f="'+k+'" data-dir="1" aria-label="More">+</button></div>';if(t==='weight'&&k==='w'){const br=editor?exBar(editor.ex):null;if(br)h+='<div class="edbar'+enterCls(justBar)+'"><label for="ed-bar">Bar</label><input id="ed-bar" inputmode="decimal" value="'+esc(fw(br))+'" autocomplete="off"><span class="barunit">'+plan.unit+'</span><button class="barx" data-act="barclear" aria-label="Remove bar">×</button></div>';else h+='<button class="barlink" type="button" data-act="baradd">+ Bar</button>'}});
   h+='<div class="edbtns"><button class="btn" data-act="edcancel">Cancel</button>'+(s.done?'<button class="btn" data-act="edundo">Not done</button>':'')+'<button class="btn primary" data-act="edsave">'+(s.done?'Save':'Save as done')+'</button></div></div>';
   return h;
 }
@@ -1378,7 +1431,7 @@ function comboRender(inp){
   list.innerHTML=msg+(opts.length?opts.map((o,i)=>'<div class="combo-opt'+(o.create?' create':'')+'" role="option" id="co-'+i+'" aria-selected="'+(i===comboSel)+'" data-act="combopick" data-v="'+esc(o.v)+'">'+(o.create?'+ Create “'+esc(o.v)+'”':'<span><b>'+esc(o.v)+'</b><small>'+esc(o.sub)+'</small></span><span class="tag">'+esc(o.tag)+'</span>')+'</div>').join(''):(hi?'':'<div class="combo-empty">Nothing to add. Type a new name to create one.</div>'));
   if(comboSel>=0)inp.setAttribute('aria-activedescendant','co-'+comboSel);else inp.removeAttribute('aria-activedescendant');
 }
-function comboClose(inp){const box=inp&&inp.parentElement;if(!box||!box.classList.contains('combo'))return;box.classList.remove('open');inp.setAttribute('aria-expanded','false');const l=box.querySelector('.combo-list');l.hidden=true;l.innerHTML='';comboSel=-1;comboHint(inp)}
+function comboClose(inp){const box=inp&&inp.parentElement;if(!box||!box.classList.contains('combo'))return;const l=box.querySelector('.combo-list');const finish=()=>{box.classList.remove('open');inp.setAttribute('aria-expanded','false');if(l){l.hidden=true;l.innerHTML='';l.classList.remove('closing')}comboSel=-1;comboHint(inp)};if(l&&!l.hidden&&wantAnim()){l.classList.add('closing');setTimeout(finish,160)}else finish()}
 document.addEventListener('focusin',e=>{if(e.target.getAttribute&&e.target.getAttribute('role')==='combobox'){comboSel=-1;comboRender(e.target);if(!isWide()){const el=e.target;setTimeout(()=>{try{el.scrollIntoView({block:'start',behavior:'smooth'})}catch(x){el.scrollIntoView()}},60)}}});
 document.addEventListener('focusout',e=>{if(e.target.getAttribute&&e.target.getAttribute('role')==='combobox')setTimeout(()=>{if(document.activeElement!==e.target)comboClose(e.target)},120)});
 document.addEventListener('pointerdown',e=>{if(e.target.closest('.combo-opt'))e.preventDefault()});
@@ -1395,10 +1448,12 @@ function planHtml(){
   if(!L.length&&!planEditing)return h+'<div class="empty"><p>No sessions yet. Create one (like Push), add its exercises, then add the next.</p><button class="btn primary" data-act="newsess">+ New session</button></div>'+'<div class="pgrid">'+exListHtml(true)+'</div>';
   h+='<p class="help" style="margin:4px 0 0">Done in this order, then back to the first. Drag ⠿ to change the order.</p><div class="pgrid"><div class="sesslist">';
   L.forEach((k,n)=>{if(planEditing&&k===editSess){h+=dayEditCard();return}
-    const ss=plan.sessions[k],items=ss.items.filter(i=>ex(i.ex)&&!ex(i.ex).archived),op=!!sessOpen[k],shown=op?items:items.slice(0,2);
-    h+='<div class="card sesscard'+(k===nx?' isnext':'')+(dayFlash===k?' dsaved':'')+'" data-sess="'+k+'"><div class="sesshead"><button class="handle" aria-label="Drag to reorder '+esc(ss.name)+'">'+I.grip+'</button><button class="sesstap" data-act="sesstoggle" data-s="'+k+'" aria-expanded="'+op+'"><span class="snum">'+(n+1)+'</span><b>'+esc(ss.name||'Session')+'</b>'+(k===nx?'<span class="nexttag">NEXT</span>':'')+'</button><span class="dhr">'+(dayFlash===k?'<span class="savedok">Saved ✓</span>':'')+'<button class="link" data-act="dayedit" data-s="'+k+'">✎ Edit</button></span></div>';
+    const ss=plan.sessions[k],items=ss.items.filter(i=>ex(i.ex)&&!ex(i.ex).archived),op=!!sessOpen[k],first=items.slice(0,2),extra=items.slice(2);
+    h+='<div class="card sesscard'+(k===nx?' isnext':'')+(dayFlash===k?' dsaved':'')+(op?'':' sess-collapsed')+'" data-sess="'+k+'"><div class="sesshead"><button class="handle" aria-label="Drag to reorder '+esc(ss.name)+'">'+I.grip+'</button><button class="sesstap" data-act="sesstoggle" data-s="'+k+'" aria-expanded="'+op+'"><span class="snum">'+(n+1)+'</span><b>'+esc(ss.name||'Session')+'</b>'+(k===nx?'<span class="nexttag">NEXT</span>':'')+'</button><span class="dhr">'+(dayFlash===k?'<span class="savedok">Saved ✓</span>':'')+'<button class="link" data-act="dayedit" data-s="'+k+'">✎ Edit</button></span></div>';
     if(!items.length)h+='<p class="help" style="margin:4px 0 0">No exercises yet. Tap Edit to add some.</p>';
-    else h+='<div class="ro" data-act="sesstoggle" data-s="'+k+'">'+shown.map(it=>{const t=exType(it.ex);return '<div class="rorow"><span><b>'+esc(exName(it.ex))+'</b>'+(op?'<small>'+TYPES[t]+(exMuscles(it.ex).length?' · '+esc(exMuscles(it.ex).map(m=>m===exMain(it.ex)?m+' ★':m).join(', ')):'')+'</small>':'')+'</span><span class="g">'+goalTxt(t,it)+'</span></div>'}).join('')+(items.length>shown.length?'<p class="help sessmore">+'+(items.length-shown.length)+' more</p>':'')+'</div>';
+    else{const row=it=>{const t=exType(it.ex);return '<div class="rorow"><span><b>'+esc(exName(it.ex))+'</b></span><span class="g">'+goalTxt(t,it)+'</span></div>'};
+      h+='<div class="ro" data-act="sesstoggle" data-s="'+k+'">'+first.map(row).join('')+(extra.length?'<p class="help sessmore">+'+extra.length+' more</p>':'')+'</div>';
+      if(extra.length)h+='<div class="sess-extra"><div class="secinner">'+extra.map(row).join('')+'</div></div>'}
     h+='</div>'});
   if(planEditing&&editSess&&!L.includes(editSess))h+=dayEditCard();
   h+=(planEditing?'':'<button class="ghost" data-act="newsess">+ New session</button>')+'</div>';
@@ -1406,7 +1461,7 @@ function planHtml(){
   return h+'</div>';
 }
 function dayEditCard(){const w=curSess(),items=w.items.filter(i=>ex(i.ex)),isNewS=!!(editSnap&&editSnap.plan&&editSnap.plan.sessions&&!editSnap.plan.sessions[editSess]);
-  let h='<div class="card dayedit" data-sec="day"><b class="deh">Editing '+esc(w.name||'new session')+'</b><div class="field"><label for="dname">Session name</label><input class="inp" id="dname" value="'+esc(w.name)+'" placeholder="Push, Pull, Legs, Whole body…"></div>';
+  let h='<div class="card dayedit'+enterCls(justShow('dayedit',true))+'" data-sec="day"><b class="deh">Editing '+esc(w.name||'new session')+'</b><div class="field"><label for="dname">Session name</label><input class="inp" id="dname" value="'+esc(w.name)+'" placeholder="Push, Pull, Legs, Whole body…"></div>';
   h+='<span class="flabel">Exercises'+(items.length>1?' <span class="help" style="display:inline">(drag ⠿ to reorder, ✕ removes from this session only)</span>':'')+'</span>';
   if(!items.length)h+='<p class="help">No exercises yet.</p>';
   else h+='<div class="plist">'+w.items.map((it,idx)=>{if(!ex(it.ex))return '';const t=exType(it.ex),nw=justAdded===it.ex;return '<div class="prow'+(nw?' new':'')+'" data-row="'+idx+'"><button class="handle" data-i="'+idx+'" aria-label="Drag to reorder">'+I.grip+'</button><span class="nm">'+esc(exName(it.ex))+(nw?' <span class="newtag">NEW</span>':'')+'<small>'+TYPES[t]+'</small></span><input inputmode="numeric" aria-label="Sets" data-pi="'+idx+'" data-pf="sets" value="'+it.sets+'"><span class="x">×</span><input inputmode="numeric" aria-label="'+(t==='time'?'Seconds':'Reps')+'" data-pi="'+idx+'" data-pf="'+(t==='time'?'secs':'reps')+'" value="'+(t==='time'?(it.secs||it.reps||30):it.reps)+'">'+(t==='time'?'<span class="x">s</span>':'<span></span>')+'<button class="rm" data-act="rm" data-i="'+idx+'" aria-label="Remove '+esc(exName(it.ex))+'">✕</button></div>'}).join('')+'</div>';
@@ -1455,7 +1510,7 @@ function exListHtml(editing){
 function bkHtml(){loadCloudBackups();const l=backupList();
   if(!l.length)return '<p class="help">No automatic backups yet. One is saved the first time you open the app each day, and again when you finish a workout. The last 7 days are kept.</p>';
   return l.map(b=>'<div class="bkrow"><span>'+esc(fmtDate(b.date))+' <small>'+b.sets+(b.sets===1?' set':' sets')+'</small></span><button class="link" data-act="bkrestore" data-src="'+b.src+'" data-d="'+b.date+'">Restore</button></div>').join('')+'<p class="help">Saved when you first open the app each day, and when you finish a workout. Last 7 kept'+(user?', online too':'')+'.</p>'}
-function secCard(id,title,sum,body){const open=setOpen.has(id);return '<div class="card sec'+(open?'':' collapsed')+'"><button type="button" class="sectog" data-act="setsec" data-sec="'+id+'" aria-expanded="'+open+'"><span class="sectit"><h3>'+title+'</h3>'+(open?'':'<span class="secsum">'+sum+'</span>')+'</span><span class="chev" aria-hidden="true">'+(open?'⌃':'⌄')+'</span></button>'+(open?body:'')+'</div>'}
+function secCard(id,title,sum,body){const open=setOpen.has(id);return '<div class="card sec'+(open?'':' collapsed')+'" data-secid="'+id+'"><button type="button" class="sectog" data-act="setsec" data-sec="'+id+'" aria-expanded="'+open+'"><span class="sectit"><h3>'+title+'</h3><span class="secsum">'+sum+'</span></span><span class="chev" aria-hidden="true"></span></button><div class="secbody"><div class="secinner">'+body+'</div></div></div>'}
 function settingsHtml(){
   const seg=(act,cur,opts,label)=>'<div class="seg" role="radiogroup" aria-label="'+label+'">'+opts.map(([v,l])=>'<button role="radio" data-act="'+act+'" data-v="'+v+'" aria-checked="'+(v===cur)+'">'+l+'</button>').join('')+'</div>';
   let acct;
@@ -1467,8 +1522,8 @@ function settingsHtml(){
   return '<h1 class="big sm">Settings</h1><div class="setpage">'+
     '<div class="card sec"><h3>Account and sync</h3>'+acct+'</div>'+
     secCard('protein','Protein',plan.protein.goal?plan.protein.goal+' g':'No goal','<div class="field"><label for="pgoal">Daily goal (grams)</label><input class="inp" id="pgoal" inputmode="decimal" value="'+(plan.protein.goal||'')+'" placeholder="150"></div><span class="flabel">Your foods (one-tap add on Today)</span>'+
-      plan.protein.foods.map(f=>'<div class="foodrow"><input class="inp" data-fname="'+f.id+'" value="'+esc(f.name)+'" aria-label="Food name"><input class="inp" data-fg="'+f.id+'" inputmode="decimal" value="'+f.g+'" aria-label="Grams of protein"><span class="x">g</span><button class="rm" data-act="fooddel" data-f="'+f.id+'" aria-label="Delete '+esc(f.name)+'">✕</button></div>').join('')+
-      '<div class="foodrow"><input class="inp" id="nfName" placeholder="e.g. Protein shake" aria-label="New food name"><input class="inp" id="nfG" inputmode="decimal" placeholder="25" aria-label="Grams of protein"><span class="x">g</span><button class="btn primary" data-act="foodadd">Add</button></div>')+
+      plan.protein.foods.map(f=>'<div class="foodrow'+(foodArm===f.id?' armed':'')+'">'+'<input class="inp" data-fname="'+f.id+'" value="'+esc(f.name)+'" aria-label="Food name"><div class="food-tail"><input class="inp" data-fg="'+f.id+'" inputmode="decimal" value="'+f.g+'" aria-label="Grams of protein"><span class="x">g</span><button class="rm" data-act="foodarm" data-f="'+f.id+'" aria-label="Delete '+esc(f.name)+'">✕</button>'+(foodArm===f.id?'<button class="rmconf rm-cover'+(foodArmAnim?'':' noanim')+'" data-act="fooddel" data-f="'+f.id+'">Remove</button>':'')+'</div></div>').join('')+
+      '<div class="foodrow"><input class="inp" id="nfName" placeholder="e.g. Protein shake" aria-label="New food name"><div class="food-tail"><input class="inp" id="nfG" inputmode="decimal" placeholder="25" aria-label="Grams of protein"><span class="x">g</span><button class="btn primary" data-act="foodadd">Add</button></div></div>')+
     secCard('awake','During workouts',LS.get('awake')!==false?'Keep screen on':'Screen can sleep','<label class="toggle-row"><span>Keep screen on</span><input type="checkbox" class="sw" id="awakeT"'+(LS.get('awake')!==false?' checked':'')+'></label><p class="help">While a workout is going on Today, your screen won\'t dim or lock. This device only.</p>')+
     secCard('muscles','Muscle groups',(plan.musOff&&plan.musOff.length)?plan.musOff.length+' hidden':'All on','<p class="help" style="margin:0 0 6px">Turn off the ones you don’t track. They’re hidden from the muscle list and greyed on the body map; exercises keep their tags.</p><div class="mulist">'+MGROUPS.map(([g,ms])=>'<div class="mgrp">'+g+'</div>'+ms.map(m=>'<label class="toggle-row murow"><span>'+m+'</span><input type="checkbox" class="sw" data-muoff="'+m+'"'+(muOn(m)?' checked':'')+'></label>').join('')).join('')+'</div>')+
     secCard('unit','Weight unit',plan.unit,seg('unit',plan.unit,[['kg','kg'],['lb','lb']],'Weight unit')+'<p class="help">Switching converts all your numbers.</p>')+
@@ -1497,7 +1552,7 @@ function yearProgress(){const t0=today(),t=parse(t0),mon=addDays(t,-((t.getDay()
     for(let d=0;d<7;d++){const k=ymd(addDays(wk,d));if(k>t0){col+='<i class="hm-f"></i>';continue}const n=stats(k).n,lv=isOff(k)?'r':n>=15?4:n>=10?3:n>=5?2:n>0?1:0;
       col+='<button class="hm l'+lv+(k===t0?' now':'')+(k===yearSel?' sel':'')+'" data-act="yearpick" data-d="'+k+'" aria-label="'+esc(fmtDate(k))+', '+n+' sets"></button>'}
     cols+='<div class="hm-col">'+col+'</div>'}
-  let det='';if(yearSel){const n=stats(yearSel).n,nm=weekPlanName(yearSel);det='<div class="hm-det"><span><b>'+esc(fmtDate(yearSel))+'</b>'+(n?', '+esc(nm||'Workout')+', '+n+(n===1?' set':' sets'):isOff(yearSel)?', rest':', no sets')+'</span><button class="link" data-act="openday" data-d="'+yearSel+'">Open day</button></div>'}
+  let det='';if(yearSel){const n=stats(yearSel).n,nm=weekPlanName(yearSel);det='<div class="hm-det'+enterCls(justShow('hmdet',true))+'"><span><b>'+esc(fmtDate(yearSel))+'</b>'+(n?', '+esc(nm||'Workout')+', '+n+(n===1?' set':' sets'):isOff(yearSel)?', rest':', no sets')+'</span><button class="link" data-act="openday" data-d="'+yearSel+'">Open day</button></div>'}
   const yrSets=Object.keys(days).filter(k=>k>ymd(mon)).reduce((a,k)=>a+stats(k).n,0),yrDays=Object.keys(days).filter(k=>k>ymd(mon)&&stats(k).n).length;
   return '<div class="card"><div class="ph"><strong>Last 12 months</strong><span class="help" style="margin:0">'+yrDays+' training days, '+yrSets+' sets</span></div><div class="hm-wrap" id="hmw"><div class="hm-months">'+months+'</div><div class="hm-grid">'+cols+'</div></div>'+det+
     '<div class="hm-legend"><span>Less</span><i class="hm l0"></i><i class="hm l1"></i><i class="hm l2"></i><i class="hm l3"></i><i class="hm l4"></i><span>More</span><i class="hm lr" style="margin-left:10px"></i><span>Rest</span></div></div>'}
@@ -1508,7 +1563,7 @@ function musclesProgress(){const ws=lastDays(7),cnt={};MUSCLES.forEach(m=>cnt[m]
   const fig=(list0,dx)=>{const list=list0;return '<g transform="translate('+dx+' 0)"><path d="'+BODY.out+'" class="bsil"/><ellipse cx="100" cy="36" rx="18" ry="22" class="bsil"/>'+list.map(([m,d])=>{const o=muOn(m)?op(cnt[m]):0;return '<path d="'+d+'" class="bm'+(muOn(m)?'':' moff')+(o?' on':'')+(musTap===m?' tap':'')+'"'+(o?' style="fill-opacity:'+o+'"':'')+' data-act="mtap" data-v="'+m+'"><title>'+m+': '+fm(cnt[m])+' sets</title></path>'}).join('')+'</g>'};
   let svg='<svg viewBox="28 0 384 452" class="body" role="img" aria-label="Muscles trained in the last 7 days">'+fig(BODY.front,10)+fig(BODY.back,230)+'<text x="110" y="448" text-anchor="middle" class="bt">Front</text><text x="330" y="448" text-anchor="middle" class="bt">Back</text></svg>';
   let h='<div class="pgrid"><div class="card"><div class="ph"><strong>Last 7 days</strong><span class="help" style="margin:0">'+fm(tot)+' muscle sets</span></div><div class="bodywrap">'+svg+(tot?'':'<div class="bempty"><b>No sets in the last 7 days</b><span>Muscles light up as you train</span></div>')+'</div>';
-  h+=(musTap?'<div class="mtapl"><b>'+musTap+'</b>: '+fm(cnt[musTap])+' sets in the last 7 days</div>':'<p class="help" style="text-align:center;margin:4px 0 0">Tap a muscle for its sets.</p>');
+  h+=(musTap?'<div class="mtapl'+enterCls(justShow('mtapl',true))+'"><b>'+musTap+'</b>: '+fm(cnt[musTap])+' sets in the last 7 days</div>':'<p class="help" style="text-align:center;margin:4px 0 0">Tap a muscle for its sets.</p>');
   h+='<div class="hm-legend" style="justify-content:center"><i class="mzk none"></i><span>None</span><i class="mzk" style="opacity:.35"></i><span>1 to 4 sets</span><i class="mzk" style="opacity:.65"></i><span>5 to 9</span><i class="mzk"></i><span>10+</span></div></div>';
   const sorted=MUSCLES.filter(m=>muOn(m)&&cnt[m]).sort((a,b)=>cnt[b]-cnt[a]),none=MUSCLES.filter(m=>muOn(m)&&!cnt[m]);
   h+='<div class="card"><strong>Sets per muscle</strong>'+(sorted.length?sorted.map(m=>'<div class="rr"><span>'+m+'</span><span>'+fm(cnt[m])+'</span></div>').join(''):'<p class="help">Nothing in the last 7 days.</p>')+(none.length&&tot?'<p class="help">Not trained yet: '+none.join(', ')+'.</p>':'')+(untagged.size?'<p class="help">No muscles picked for: '+[...untagged].map(esc).join(', ')+'. Pick them in Plan, Your exercises.</p>':'')+'<p class="help">The main muscle of an exercise counts 1 set, the others half.</p></div></div>';
@@ -1639,7 +1694,7 @@ document.addEventListener('change',e=>{
   if(t.id==='impfile'&&t.files[0]){const r=new FileReader();r.onload=()=>{try{importData(JSON.parse(r.result))}catch(x){toast('That file is not a workout backup.')}};r.readAsText(t.files[0]);t.value=''}
 });
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){if(askState){closeAsk('cancel');return}if(editor){editor=null;render();return}}
+  if(e.key==='Escape'){if(askState){closeAsk('cancel');return}if(editor){animOut('.editor',()=>{editor=null;render()});return}if(protOpen){act('protclose');return}if(addSheet&&!musOpen){act('addclose');return}if(musOpen){act('musclose');return}if(sessSheet){act('sessclose');return}if(tagOpen){act('tagclose');return}if(psOpen){act('pscancel');return}if(cmpOpen){act('cmpclose');return}const cb=document.querySelector('.combo.open [role=combobox]');if(cb){comboClose(cb);return}}
   if(e.key!=='Enter')return;const id=e.target.id;
   if(['addName','addSets','addReps'].includes(id)){e.preventDefault();act('addday')}
   else if(['pName','pSets','pReps'].includes(id)){e.preventDefault();act('padd')}
@@ -1681,7 +1736,7 @@ function act(a,b){
         if(!isWide()){const c=document.querySelector('.card[data-card="'+id+'"]');if(c&&fromRow)window.scrollBy(0,c.getBoundingClientRect().top-y)}};
       const after=()=>{if(!isWide()&&!fromRow){const c=document.querySelector('.card[data-card="'+id+'"]');if(c){const t=c.getBoundingClientRect().top;if(t<0||t>window.innerHeight*0.45)c.scrollIntoView({block:'start',behavior:smoothOK()?'smooth':'auto'})}}};
       if(!isWide()&&smoothOK()&&document.startViewTransition){vtBusy=true;const vt=document.startViewTransition(apply);vt.finished.finally(()=>{vtBusy=false;after()})}
-      else{apply();after()}
+      else{if(isWide()&&wantAnim())swapAnim='.tgrid .card, .tgrid';apply();after()}
       return}
     case 'done':{if(locked(d)){nudgeStart();return}const i=+b.dataset.i,it=visibleItems(d).find(x=>x.ex===id);if(!it)return;const rows=rowsFor(d,it),tv=rowTargets(d,id,it,rows).rowList[i];if(!tv)return;
       const before=days[d]?clone(days[d]):null;
@@ -1700,11 +1755,11 @@ function act(a,b){
       stamp(ed.d);active[ed.d]=ed.ex;bumpSession(ed.d);touchDay(ed.d);buzz();justDone=ed.d+'|'+ed.ex+'|'+ed.i;animOut('.editor',()=>{editor=null;render()});return}
     case 'edundo':{const ed=editor;animOut('.editor',()=>{const s=setRow(ed.d,ed.ex,ed.i);s.done=false;touchDay(ed.d);editor=null;render()});return}
     case 'undo':{const f=undoFn;hideToast();if(f)f();return}
-    case 'finish':{delete peek[d];const x=getDay(d,true);x.finished=true;x.reopened=false;finishSession();touchDay(d);editor=null;moreOpen=null;backupOnFinish();render();window.scrollTo({top:0,behavior:smoothOK()?'smooth':'auto'});return}
-    case 'hidesignin':LS.set('hideSignin',true);break;
+    case 'finish':{delete peek[d];const x=getDay(d,true);x.finished=true;x.reopened=false;finishSession();touchDay(d);editor=null;moreOpen=null;backupOnFinish();lastOpen['wdone']=false;render();window.scrollTo({top:0,behavior:smoothOK()?'smooth':'auto'});return}
+    case 'hidesignin':animOut('.signin',()=>{LS.set('hideSignin',true);lastOpen['signin']=false;render()});return;
     case 'edcancel':animOut('.editor',()=>{editor=null;render()});return;
-    case 'addset':{if(locked(d)){nudgeStart();return}const x=snap(d);x.rows[id]=+b.dataset.rows+1;touchDay(d);break}
-    case 'dropset':{if(locked(d)){nudgeStart();return}const x=snap(d),n=+b.dataset.rows-1;x.rows[id]=n;x.sets[id]=(x.sets[id]||[]).slice(0,n);if(editor&&editor.i>=n)editor=null;touchDay(d);break}
+    case 'addset':{if(locked(d)){nudgeStart();return}const x=snap(d);x.rows[id]=+b.dataset.rows+1;justSet=d+'|'+id+'|'+(x.rows[id]-1);touchDay(d);break}
+    case 'dropset':{if(locked(d)){nudgeStart();return}const apply=()=>{const x=snap(d),n=+b.dataset.rows-1;x.rows[id]=n;x.sets[id]=(x.sets[id]||[]).slice(0,n);if(editor&&editor.i>=n)editor=null;touchDay(d);render()};const card=document.querySelector('.card[data-card="'+id+'"]')||b.closest('.card');const last=card&&[...card.querySelectorAll('.set,.editor.setedit')].pop();if(last&&wantAnim()){last.classList.add('closing');setTimeout(apply,170);return}apply();return}
     case 'skip':{const nDone=doneSets(d,id).length,nm=exName(id);
       const doSkip=()=>withUndo('Skipped '+nm+'.',()=>{const x=snap(d),inPlan=(x.plan||[]).some(i=>i.ex===id),k=x.extra.findIndex(e=>e.ex===id);delete x.sets[id];delete x.rows[id];
         if(!inPlan&&k>-1)x.extra.splice(k,1);else if(!x.skip.includes(id))x.skip.push(id);delete active[d];if(editor&&editor.ex===id)editor=null;touchDay(d,true)});
@@ -1712,24 +1767,24 @@ function act(a,b){
       else doSkip();return}
     case 'unskip':{const x=snap(d);x.skip=x.skip.filter(i=>i!==id);touchDay(d);break}
     case 'note':noteOpen=id;render();{const n=$('#noteIn');n&&n.focus()}return;
-    case 'noteclose':noteOpen=null;break;
+    case 'noteclose':animOut('.note input,.note .inl,#noteIn',()=>{noteOpen=null;render()});return;
     case 'openadd':addOpen=true;editor=null;moreOpen=null;render();{const f=$('.addform');if(f)f.scrollIntoView({block:'end',behavior:smoothOK()?'smooth':'auto'});const n=$('#addName');n&&n.focus({preventScroll:true})}return;
-    case 'closeadd':addOpen=false;break;
+    case 'closeadd':animOut('.addform',()=>{addOpen=false;render()});return;
     case 'addday':{const ai=$('#addName'),an=(ai.value||'').trim(),af=an?findEx(an):null;if(!af){comboClose(ai);comboHint(ai);ai.focus();return}
       const nid=af;if(plan.library[nid].archived)plan.library[nid].archived=false;
       if(!plan.startedOn)plan.startedOn=today();const x=snap(d);x.skip=x.skip.filter(i=>i!==nid);
       if(visibleItems(d).some(i=>i.ex===nid)){toast(exName(nid)+' is already on this day.');addOpen=false;active[d]=nid;break}
       if(!plannedItems(d).some(i=>i.ex===nid)){let g=goalItem(nid);x.extra.push({ex:nid,sets:g?g.sets:3,reps:g?g.reps:10})}
       active[d]=nid;addOpen=false;savePlan();touchDay(d);break}
-    case 'off':if(!liveDay(d))return;{const x=getDay(d,true);x.off=true;x.session=null;touchDay(d)}break;
-    case 'unoff':{const x=getDay(d,true);x.off=false;touchDay(d)}break;
+    case 'off':if(!liveDay(d))return;{const x=getDay(d,true);x.off=true;x.session=null;touchDay(d);swapAnim='#view .tgrid, #view .card, #view .startbtn, #view .restcard, #view .sessbtns, #view .guide, #view .barrow'}break;
+    case 'unoff':{const x=getDay(d,true);x.off=false;touchDay(d);swapAnim='#view .tgrid, #view .card, #view .startbtn, #view .restcard, #view .barrow'}break;
     case 'sessopen':sessSheet=d;renderSessSheet();return;
     case 'sessclose':animOut('#sheetRoot .scrim, #sheetRoot .musbox',()=>{sessSheet=null;$('#sheetRoot').innerHTML=''});return;
     case 'pickses':{const dd=sessSheet;if(!dd)return;const x=getDay(dd,true),k=b.dataset.s;x.off=false;if(k==='rest'){x.off=true;x.session=null}else{x.session=k;if(!liveDay(dd)){x.plan=clone(plan.sessions[k].items.filter(i=>ex(i.ex)&&!ex(i.ex).archived));x.title=sessName(k)}}touchDay(dd);animOut('#sheetRoot .scrim, #sheetRoot .musbox',()=>{sessSheet=null;$('#sheetRoot').innerHTML='';peek[dd]=!liveDay(dd);render()});return}
-    case 'pick':viewKey=b.dataset.d;editor=null;addOpen=false;noteOpen=null;break;
-    case 'today':viewKey=today();weekOff=0;editor=null;addOpen=false;break;
-    case 'wkprev':weekOff--;break;
-    case 'wknext':if(weekOff<0)weekOff++;break;
+    case 'pick':viewKey=b.dataset.d;editor=null;addOpen=false;noteOpen=null;swapAnim='#view .tgrid, #view .card, #view .startbtn, #view .restcard, #view .guide, #view .barrow, #view .inprogrow, #view .wdone, #view .afwarn, #view .afnote, #view .pchg';break;
+    case 'today':viewKey=today();weekOff=0;editor=null;addOpen=false;swapAnim='#view .tgrid, #view .card, #view .startbtn, #view .restcard, #view .guide, #view .barrow, #view .inprogrow, #view .wdone';break;
+    case 'wkprev':weekOff--;swapAnim='.weekpanel,.wk,.days7';break;
+    case 'wknext':if(weekOff<0)weekOff++;swapAnim='.weekpanel,.wk,.days7';break;
     case 'goplan':setView('plan');if(!sessList().length){act('newsess',b);return}break;
     case 'protopen':protOpen=true;render();setTimeout(()=>{const f=$('#pgoal1')||$('.protbox .food')||$('#pother');f&&f.focus()},30);return;
     case 'protday':protDayOpen=protDayOpen===b.dataset.d?null:b.dataset.d;break;
@@ -1740,27 +1795,27 @@ function act(a,b){
       if(t==='new'){const k=newMus.indexOf(m);if(k>-1)newMus.splice(k,1);else newMus.push(m);if(!newMus.includes(newMain))newMain=newMus[0]||null;renderMus();updAdd();return}
       const e=plan.library[t];if(!e)return;e.mainSet=null;const l=exMuscles(t).slice(),k=l.indexOf(m);if(k>-1)l.splice(k,1);else l.push(m);e.muscles=l;if(!l.includes(e.main))e.main=l[0]||null;savePlan();renderMus();return}
     case 'mmain':{const t=musOpen,m=b.dataset.v;if(t==='draft'&&exDraft){exDraft.mainSet=null;exDraft.main=m;renderMus();const f=$('#mf-draft');if(f)f.querySelector('span').innerHTML=musSummary(exDraft.muscles,m);updDirty();return}if(t==='new'){newMain=m;renderMus();updAdd();return}const e=plan.library[t];if(e){e.main=m;savePlan();renderMus()}return}
-    case 'mtap':musTap=musTap===b.dataset.v?null:b.dataset.v;break;
+    case 'mtap':{const nxt=musTap===b.dataset.v?null:b.dataset.v;if(!nxt&&musTap){animOut('.mtapl',()=>{musTap=null;lastOpen['mtapl']=false;render()});return}musTap=nxt;break}
     case 'settag':{const tg=tagOpen;if(!tg)return;const s=setRow(tg.d,tg.ex,tg.i);if(b.dataset.v)s.tag=b.dataset.v;else delete s.tag;touchDay(tg.d,true);animOut('#sheetRoot .scrim, .tagbox',()=>{tagOpen=null;$('#sheetRoot').innerHTML='';render()});return}
     case 'tagclose':animOut('#sheetRoot .scrim, .tagbox',()=>{tagOpen=null;$('#sheetRoot').innerHTML='';render()});return;
-    case 'dnopen':dnOpen=d;render();{const i=$('#dnIn');i&&i.focus()}return;
-    case 'dnclose':dnOpen=null;break;
+    case 'dnopen':dnOpen=d;justDn=true;render();{const i=$('#dnIn');i&&i.focus()}return;
+    case 'dnclose':animOut('.dnote',()=>{dnOpen=null;lastOpen['dnote']=false;render()});return;
     case 'reorder':reorderOpen=true;swapAnim='#view .reo';break;
     case 'reorderdone':reorderOpen=false;swapAnim='#view .acc, #view .tgrid';break;
-    case 'guideskip':LS.set('guide','done');break;
+    case 'guideskip':animOut('.guide',()=>{LS.set('guide','done');lastOpen['guide']=false;render()});return;
     case 'gosettings':setView('settings');window.scrollTo(0,0);break;
-    case 'cancelwk':{if(hasDone(d)||!canFinish(d))return;confirmAsk('Cancel this workout?','Nothing has been logged, so it will be as if you never started.','Cancel workout').then(ok=>{if(!ok)return;const x=getDay(d,true);x.started=null;x.finished=false;x.plan=null;x.title=null;x.session=null;x.planAck=null;x.t0=null;x.t1=null;editor=null;moreOpen=null;delete peek[d];delete active[d];finishSession();afClear();touchDay(d);render()});return}
-    case 'setsec':{const k=b.dataset.sec;if(setOpen.has(k))setOpen.delete(k);else setOpen.add(k);render();return}
-    case 'baradd':{if(!editor)return;const exid=editor.ex;if(!exBar(exid)){plan.library[exid].bar=DEF_BAR;savePlan()}render();const f=$('#ed-bar');if(f&&isFine())f.focus();return}
-    case 'barclear':{if(!editor)return;plan.library[editor.ex].bar=null;savePlan();render();return}
-    case 'afkeep':{const x=days[d];if(!x||!x.started||x.finished)return;x.t1=Date.now();bumpSession(d);touchDay(d);const a=afGet();if(a.date===d){a.bannerHidden=false;LS.set('af',a)}render();return}
-    case 'afdismiss':{const x=days[d];if(x&&x.started)afSet({date:d,started:x.started,bannerHidden:true});render();return}
-    case 'afkeepfin':{const a=afGet();if(a.kind==='done'){a.dismissed=true;LS.set('af',a)}render();return}
+    case 'cancelwk':{if(hasDone(d)||!canFinish(d))return;confirmAsk('Cancel this workout?','Nothing has been logged, so it will be as if you never started.','Cancel workout').then(ok=>{if(!ok)return;const go=()=>{const x=getDay(d,true);x.started=null;x.finished=false;x.plan=null;x.title=null;x.session=null;x.planAck=null;x.t0=null;x.t1=null;editor=null;moreOpen=null;delete peek[d];delete active[d];finishSession();afClear();touchDay(d);saveNow();lastOpen['startbtn']=false;render()};animOut('.inprogrow,.inprog,.tgrid .card,[data-act=cancelwk]',go)});return}
+    case 'setsec':{const k=b.dataset.sec;if(setOpen.has(k))setOpen.delete(k);else setOpen.add(k);const card=b.closest('.card.sec')||document.querySelector('.card.sec[data-secid="'+k+'"]');if(card&&wantAnim()){card.classList.add('sec-anim');card.classList.toggle('collapsed',!setOpen.has(k));b.setAttribute('aria-expanded',setOpen.has(k));return}render();return}
+    case 'baradd':{if(!editor)return;const exid=editor.ex;if(!exBar(exid)){plan.library[exid].bar=DEF_BAR;savePlan()}justBar=true;render();const f=$('#ed-bar');if(f&&isFine())f.focus();return}
+    case 'barclear':{if(!editor)return;const go=()=>{plan.library[editor.ex].bar=null;savePlan();render()};animOut('.edbar',go);return}
+    case 'afkeep':{if(!days[d]||!days[d].started||days[d].finished)return;const go=()=>{const x=days[d];x.t1=Date.now();bumpSession(d);touchDay(d);const a=afGet();if(a.date===d){a.bannerHidden=false;LS.set('af',a)}lastOpen['afwarn']=false;render()};if(document.querySelector('.afwarn'))animOut('.afwarn',go);else go();return}
+    case 'afdismiss':{animOut('.afwarn',()=>{const x=days[d];if(x&&x.started)afSet({date:d,started:x.started,bannerHidden:true});lastOpen['afwarn']=false;render()});return}
+    case 'afkeepfin':{animOut('.afnote',()=>{const a=afGet();if(a.kind==='done'){a.dismissed=true;LS.set('af',a)}lastOpen['afnote']=false;render()});return}
     case 'toastx':{const a=afGet();if(a.kind==='cleared'&&!a.dismissed){a.dismissed=true;LS.set('af',a)}hideToast();return}
-    case 'startwk':{wpOpen=false;delete folded[d];peek[d]=true;delete active[d];const x=getDay(d,true);const sk=sessFor(d);x.plan=clone(weekItems(d));x.title=sessName(sk);x.session=sk;x.planAck=null;x.started=Date.now();x.finished=false;touchDay(d);bumpSession(d);afClear();render();return}
-    case 'resumewk':{const x=getDay(d,true);x.finished=false;x.started=x.started||Date.now();x.t1=Date.now();touchDay(d);bumpSession(d);afClear();render();return}
-    case 'plannew':{const x=getDay(d,true);const sk=sessOfDay(d);x.session=sk;x.plan=sk?clone(plan.sessions[sk].items.filter(i=>ex(i.ex)&&!ex(i.ex).archived)):[];x.title=sessName(sk);x.planAck=null;touchDay(d);break}
-    case 'plankeep':{const x=getDay(d,true);x.planAck=planSig(d);touchDay(d);break}
+    case 'startwk':{const go=()=>{wpOpen=false;delete folded[d];peek[d]=true;delete active[d];const x=getDay(d,true);const sk=sessFor(d);x.plan=clone(weekItems(d));x.title=sessName(sk);x.session=sk;x.planAck=null;x.started=Date.now();x.finished=false;touchDay(d);bumpSession(d);afClear();lastOpen['startbtn']=false;lastOpen['guide']=false;render()};const sel=['#startbtn','.startbtn','.guide','.starthint','.sessbtns'];if(!isWide())sel.push('.weekpanel');animOut(sel.join(','),go);return}
+    case 'resumewk':{animOut('.wdone,.afnote',()=>{const x=getDay(d,true);x.finished=false;x.started=x.started||Date.now();x.t1=Date.now();touchDay(d);bumpSession(d);afClear();lastOpen['wdone']=false;lastOpen['afnote']=false;render()});return}
+    case 'plannew':{animOut('.pchg',()=>{const x=getDay(d,true);const sk=sessOfDay(d);x.session=sk;x.plan=sk?clone(plan.sessions[sk].items.filter(i=>ex(i.ex)&&!ex(i.ex).archived)):[];x.title=sessName(sk);x.planAck=null;touchDay(d);lastOpen['pchg']=false;render()});return}
+    case 'plankeep':{animOut('.pchg',()=>{const x=getDay(d,true);x.planAck=planSig(d);touchDay(d);lastOpen['pchg']=false;render()});return}
     case 'unskipall':{const x=snap(d);x.skip=[];touchDay(d);break}
     case 'combotoggle':{const inp=b.parentElement.querySelector('input');if(!inp)return;if(b.parentElement.classList.contains('open'))comboClose(inp);else{comboSel=-1;comboRender(inp)}return}
     case 'excancel':closeEx(id);return;
@@ -1774,15 +1829,16 @@ function act(a,b){
     case 'addclose':animOut('#addRoot .scrim, .addsheet',()=>{addSheet=false;renderAddSheet()});return;
     case 'protclose':protArm=null;animOut('#sheetRoot .scrim, .protbox',()=>{protOpen=false;render()});return;
     case 'protgoal1':{const g=num($('#pgoal1').value);if(!(g>0)){toast('Type your daily goal in grams.');return}plan.protein.goal=r1(g);savePlan();break}
-    case 'protadd':{const f=plan.protein.foods.find(x=>x.id===b.dataset.f);if(!f)return;const x=getDay(viewKey,true);x.protein.push({id:newId(),name:f.name,g:f.g});touchDay(viewKey);protKeepInputs=true;break}
+    case 'protadd':{const f=plan.protein.foods.find(x=>x.id===b.dataset.f);if(!f)return;const x=getDay(viewKey,true),nid=newId();x.protein.push({id:nid,name:f.name,g:f.g});justProt=nid;touchDay(viewKey);protKeepInputs=true;break}
     case 'protother':{const g=num($('#pother').value);if(!(g>0)){toast('Type the grams.');$('#pother').focus();return}
-      const nm=($('#pname').value||'').trim(),gg=r1(g),x=getDay(viewKey,true);x.protein.push({id:newId(),name:nm||'Other',g:gg});touchDay(viewKey);
+      const nm=($('#pname').value||'').trim(),gg=r1(g),x=getDay(viewKey,true),nid=newId();x.protein.push({id:nid,name:nm||'Other',g:gg});justProt=nid;touchDay(viewKey);
       if(nm&&$('#psave').checked&&!plan.protein.foods.some(f=>f.name.toLowerCase()===nm.toLowerCase())){plan.protein.foods.push({id:newId(),name:nm,g:gg});savePlan()}
       break}
-    case 'protarm':{protArm=b.dataset.id;clearTimeout(protArmT);protArmT=setTimeout(()=>{protArm=null;if(protOpen)renderProt()},3000);protKeepInputs=true;renderProt();return}
+    case 'protarm':{protArm=b.dataset.id;protArmAnim=true;clearTimeout(protArmT);protArmT=setTimeout(()=>{const el=document.querySelector('.protline .rm-cover');const done=()=>{protArm=null;protArmAnim=false;if(protOpen)renderProt()};if(el&&wantAnim()){el.closest('.protline').classList.add('arm-out');setTimeout(done,160)}else done()},3000);protKeepInputs=true;renderProt();protArmAnim=false;return}
     case 'protdel':{clearTimeout(protArmT);protArm=null;const x=getDay(viewKey,true),k=x.protein.findIndex(e=>e.id===b.dataset.id);if(k>-1)x.protein.splice(k,1);touchDay(viewKey,true);protKeepInputs=true;render();return}
     case 'foodadd':{const n=($('#nfName').value||'').trim(),g=num($('#nfG').value);if(!n||!(g>0)){toast('Type a food name and its grams of protein.');return}plan.protein.foods.push({id:newId(),name:n,g:r1(g)});savePlan();break}
-    case 'fooddel':plan.protein.foods=plan.protein.foods.filter(f=>f.id!==b.dataset.f);savePlan();break;
+    case 'foodarm':{foodArm=b.dataset.f;foodArmAnim=true;clearTimeout(foodArmT);foodArmT=setTimeout(()=>{const el=document.querySelector('.foodrow.armed');const done=()=>{foodArm=null;foodArmAnim=false;if(view==='settings')render()};if(el&&wantAnim()){el.classList.add('arm-out');setTimeout(done,160)}else done()},3000);render();foodArmAnim=false;return}
+    case 'fooddel':{clearTimeout(foodArmT);foodArm=null;foodArmAnim=false;plan.protein.foods=plan.protein.foods.filter(f=>f.id!==b.dataset.f);savePlan();break}
     case 'deload':{const t0=today();plan.deload[id]={from:t0,until:ymd(addDays(parse(t0),6))};savePlan();break}
     case 'enddeload':delete plan.deload[id];savePlan();break;
     case 'snooze':plan.snooze[id]=ymd(addDays(parse(today()),7));savePlan();break;
@@ -1793,8 +1849,10 @@ function act(a,b){
     case 'newsess':{const go=()=>{exOpen=null;exDraft=null;justAdded=null;startEdit();const id='s'+Date.now().toString(36);plan.sessions[id]={name:'',items:[]};plan.order.push(id);editSess=id;savePlan();render();const c=document.querySelector('.dayedit');if(c){c.scrollIntoView({block:'start',behavior:smoothOK()?'smooth':'auto'});const n=$('#dname');n&&n.focus()}};
       if(planEditing&&dayDirty()){ask({title:'Save '+(curSess().name||'this session')+' first?',msg:'You have unsaved changes.',buttons:[{v:'save',label:'Save',style:'primary'},{v:'discard',label:'Discard changes'},{v:'stay',label:'Keep editing'}]}).then(v=>{if(v==='save'){finishEdit();go()}else if(v==='discard'){const sn=editSnap;planEditing=false;editSnap=null;if(sn)restoreSnap(sn);go()}});return}
       if(planEditing)finishEdit();go();return}
-    case 'sesstoggle':{const k=b.dataset.s,c=document.querySelector('.sesscard[data-sess="'+k+'"]'),y=c?c.getBoundingClientRect().top:0;sessOpen[k]=!sessOpen[k];render();const c2=document.querySelector('.sesscard[data-sess="'+k+'"]');if(c2)window.scrollBy(0,c2.getBoundingClientRect().top-y);return}
-    case 'delsess':{const k=editSess,nm=curSess().name||'this session';confirmAsk('Delete '+nm+'?','It stops being suggested. Workouts you already did with it stay in your history.','Delete','danger').then(ok=>{if(!ok)return;const sn=editSnap;planEditing=false;editSnap=null;if(sn)restoreSnap(sn);delete plan.sessions[k];plan.order=plan.order.filter(x=>x!==k);editSess=null;savePlan();render()});return}
+    case 'sesstoggle':{const k=b.dataset.s,c=document.querySelector('.sesscard[data-sess="'+k+'"]'),y=c?c.getBoundingClientRect().top:0;sessOpen[k]=!sessOpen[k];if(c&&wantAnim()&&(c.querySelector('.sess-extra')||c.querySelector('.sessmore')||true)){c.classList.add('sec-anim');c.classList.toggle('sess-collapsed',!sessOpen[k]);const btn=c.querySelector('.sesstap');if(btn)btn.setAttribute('aria-expanded',!!sessOpen[k]);return}render();const c2=document.querySelector('.sesscard[data-sess="'+k+'"]');if(c2)window.scrollBy(0,c2.getBoundingClientRect().top-y);return}
+    case 'delsess':{if(b&&b.dataset.d){const dd=b.dataset.d,x=days[dd];if(!x||!x.sets[id])return;const n=doneSets(dd,id).length;
+      confirmAsk('Delete this session?',exName(id)+' on '+fmtDate(dd)+', '+n+(n===1?' set':' sets')+'. Your plan and other exercises stay.','Delete session').then(ok=>{if(ok)withUndo('Session deleted.',()=>{delete x.sets[id];delete x.rows[id];touchDay(dd,true)})});return}
+      const k=editSess,nm=curSess().name||'this session';confirmAsk('Delete '+nm+'?','It stops being suggested. Workouts you already did with it stay in your history.','Delete','danger').then(ok=>{if(!ok)return;const sn=editSnap;planEditing=false;editSnap=null;if(sn)restoreSnap(sn);delete plan.sessions[k];plan.order=plan.order.filter(x=>x!==k);editSess=null;savePlan();render()});return}
     case 'editweek':case 'dayedit':{const k=b.dataset.s||editSess||sessList()[0];if(!k)return;const go=()=>{keepPlace(()=>{exOpen=null;exDraft=null;justAdded=null;startEdit();editSess=k;render()});const c=document.querySelector('.dayedit');if(c&&c.getBoundingClientRect().top<0)c.scrollIntoView({block:'start',behavior:smoothOK()?'smooth':'auto'})};
       if(planEditing&&editSess!==k&&dayDirty()){ask({title:'Save '+(curSess().name||'this session')+' first?',msg:'You changed '+(curSess().name||'this session')+'. Save before editing another?',buttons:[{v:'save',label:'Save',style:'primary'},{v:'discard',label:'Discard changes'},{v:'stay',label:'Keep editing'}]}).then(v=>{if(v==='save'){finishEdit();go()}else if(v==='discard'){const sn=editSnap;planEditing=false;editSnap=null;if(sn)restoreSnap(sn);go()}});return}
       if(planEditing&&editSess!==k)finishEdit();go();return}
@@ -1817,8 +1875,8 @@ function act(a,b){
           Object.values(plan.sessions).forEach(w=>{w.items=w.items.filter(i=>i.ex!==id)});delete plan.library[id];
           if(progEx===id)progEx=null;if(exOpen===id)exOpen=null;Object.keys(active).forEach(k=>{if(active[k]===id)delete active[k]});savePlan()})});return}
     case 'exstep':if(exDraft&&exDraft.id===id){exDraft.step=num(b.dataset.v);keepPlace(()=>render());return}plan.library[id].step=num(b.dataset.v);savePlan();break;
-    case 'doneedit':{const ch=dayDirty(),k=editSess;if(plan.sessions[k]&&!plan.sessions[k].name.trim())plan.sessions[k].name='Session '+(sessList().indexOf(k)+1);keepPlace(()=>{exOpen=null;exDraft=null;justAdded=null;finishEdit();editSess=null;if(ch){dayFlash=k;clearTimeout(window.__dft);window.__dft=setTimeout(()=>{dayFlash=null;if(view==='plan'&&!planEditing)keepPlace(()=>render())},2200)}render()});return}
-    case 'canceledit':keepPlace(()=>{exOpen=null;exDraft=null;justAdded=null;editSess=null;const sn=editSnap;planEditing=false;editSnap=null;if(sn&&(JSON.stringify(sn.plan)!==JSON.stringify(plan)||JSON.stringify(sn.days)!==JSON.stringify(days)))restoreSnap(sn);render()});return;
+    case 'doneedit':{const ch=dayDirty(),k=editSess;if(plan.sessions[k]&&!plan.sessions[k].name.trim())plan.sessions[k].name='Session '+(sessList().indexOf(k)+1);const go=()=>keepPlace(()=>{exOpen=null;exDraft=null;justAdded=null;finishEdit();editSess=null;lastOpen['dayedit']=false;if(ch){dayFlash=k;clearTimeout(window.__dft);window.__dft=setTimeout(()=>{dayFlash=null;if(view==='plan'&&!planEditing)keepPlace(()=>render())},2200)}render()});if(document.querySelector('.dayedit')&&wantAnim())animOut('.dayedit',go);else go();return}
+    case 'canceledit':{const go=()=>keepPlace(()=>{exOpen=null;exDraft=null;justAdded=null;editSess=null;const sn=editSnap;planEditing=false;editSnap=null;if(sn&&(JSON.stringify(sn.plan)!==JSON.stringify(plan)||JSON.stringify(sn.days)!==JSON.stringify(days)))restoreSnap(sn);lastOpen['dayedit']=false;render()});if(document.querySelector('.dayedit')&&wantAnim())animOut('.dayedit',go);else go();return}
     case 'pday':{const nd=+b.dataset.d;if(nd===planDay)return;
       const go=()=>{planDay=nd;swapAnim='.daypills ~ *';render()};
       if(planEditing&&dayDirty()){ask({title:'Save '+DAYNAMES[planDay]+' first?',msg:'You changed '+DAYNAMES[planDay]+'. Save those changes before switching days?',buttons:[{v:'save',label:'Save',style:'primary'},{v:'discard',label:'Discard changes'},{v:'stay',label:'Keep editing'}]}).then(v=>{if(v==='save'){finishEdit();justAdded=null;go()}else if(v==='discard'){const sn=editSnap;planEditing=false;editSnap=null;justAdded=null;if(sn)restoreSnap(sn);go()}});return}
@@ -1830,7 +1888,7 @@ function act(a,b){
       if(w.items.some(i=>i.ex===nid)){toast(exName(nid)+' is already in '+(w.name||'this session')+'.');return}
       w.items.push({ex:nid,sets:Math.max(1,Math.round(num($('#pSets').value)||3)),reps:Math.max(1,Math.round(num($('#pReps').value)||10))});
       justAdded=nid;savePlan();animOut('#addRoot .scrim, .addsheet',()=>{addSheet=false;renderAddSheet();render();const r=document.querySelector('.prow.new');if(r)r.scrollIntoView({block:'center',behavior:smoothOK()?'smooth':'auto'})});return}
-    case 'rm':curSess().items.splice(+b.dataset.i,1);savePlan();break;
+    case 'rm':{const row=b.closest('.prow');const go=()=>{curSess().items.splice(+b.dataset.i,1);savePlan();render()};if(row&&wantAnim()){row.classList.add('closing');setTimeout(go,170);return}go();return}
     case 'archive':if(exDraft&&exDraft.id===id&&draftDirty()){const o=findEx(exDraft.name.trim());applyDraft(!!(o&&o!==id)||!exDraft.name.trim())}exDraft=null;Object.values(plan.sessions).forEach(w=>{w.items=w.items.filter(i=>i.ex!==id)});plan.library[id].archived=true;if(exOpen===id)exOpen=null;savePlan();snapSyncLib();break;
     case 'restore':plan.library[id].archived=false;savePlan();break;
     case 'psearch':psOpen=true;lastSearchView=true;renderPS();return;
@@ -1841,12 +1899,10 @@ function act(a,b){
     case 'cmpset':if(cmpOpen==='A')cmpA=id;else cmpB=id;animOut('#sheetRoot .scrim, #sheetRoot .musbox',()=>{cmpOpen=null;$('#sheetRoot').innerHTML='';swapAnim='.pbar ~ *';render()});return;
     case 'cmpclose':animOut('#sheetRoot .scrim, #sheetRoot .musbox',()=>{cmpOpen=null;$('#sheetRoot').innerHTML=''});return;
     case 'pex':fromSearch=false;progEx=id;if(SPECIALS.includes(id))lastOv=id;swapAnim='.pills ~ *';render();{const pl=$('.pills');if(pl){const t=pl.getBoundingClientRect().top;if(t<0)window.scrollTo(0,window.scrollY+t-12)}}return;
-    case 'yearpick':yearSel=yearSel===b.dataset.d?null:b.dataset.d;{const w=$('#hmw'),sl=w?w.scrollLeft:null;render();const w2=$('#hmw');if(w2&&sl!=null)w2.scrollLeft=sl}return;
+    case 'yearpick':{const nxt=yearSel===b.dataset.d?null:b.dataset.d,w=$('#hmw'),sl=w?w.scrollLeft:null,apply=()=>{yearSel=nxt;if(!nxt)lastOpen['hmdet']=false;render();const w2=$('#hmw');if(w2&&sl!=null)w2.scrollLeft=sl};if(!nxt&&yearSel&&wantAnim()){animOut('.hm-det',apply);return}apply();return}
     case 'openday':{const k=b.dataset.d,t=parse(today()),mon=addDays(t,-((t.getDay()+6)%7)),km=addDays(parse(k),-((parse(k).getDay()+6)%7));weekOff=Math.round((km-mon)/(7*864e5));viewKey=k;setView('today');window.scrollTo(0,0);break}
-    case 'wrapdismiss':LS.set('wrapSeen',b.dataset.m);break;
+    case 'wrapdismiss':animOut('.wrap',()=>{LS.set('wrapSeen',b.dataset.m);lastOpen['wrap']=false;render()});return;
     case 'sharewk':shareWorkout(b.dataset.d);return;
-    case 'delsess':{const dd=b.dataset.d,x=days[dd];if(!x||!x.sets[id])return;const n=doneSets(dd,id).length;
-      confirmAsk('Delete this session?',exName(id)+' on '+fmtDate(dd)+', '+n+(n===1?' set':' sets')+'. Your plan and other exercises stay.','Delete session').then(ok=>{if(ok)withUndo('Session deleted.',()=>{delete x.sets[id];delete x.rows[id];touchDay(dd,true)})});return}
     case 'theme':plan.theme=b.dataset.v;applyTheme(plan.theme);savePlan();break;
     case 'unit':plan.unit=b.dataset.v;savePlan();break;
     case 'signin':signIn();return;
