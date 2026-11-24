@@ -902,15 +902,13 @@ html.locked,html.locked body{overscroll-behavior:none}
 .card.sec.collapsed{padding-top:10px;padding-bottom:10px}
 .inprogrow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px}
 .inprogrow .inprog{margin-top:0}
-.barlink{border:0;background:none;color:var(--faint);font-weight:500;font-size:13px;padding:0 0 0 140px;min-height:28px;text-align:left;align-self:start}
+.barlink{border:0;background:none;color:var(--faint);font-weight:500;font-size:13px;display:block;width:48px;height:48px;margin:0 0 0 auto;padding:0;text-align:center;line-height:48px;white-space:nowrap;align-self:auto}
 .edbar{display:grid;grid-template-columns:76px 48px minmax(0,1fr) 48px;align-items:center;gap:8px}
 .edbar label{font-size:13px;color:var(--muted)}
 .edbar input{height:48px;border-radius:12px;border:1px solid var(--line);background:var(--surface);text-align:center;font-family:var(--display);font-size:26px;font-weight:600;width:100%;min-width:0;color:var(--ink)}
 .edbar .barunit{font-size:13px;color:var(--muted);font-weight:600}
-.barx{height:48px;width:48px;border:1px solid var(--line);background:var(--surface);color:var(--faint);font-size:18px;line-height:1;border-radius:12px}
+.barx{height:48px;width:100%;border:1px solid var(--line);background:var(--surface);color:var(--faint);font-size:18px;line-height:1;border-radius:12px}
 .barcell{position:relative;display:block;height:48px}
-.barcell .rm-cover{position:absolute;top:0;bottom:0;right:0;left:auto;min-width:100%;width:max-content;height:100%;min-height:0;margin:0;padding:0 14px;box-sizing:border-box;border-radius:12px;z-index:2;white-space:nowrap;text-align:center;animation:rmIn .18s ease-out}
-.barcell.arm-out .rm-cover{animation:rmOut .16s ease-in forwards}
 .set .vwrap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-width:0}
 .set .barsub{display:block;font-family:var(--body);font-weight:500;font-size:11px;color:var(--muted);letter-spacing:0;white-space:nowrap;margin-top:1px}
 .set.done .barsub{color:var(--done-text);opacity:.72}
@@ -1542,7 +1540,7 @@ html[data-theme="light"] .cal-layer .scrim{background:rgba(22,27,38,.52)}
 .hx{border:0;background:none;color:var(--faint);font-size:15px;min-width:40px;min-height:40px;border-radius:10px}
 .hxconf{border:0;background:var(--danger);color:var(--danger-ink);font-weight:700;border-radius:8px;padding:0 12px;min-height:34px;animation:fIn .12s ease-out}
 .hdel{color:var(--warn-text)!important;display:block;margin:10px auto 0}
-@media (max-width:359px){.stepper,.edbar{grid-template-columns:44px minmax(0,1fr) 44px;row-gap:4px}.stepper label,.edbar label{grid-column:1/-1}.stepper button,.stepper input,.edbar input,.barcell{height:44px}.barx{height:44px;width:44px}.barlink{padding-left:52px}}
+@media (max-width:359px){.stepper,.edbar{grid-template-columns:44px minmax(0,1fr) 44px;row-gap:4px}.stepper label,.edbar label{grid-column:1/-1}.stepper button,.stepper input,.edbar input,.barcell{height:44px}.barx{height:44px}.stepper label,.edbar label{line-height:18px}.barlink{width:44px;height:66px;padding-top:22px;box-sizing:border-box;line-height:44px}}
 </style>
 <script src="firebase-config.js"></script>
 </head>
@@ -1561,7 +1559,7 @@ html[data-theme="light"] .cal-layer .scrim{background:rgba(22,27,38,.52)}
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=85, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=87, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Neck','Traps','Upper chest','Lower chest','Front delts','Side delts','Rear delts','Upper back','Lats','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs','Obliques','Hip flexors']],['Legs',['Glutes','Outer hips','Inner thighs','Quads','Hamstrings','Calves','Shins']]];
 const LEGACY={Chest:['Upper chest','Lower chest'],Shoulders:['Front delts','Side delts','Rear delts'],Back:['Upper back','Lats'],Core:['Abs']};
@@ -1598,7 +1596,6 @@ const I={
 let plan, days={};
 const VIEWS=['today','plan','progress','settings'];
 let view=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'today', viewKey=today(), weekOff=0, wkSlide=null, updateReady=null, pendingHash=location.hash.slice(1), active={}, editor=null, addOpen=false, noteOpen=null, sheet=false;
-let barArmT=null;
 let folded={},peek={},sessSheet=null,wpAnim=false,editSess=null,sessOpen={};
 let addSheet=false,justAdded=null,dayFlash=null;
 const DAYNAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -2331,6 +2328,7 @@ function armCalChevron(){
   void (els[0]&&els[0].offsetWidth);
   els.forEach(el=>el.classList.add('up'));
 }
+function keepEditorInputs(fn){const vals={};['w','r','t'].forEach(k=>{const e=document.getElementById('ed-'+k);if(e)vals[k]=e.value});fn();['w','r','t'].forEach(k=>{const e=document.getElementById('ed-'+k);if(e&&vals[k]!=null)e.value=vals[k]})}
 function postRender(){filterEx(false);checkLock();stickCheck();syncWake();updDot();armWeekAnim();armCalChevron();placeCal();
   document.querySelectorAll('[data-k]').forEach(el=>{const k=el.dataset.k,to=el.style.width;if(smoothOK()&&barW[k]!=null&&barW[k]!==to){el.style.transition='none';el.style.width=barW[k];void el.offsetWidth;el.style.transition='';el.style.width=to}barW[k]=to});
   if(swapAnim&&wantAnim())document.querySelectorAll(swapAnim).forEach(e=>{e.classList.remove('enter');void e.offsetWidth;e.classList.add('enter')});swapAnim=null;
@@ -2538,7 +2536,7 @@ function editorHtml(t,s,tv,i){
   const f=t==='pin'?[['w','Pin'],['r','Reps']]:t==='weight'?[['w','Weight ('+plan.unit+')'],['r','Reps']]:t==='reps'?[['r','Reps'],['w','Extra '+plan.unit]]:[['t','Seconds']];
   const ek=i+'|'+t;const isNewEd=lastOpen['ed']!==ek;lastOpen['ed']=ek;
   let h='<div class="editor setedit'+(isNewEd?' enter':'')+'" role="group" aria-label="Set '+(i+1)+' numbers"><div class="seh"><b>Set '+(i+1)+(s.done?' <span class="setick">✓</span> · editing':' · entering')+'</b><span>'+(s.done?'was '+esc(fmtSetT(t,s)):(tv?'target '+esc(fmtSet(t,tv)):'first time'))+'</span></div>';
-  f.forEach(([k,l])=>{h+='<div class="stepper"><label for="ed-'+k+'">'+l+'</label><button data-act="step" data-f="'+k+'" data-dir="-1" aria-label="Less">−</button><input id="ed-'+k+'" inputmode="decimal" value="'+esc(pick(k))+'" autocomplete="off"><button data-act="step" data-f="'+k+'" data-dir="1" aria-label="More">+</button></div>';if(t==='weight'&&k==='w'){const br=editor?exBar(editor.ex):null;if(br)h+='<div class="edbar'+enterCls(justBar)+'"><label for="ed-bar">Bar ('+plan.unit+')</label><span aria-hidden="true"></span><input id="ed-bar" inputmode="decimal" value="'+esc(fw(br))+'" autocomplete="off"><span class="barcell"><button class="barx" data-act="bararm" aria-label="Remove bar">✕</button></span></div>';else h+='<button class="barlink" type="button" data-act="baradd">+ Bar</button>'}});
+  f.forEach(([k,l])=>{h+='<div class="stepper"><label for="ed-'+k+'">'+l+'</label><button data-act="step" data-f="'+k+'" data-dir="-1" aria-label="Less">−</button><input id="ed-'+k+'" inputmode="decimal" value="'+esc(pick(k))+'" autocomplete="off"><button data-act="step" data-f="'+k+'" data-dir="1" aria-label="More">+</button></div>';if(t==='weight'&&k==='w'){const br=editor?exBar(editor.ex):null;if(br)h+='<div class="edbar'+enterCls(justBar)+'"><label for="ed-bar">Bar ('+plan.unit+')</label><span aria-hidden="true"></span><input id="ed-bar" inputmode="decimal" value="'+esc(fw(br))+'" autocomplete="off"><span class="barcell"><button class="barx" data-act="barclear" aria-label="Remove bar">✕</button></span></div>';else h+='<button class="barlink" type="button" data-act="baradd">+ Bar</button>'}});
   h+='<div class="edbtns"><button class="btn" data-act="edcancel">Cancel</button>'+(s.done?'<button class="btn" data-act="edundo">Not done</button>':'')+'<button class="btn primary" data-act="edsave">'+(s.done?'Save':'Save as done')+'</button></div></div>';
   return h;
 }
@@ -3017,13 +3015,8 @@ function act(a,b){
     case 'gosettings':setView('settings');window.scrollTo(0,0);break;
     case 'cancelwk':{if(hasDone(d)||!canFinish(d))return;confirmAsk('Cancel this workout?','Nothing has been logged, so it will be as if you never started.','Cancel workout').then(ok=>{if(!ok)return;const go=()=>{const x=getDay(d,true);x.started=null;x.finished=false;x.plan=null;x.title=null;x.session=null;x.planAck=null;x.t0=null;x.t1=null;editor=null;moreOpen=null;delete peek[d];delete active[d];finishSession();afClear();touchDay(d);saveNow();lastOpen['startbtn']=false;render()};animOut('.inprogrow,.inprog,.tgrid .card,[data-act=cancelwk]',go)});return}
     case 'setsec':{const k=b.dataset.sec;if(setOpen.has(k))setOpen.delete(k);else setOpen.add(k);const card=b.closest('.card.sec')||document.querySelector('.card.sec[data-secid="'+k+'"]');if(card&&wantAnim()){card.classList.add('sec-anim');card.classList.toggle('collapsed',!setOpen.has(k));b.setAttribute('aria-expanded',setOpen.has(k));return}render();return}
-    case 'baradd':{if(!editor)return;const exid=editor.ex;if(!exBar(exid)){plan.library[exid].bar=DEF_BAR;savePlan()}justBar=true;render();const f=$('#ed-bar');if(f&&isFine())f.focus();return}
-    case 'bararm':{const cell=b.closest('.barcell');if(!cell||cell.querySelector('.rm-cover'))return;const c=document.createElement('button');c.className='rmconf rm-cover';c.dataset.act='barclear';c.textContent='Remove';cell.appendChild(c);clearTimeout(barArmT);
-      {const inp=$('#ed-bar');if(inp){const ir=inp.getBoundingClientRect(),cr=c.getBoundingClientRect(),xr=cell.getBoundingClientRect(),cs=getComputedStyle(inp),cv=document.createElement('canvas').getContext('2d');cv.font=cs.fontWeight+' '+cs.fontSize+' '+cs.fontFamily;
-        const numW=cv.measureText(inp.value||'').width,numRight=ir.left+(ir.width+numW)/2;
-        if(xr.right-c.offsetWidth<numRight+6){c.style.width=(xr.right-ir.left)+'px';c.style.minWidth='0'}}}
-      barArmT=setTimeout(()=>{const el=cell.querySelector('.rm-cover');if(!el)return;if(wantAnim()){cell.classList.add('arm-out');setTimeout(()=>{el.remove();cell.classList.remove('arm-out')},160)}else el.remove()},3000);return}
-    case 'barclear':{clearTimeout(barArmT);if(!editor)return;const go=()=>{plan.library[editor.ex].bar=null;savePlan();render()};animOut('.edbar',go);return}
+    case 'baradd':{if(!editor)return;const exid=editor.ex;if(!exBar(exid)){plan.library[exid].bar=DEF_BAR;savePlan()}justBar=true;keepEditorInputs(()=>render());const f=$('#ed-bar');if(f&&isFine())f.focus();return}
+    case 'barclear':{if(!editor)return;const go=()=>{keepEditorInputs(()=>{plan.library[editor.ex].bar=null;savePlan();render()})};animOut('.edbar',go);return}
     case 'afkeep':{if(!days[d]||!days[d].started||days[d].finished)return;const go=()=>{const x=days[d];x.t1=Date.now();bumpSession(d);touchDay(d);const a=afGet();if(a.date===d){a.bannerHidden=false;LS.set('af',a)}lastOpen['afwarn']=false;render()};if(document.querySelector('.afwarn'))animOut('.afwarn',go);else go();return}
     case 'afdismiss':{animOut('.afwarn',()=>{const x=days[d];if(x&&x.started)afSet({date:d,started:x.started,bannerHidden:true});lastOpen['afwarn']=false;render()});return}
     case 'afkeepfin':{animOut('.afnote',()=>{const a=afGet();if(a.kind==='done'){a.dismissed=true;LS.set('af',a)}lastOpen['afnote']=false;render()});return}
