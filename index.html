@@ -1524,14 +1524,15 @@ html[data-theme="light"] .cal-layer .scrim{background:rgba(22,27,38,.52)}
 
 .histlist{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 .hcard{background:var(--surface);border-radius:16px;overflow:hidden}
+.hcard{transition:box-shadow .32s ease}
 .hcard.open{box-shadow:inset 0 0 0 1.5px var(--line)}
 .htop{all:unset;box-sizing:border-box;width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;min-height:56px}
 .htop:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .htop .hl b{display:block;font-weight:600;font-size:15px}
 .hmeta{display:flex;gap:12px;font-size:12px;color:var(--muted);margin-top:2px}
-.hchev{width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s ease;flex:0 0 auto;margin-right:4px}
+.hchev{width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .32s cubic-bezier(.2,.8,.2,1);flex:0 0 auto;margin-right:4px}
 .hcard.open .hchev{transform:rotate(225deg)}
-.hbody{padding:0 14px 12px;animation:fIn .18s ease-out}
+.hbody{padding:0 14px 12px;will-change:height}
 .hex{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--hair)}
 .hex b{display:block;font-weight:600;font-size:14px}
 .hex small{display:block;font-size:12px;color:var(--muted)}
@@ -1556,7 +1557,7 @@ html[data-theme="light"] .cal-layer .scrim{background:rgba(22,27,38,.52)}
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=79, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=80, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Neck','Traps','Upper chest','Lower chest','Front delts','Side delts','Rear delts','Upper back','Lats','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs','Obliques','Hip flexors']],['Legs',['Glutes','Outer hips','Inner thighs','Quads','Hamstrings','Calves','Shins']]];
 const LEGACY={Chest:['Upper chest','Lower chest'],Shoulders:['Front delts','Side delts','Rear delts'],Back:['Upper back','Lats'],Core:['Abs']};
@@ -3100,7 +3101,18 @@ function act(a,b){
     case 'pscancel':animOut('#sheetRoot .scrim, .psheet',()=>{psOpen=false;psQ='';$('#sheetRoot').innerHTML=''});return;
     case 'psel':progEx=id;lastEx=id;fromSearch=true;psQ='';animOut('#sheetRoot .scrim, .psheet',()=>{psOpen=false;$('#sheetRoot').innerHTML='';swapAnim='.pbar ~ *';render();window.scrollTo(0,0)});return;
     case 'pseg':{const v=b.dataset.v;if(v===progSeg)return;if(v==='sess'){progSeg='sess';if(isWide()&&!sessPick){const ks=sessDayKeys();sessPick=ks[0]||null}swapAnim='.pseg ~ *';break}if(v==='ov'){if(!SPECIALS.includes(progEx))lastEx=progEx;progEx=lastOv}else{if(SPECIALS.includes(progEx))lastOv=progEx;progEx=lastEx&&plan.library[lastEx]?lastEx:null}progSeg=v;swapAnim='.pseg ~ *';break}
-    case 'histtog':{const k=b.dataset.d,c=document.querySelector('.hcard[data-h="'+k+'"]'),y=c?c.getBoundingClientRect().top:0;if(histOpen.has(k))histOpen.delete(k);else histOpen.add(k);histArm=null;render();const c2=document.querySelector('.hcard[data-h="'+k+'"]');if(c2)window.scrollBy(0,c2.getBoundingClientRect().top-y);return}
+    case 'histtog':{const k=b.dataset.d,card=()=>document.querySelector('.hcard[data-h="'+k+'"]'),c=card(),y=c?c.getBoundingClientRect().top:0,EASE='cubic-bezier(.2,.8,.2,1)',MS=320;histArm=null;
+      if(histOpen.has(k)){const body=c&&c.querySelector('.hbody');if(!wantAnim()||!body){histOpen.delete(k);render();return}
+        c.classList.remove('open');body.style.overflow='hidden';body.style.height=body.offsetHeight+'px';body.style.opacity='1';void body.offsetHeight;
+        body.style.transition='height '+MS+'ms '+EASE+',opacity '+(MS-80)+'ms ease,padding '+MS+'ms '+EASE;body.style.height='0px';body.style.opacity='0';body.style.paddingBottom='0px';
+        setTimeout(()=>{histOpen.delete(k);render();const c2=card();if(c2)window.scrollBy(0,c2.getBoundingClientRect().top-y)},MS+10);return}
+      histOpen.add(k);render();const c2=card();if(c2)window.scrollBy(0,c2.getBoundingClientRect().top-y);
+      if(c2&&wantAnim()){const body=c2.querySelector('.hbody'),ch=c2.querySelector('.hchev');if(body){const hgt=body.scrollHeight,pb=getComputedStyle(body).paddingBottom;
+        body.style.animation='none';body.style.overflow='hidden';body.style.height='0px';body.style.opacity='0';body.style.paddingBottom='0px';if(ch){ch.style.transition='none';ch.style.transform='rotate(45deg)'}
+        void body.offsetHeight;body.style.transition='height '+MS+'ms '+EASE+',opacity '+(MS-60)+'ms ease '+60+'ms,padding '+MS+'ms '+EASE;body.style.height=hgt+'px';body.style.opacity='1';body.style.paddingBottom=pb;
+        if(ch){void ch.offsetWidth;ch.style.transition='';ch.style.transform=''}
+        setTimeout(()=>{body.style.transition='';body.style.height='';body.style.overflow='';body.style.paddingBottom=''},MS+20)}}
+      return}
     case 'hxarm':{histArm=b.dataset.d+'|'+b.dataset.ex;clearTimeout(histArmT);histArmT=setTimeout(()=>{histArm=null;if(view==='progress')keepPlace(()=>render())},3000);keepPlace(()=>render());return}
     case 'hxdel':{clearTimeout(histArmT);histArm=null;const k=b.dataset.d,x=days[k];if(!x)return;delete x.sets[b.dataset.ex];if(x.extra)x.extra=x.extra.filter(e=>e.ex!==b.dataset.ex);touchDay(k,true);if(!hasDone(k))histOpen.delete(k);keepPlace(()=>render());return}
     case 'histdel':{const k=b.dataset.d,when=dname(k)+' '+parse(k).getDate()+' '+MONTHS[parse(k).getMonth()];confirmAsk('Delete this workout?','Every set from '+when+' is removed. Your protein and notes for that day stay.','Delete','danger').then(ok=>{if(!ok)return;const x=days[k];if(!x)return;x.sets={};x.extra=[];x.skip=[];x.plan=null;x.title=null;x.session=null;x.started=null;x.finished=false;x.order=null;touchDay(k,true);histOpen.delete(k);keepPlace(()=>render())});return}
