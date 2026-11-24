@@ -1,5 +1,5 @@
 // Offline cache. Bump the number when you change files, so phones pick up the new version.
-const CACHE='workout-v81';
+const CACHE='workout-v83';
 const SHELL=['./','index.html','firebase-config.js','manifest.json?v=39','icon3-180.png','icon3-192.png','icon3-512.png','icon3-maskable-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)));self.skipWaiting()});
 self.addEventListener('message',e=>{if(e.data==='SKIP_WAITING'||(e.data&&e.data.type==='SKIP_WAITING'))self.skipWaiting()});

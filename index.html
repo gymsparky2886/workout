@@ -1039,7 +1039,7 @@ main{position:relative;z-index:1}
 /* 3 tab bar */
 .tabbar{background:var(--glass);-webkit-backdrop-filter:saturate(1.6) blur(18px);backdrop-filter:saturate(1.6) blur(18px);border-top:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
 .tabbar button{isolation:isolate}
-.tabbar button::before{content:"";position:absolute;left:50%;top:5px;width:60px;height:32px;border-radius:999px;background:var(--accent-tint);transform:translateX(-50%) scale(.6);opacity:0;transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .2s;z-index:-1}
+.tabbar button::before{content:"";position:absolute;left:50%;top:4px;bottom:4px;width:76px;border-radius:16px;background:var(--accent-tint);transform:translateX(-50%) scale(.6);opacity:0;transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .2s;z-index:-1}
 .tabbar button[aria-current="page"]::before{transform:translateX(-50%) scale(1);opacity:1}
 .tabbar button[aria-current="page"]{color:var(--accent-text)}
 @media (min-width:900px){
@@ -1557,7 +1557,7 @@ html[data-theme="light"] .cal-layer .scrim{background:rgba(22,27,38,.52)}
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=81, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=83, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Neck','Traps','Upper chest','Lower chest','Front delts','Side delts','Rear delts','Upper back','Lats','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs','Obliques','Hip flexors']],['Legs',['Glutes','Outer hips','Inner thighs','Quads','Hamstrings','Calves','Shins']]];
 const LEGACY={Chest:['Upper chest','Lower chest'],Shoulders:['Front delts','Side delts','Rear delts'],Back:['Upper back','Lats'],Core:['Abs']};
