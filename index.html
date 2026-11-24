@@ -41,7 +41,7 @@
   --pr:#F2C230;--pr-tint:#3A3015;--pr-text:#F5D77A;--warn:#F08A6A;--warn-tint:#3A1E16;--warn-text:#F5B49E;
   --hero:#232935;--hero-ink:#EEF1F5;--hero-muted:#A3ACBA;--hero-bar:#3A4252;--pill:#EEF1F5;--pill-ink:#12151B;--scrim:rgba(0,0,0,.6);--danger:#F2B8B5;--danger-ink:#601410;--prot:#A98BF5;--prot-text:#B9A0F8;--prot-tint:#2A2342;--amber-tint:#3A2A12;--amber-text:#F5C77A;--b-body:#20252E;--b-edge:#2C3340;--b-mus:#272D38;--b-line:#363E4B;color-scheme:dark}
 *,*::before,*::after{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;overflow-y:scroll;overscroll-behavior-y:contain;background:var(--bg);min-height:100%}
+html{scrollbar-gutter:stable;-webkit-text-size-adjust:100%;overflow-y:scroll;overscroll-behavior-y:contain;background:var(--bg);min-height:100%}
 body{overscroll-behavior-y:contain}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent;min-height:100%}
 button,input,select{font:inherit;color:inherit}
@@ -1522,6 +1522,22 @@ html[data-theme="light"] .cal-layer .scrim{background:rgba(22,27,38,.52)}
   .cal-layer.cal-pop .calbox{position:relative;z-index:1}
 }
 
+.histlist{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.hcard{background:var(--surface);border-radius:16px;overflow:hidden}
+.hcard.open{box-shadow:inset 0 0 0 1.5px var(--line)}
+.htop{all:unset;box-sizing:border-box;width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;min-height:56px}
+.htop:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.htop .hl b{display:block;font-weight:600;font-size:15px}
+.hmeta{display:flex;gap:12px;font-size:12px;color:var(--muted);margin-top:2px}
+.hchev{width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s ease;flex:0 0 auto;margin-right:4px}
+.hcard.open .hchev{transform:rotate(225deg)}
+.hbody{padding:0 14px 12px;animation:fIn .18s ease-out}
+.hex{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--hair)}
+.hex b{display:block;font-weight:600;font-size:14px}
+.hex small{display:block;font-size:12px;color:var(--muted)}
+.hx{border:0;background:none;color:var(--faint);font-size:15px;min-width:40px;min-height:40px;border-radius:10px}
+.hxconf{border:0;background:var(--danger);color:var(--danger-ink);font-weight:700;border-radius:8px;padding:0 12px;min-height:34px;animation:fIn .12s ease-out}
+.hdel{color:var(--warn-text)!important;display:block;margin:10px auto 0}
 </style>
 <script src="firebase-config.js"></script>
 </head>
@@ -1540,7 +1556,7 @@ html[data-theme="light"] .cal-layer .scrim{background:rgba(22,27,38,.52)}
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=78, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=79, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Neck','Traps','Upper chest','Lower chest','Front delts','Side delts','Rear delts','Upper back','Lats','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs','Obliques','Hip flexors']],['Legs',['Glutes','Outer hips','Inner thighs','Quads','Hamstrings','Calves','Shins']]];
 const LEGACY={Chest:['Upper chest','Lower chest'],Shoulders:['Front delts','Side delts','Rear delts'],Back:['Upper back','Lats'],Core:['Abs']};
@@ -2105,8 +2121,8 @@ document.addEventListener('visibilitychange',()=>syncWake());
 function stickCheck(){const c=$('#pchg');if(!c)return;const top=parseFloat(getComputedStyle(c).top)||0;c.classList.toggle('stuck',c.getBoundingClientRect().top<=top+1&&window.scrollY>40)}
 window.addEventListener('scroll',stickCheck,{passive:true});
 let lockY=null;
-function scrollLock(on){const b=document.body;if(on&&lockY==null){lockY=window.scrollY;b.style.position='fixed';b.style.top=(-lockY)+'px';b.style.left='0';b.style.right='0';b.style.width='100%';document.documentElement.classList.add('locked')}
-  else if(!on&&lockY!=null){const y=lockY;lockY=null;b.style.position='';b.style.top='';b.style.left='';b.style.right='';b.style.width='';document.documentElement.classList.remove('locked');window.scrollTo(0,y)}}
+function scrollLock(on){const h=document.documentElement;if(on&&lockY==null){lockY=window.scrollY;h.classList.add('locked');h.style.overflow='hidden'}
+  else if(!on&&lockY!=null){const y=lockY;lockY=null;h.classList.remove('locked');h.style.overflow='';if(Math.abs(window.scrollY-y)>1)window.scrollTo(0,y)}}
 function checkLock(){const open=!!(document.querySelector('#sheetRoot').children.length||document.querySelector('#addRoot').children.length);scrollLock(open)}
 const lockObs=new MutationObserver(checkLock);
 setTimeout(()=>{['sheetRoot','addRoot'].forEach(id=>{const el=document.getElementById(id);if(el)lockObs.observe(el,{childList:true})})},0);
@@ -2295,12 +2311,8 @@ function foldWeekToDefault(){
   closeWeek(()=>{wpOpen=false;calOpen=false;datePhase=0;render()});
 }
 function datePillTap(){
-  /* 0 hidden, 1 week (chevron down), 2 month (chevron up), 3 week-after-month (chevron up) */
-  if(calOpen || datePhase===2){closeCalendar(null,true);return 'async'}
-  if(datePhase===3){foldWeekToDefault();return 'async'}
-  if(wpOpen || datePhase===1){
-    calOpen=true;calYM=(viewKey||today()).slice(0,7);calMid=false;calChevronAnim=true;datePhase=2;return 'render'
-  }
+  if(calOpen){closeCalendar(null,true);return 'async'}
+  if(wpOpen||datePhase){foldWeekToDefault();return 'async'}
   wpOpen=true;wpAnim=true;datePhase=1;return 'render'
 }
 function armCalChevron(){
@@ -2347,7 +2359,7 @@ function todayHtml(){
   const pillH='<span class="pill'+(sk?' on':'')+'">'+(sk?'🔥 '+sk+' in a row':'Start a streak')+'</span>',wide=isWide();
   const dateLab=esc(dname(d)+' '+parse(d).getDate()+' '+MONTHS[parse(d).getMonth()]);
   const dateExp=!!(wpOpen||calOpen);
-  const chevCls=(calOpen||datePhase===3?' up':'');
+  const chevCls=(wpOpen||calOpen||datePhase?' up':'');
   const dateBtn='<button class="datebtn'+(wide?' datehit':'')+'" data-act="calopen" aria-expanded="'+dateExp+'">'+dotHtml()+dateLab+' <span class="chev'+chevCls+'" aria-hidden="true"></span></button>';
   const meta='<div class="h2meta">'+dateBtn+pillH+'</div>';
   h+='<div class="hero2"><div class="h2l">'+(wide?'<div class="th"><h1 class="big tbig">'+esc(title)+'</h1></div>'+meta:'<div class="th"><h1 class="big tbig">'+esc(title)+'</h1>'+meta+'</div>')+'</div>';
@@ -2637,7 +2649,7 @@ function exListHtml(editing){
 function bkHtml(){loadCloudBackups();const l=backupList();
   if(!l.length)return '<p class="help">No automatic backups yet. One is saved the first time you open the app each day, and again when you finish a workout. The last 7 days are kept.</p>';
   return l.map(b=>'<div class="bkrow"><span>'+esc(fmtDate(b.date))+' <small>'+b.sets+(b.sets===1?' set':' sets')+'</small></span><button class="link" data-act="bkrestore" data-src="'+b.src+'" data-d="'+b.date+'">Restore</button></div>').join('')+'<p class="help">Saved when you first open the app each day, and when you finish a workout. Last 7 kept'+(user?', online too':'')+'.</p>'}
-function secCard(id,title,sum,body){const open=setOpen.has(id);return '<div class="card sec'+(open?'':' collapsed')+'" data-secid="'+id+'"><button type="button" class="sectog" data-act="setsec" data-sec="'+id+'" aria-expanded="'+open+'"><span class="sectit">'+secIcon(id)+'<span><h3>'+title+'</h3><span class="secsum">'+sum+'</span></span></span><span class="chev" aria-hidden="true"></span></button><div class="secbody"><div class="secinner">'+body+'</div></div></div>'}
+function secCard(id,title,sum,body){const open=setOpen.has(id);return '<div class="card sec'+(open?'':' collapsed')+'" data-secid="'+id+'"><button type="button" class="sectog" data-act="setsec" data-sec="'+id+'" aria-expanded="'+open+'"><span class="sectit"><span><h3>'+title+'</h3><span class="secsum">'+sum+'</span></span></span><span class="chev" aria-hidden="true"></span></button><div class="secbody"><div class="secinner">'+body+'</div></div></div>'}
 function settingsHtml(){
   const seg=(act,cur,opts,label)=>'<div class="seg" role="radiogroup" aria-label="'+label+'">'+opts.map(([v,l])=>'<button role="radio" data-act="'+act+'" data-v="'+v+'" aria-checked="'+(v===cur)+'">'+l+'</button>').join('')+'</div>';
   let acct;
@@ -2650,11 +2662,11 @@ function settingsHtml(){
   let upd='';
   if(updateReady){
     const ver=typeof updateReady==='number'?('Version '+updateReady+' is ready'):(updateReady!==true?('Version '+updateReady+' is ready'):'A new version is ready');
-    upd='<div class="card sec updcard"><div class="accth">'+secIcon('bkfile')+'<h3>Update ready</h3></div><p class="help">'+esc(ver)+'</p><button type="button" class="btn primary updnow" data-act="doupdate">Update now</button></div>';
+    upd='<div class="card sec updcard"><div class="accth"><h3>Update ready</h3></div><p class="help">'+esc(ver)+'</p><button type="button" class="btn primary updnow" data-act="doupdate">Update now</button></div>';
   }
-  const kb=isWide()||(window.matchMedia&&matchMedia('(pointer:fine)').matches)?'<div class="card sec"><div class="accth">'+secIcon('ex')+'<h3>Keyboard shortcuts</h3></div><dl class="kbs"><dt><kbd>1</kbd></dt><dd>Today</dd><dt><kbd>2</kbd></dt><dd>Plan</dd><dt><kbd>3</kbd></dt><dd>Progress</dd><dt><kbd>4</kbd></dt><dd>Settings</dd><dt><kbd>[</kbd></dt><dd>Previous week</dd><dt><kbd>]</kbd></dt><dd>Next week</dd><dt><kbd>Esc</kbd></dt><dd>Close a sheet or calendar</dd></dl><p class="help">These work on a computer, not while you are typing.</p></div>':'';
+  const kb=isWide()||(window.matchMedia&&matchMedia('(pointer:fine)').matches)?'<div class="card sec"><div class="accth"><h3>Keyboard shortcuts</h3></div><dl class="kbs"><dt><kbd>1</kbd></dt><dd>Today</dd><dt><kbd>2</kbd></dt><dd>Plan</dd><dt><kbd>3</kbd></dt><dd>Progress</dd><dt><kbd>4</kbd></dt><dd>Settings</dd><dt><kbd>[</kbd></dt><dd>Previous week</dd><dt><kbd>]</kbd></dt><dd>Next week</dd><dt><kbd>Esc</kbd></dt><dd>Close a sheet or calendar</dd></dl><p class="help">These work on a computer, not while you are typing.</p></div>':'';
   return '<h1 class="big sm">Settings</h1><div class="setpage">'+upd+
-    '<div class="card sec"><div class="accth">'+secIcon('acct')+'<h3>Account and sync</h3></div>'+acct+'</div>'+kb+
+    '<div class="card sec"><div class="accth"><h3>Account and sync</h3></div>'+acct+'</div>'+kb+
     secCard('protein','Protein',plan.protein.goal?plan.protein.goal+' g':'No goal','<div class="field"><label for="pgoal">Daily goal (grams)</label><input class="inp" id="pgoal" inputmode="decimal" value="'+(plan.protein.goal||'')+'" placeholder="150"></div><span class="flabel">Your foods (one-tap add on Today)</span>'+
       plan.protein.foods.map(f=>'<div class="foodrow'+(foodArm===f.id?' armed':'')+'">'+'<input class="inp" data-fname="'+f.id+'" value="'+esc(f.name)+'" aria-label="Food name"><div class="food-tail"><input class="inp" data-fg="'+f.id+'" inputmode="decimal" value="'+f.g+'" aria-label="Grams of protein"><span class="x">g</span><button class="rm" data-act="foodarm" data-f="'+f.id+'" aria-label="Delete '+esc(f.name)+'">✕</button>'+(foodArm===f.id?'<button class="rmconf rm-cover'+(foodArmAnim?'':' noanim')+'" data-act="fooddel" data-f="'+f.id+'">Remove</button>':'')+'</div></div>').join('')+
       '<div class="foodrow"><input class="inp" id="nfName" placeholder="e.g. Protein shake" aria-label="New food name"><div class="food-tail"><input class="inp" id="nfG" inputmode="decimal" placeholder="25" aria-label="Grams of protein"><span class="x">g</span><button class="btn primary" data-act="foodadd">Add</button></div></div>')+
@@ -2754,15 +2766,20 @@ function sessDetailHtml(d){
 function sessionsHtml(){
   const keys=sessDayKeys();
   if(!keys.length)return '<p class="help" style="margin-top:16px">Finished workouts will show up here.</p>';
-  const list='<div class="sesslist">'+keys.map(k=>sessRowHtml(k,sessPick)).join('')+'</div>';
-  if(isWide()){
-    const det=sessPick?sessDetailHtml(sessPick):'<div class="sessempty">Pick a session to see every exercise and set from that day.</div>';
-    return '<div class="sesssplit">'+list+det+'</div>';
-  }
-  if(sessPick)return sessDetailHtml(sessPick);
-  return list;
+  return '<div class="histlist">'+keys.map(histCard).join('')+'</div>';
 }
-
+function histExIds(k){const x=days[k],seen=[];visibleItems(k).forEach(it=>{if(doneSets(k,it.ex).length&&!seen.includes(it.ex))seen.push(it.ex)});Object.keys((x&&x.sets)||{}).forEach(id=>{if(ex(id)&&doneSets(k,id).length&&!seen.includes(id))seen.push(id)});return seen}
+function histCard(k){const x=days[k],nm=weekPlanName(k)||x.title||'Workout',st=histStats(k),vol=Math.round(dayVol(k)),pr=prs(k),op=histOpen.has(k);
+  const when=dname(k)+' '+parse(k).getDate()+' '+MONTHS[parse(k).getMonth()];
+  let h='<div class="hcard'+(op?' open':'')+'" data-h="'+k+'"><button class="htop" data-act="histtog" data-d="'+k+'" aria-expanded="'+op+'"><span class="hl"><b>'+esc(when)+' · '+esc(nm)+'</b><span class="hmeta"><span>'+st+' '+(st===1?'set':'sets')+'</span><span>'+vol.toLocaleString()+' '+plan.unit+'</span><span>'+pr.length+' '+(pr.length===1?'PR':'PRs')+'</span></span></span><span class="hchev" aria-hidden="true"></span></button>';
+  if(op){h+='<div class="hbody">';
+    histExIds(k).forEach(id=>{const t=exType(id),ds=doneSets(k,id),armed=histArm===k+'|'+id;
+      h+='<div class="hex"><span><b>'+esc(exName(id))+'</b><small>'+esc(listTxt(t,ds))+'</small></span>'+(armed?'<button class="hxconf" data-act="hxdel" data-d="'+k+'" data-ex="'+id+'">Remove</button>':'<button class="hx" data-act="hxarm" data-d="'+k+'" data-ex="'+id+'" aria-label="Remove '+esc(exName(id))+' from this workout">✕</button>')+'</div>'});
+    if(x.note)h+='<p class="sessnote">📝 '+esc(x.note)+'</p>';
+    h+='<button class="link hdel" data-act="histdel" data-d="'+k+'">Delete this workout</button></div>'}
+  return h+'</div>'}
+function histStats(k){return histExIds(k).reduce((a,id)=>a+doneSets(k,id).length,0)}
+let histOpen=new Set(),histArm=null,histArmT=null;
 let sessPick=null;
 const SPECIALS=['__records','__last7','__muscles','__weeks','__months','__year','__compare','__protein'];let progSeg='ex',lastEx=null,lastOv='__muscles';
 function renderPS(){if(!psOpen||askState)return;const r=$('#sheetRoot'),ids=Object.keys(plan.library).filter(id=>sessions(id).length);
@@ -3083,7 +3100,10 @@ function act(a,b){
     case 'pscancel':animOut('#sheetRoot .scrim, .psheet',()=>{psOpen=false;psQ='';$('#sheetRoot').innerHTML=''});return;
     case 'psel':progEx=id;lastEx=id;fromSearch=true;psQ='';animOut('#sheetRoot .scrim, .psheet',()=>{psOpen=false;$('#sheetRoot').innerHTML='';swapAnim='.pbar ~ *';render();window.scrollTo(0,0)});return;
     case 'pseg':{const v=b.dataset.v;if(v===progSeg)return;if(v==='sess'){progSeg='sess';if(isWide()&&!sessPick){const ks=sessDayKeys();sessPick=ks[0]||null}swapAnim='.pseg ~ *';break}if(v==='ov'){if(!SPECIALS.includes(progEx))lastEx=progEx;progEx=lastOv}else{if(SPECIALS.includes(progEx))lastOv=progEx;progEx=lastEx&&plan.library[lastEx]?lastEx:null}progSeg=v;swapAnim='.pseg ~ *';break}
-    case 'sessopen':sessPick=b.dataset.d;swapAnim=isWide()?'.sessdetail':'.pseg ~ *';break;
+    case 'histtog':{const k=b.dataset.d,c=document.querySelector('.hcard[data-h="'+k+'"]'),y=c?c.getBoundingClientRect().top:0;if(histOpen.has(k))histOpen.delete(k);else histOpen.add(k);histArm=null;render();const c2=document.querySelector('.hcard[data-h="'+k+'"]');if(c2)window.scrollBy(0,c2.getBoundingClientRect().top-y);return}
+    case 'hxarm':{histArm=b.dataset.d+'|'+b.dataset.ex;clearTimeout(histArmT);histArmT=setTimeout(()=>{histArm=null;if(view==='progress')keepPlace(()=>render())},3000);keepPlace(()=>render());return}
+    case 'hxdel':{clearTimeout(histArmT);histArm=null;const k=b.dataset.d,x=days[k];if(!x)return;delete x.sets[b.dataset.ex];if(x.extra)x.extra=x.extra.filter(e=>e.ex!==b.dataset.ex);touchDay(k,true);if(!hasDone(k))histOpen.delete(k);keepPlace(()=>render());return}
+    case 'histdel':{const k=b.dataset.d,when=dname(k)+' '+parse(k).getDate()+' '+MONTHS[parse(k).getMonth()];confirmAsk('Delete this workout?','Every set from '+when+' is removed. Your protein and notes for that day stay.','Delete','danger').then(ok=>{if(!ok)return;const x=days[k];if(!x)return;x.sets={};x.extra=[];x.skip=[];x.plan=null;x.title=null;x.session=null;x.started=null;x.finished=false;x.order=null;touchDay(k,true);histOpen.delete(k);keepPlace(()=>render())});return}
     case 'sessback':{if(wantAnim()){animOut('.sessdetail',()=>{sessPick=null;render()});return}sessPick=null;break}
     case 'deldaysess':{const dd=b.dataset.d,x=days[dd];if(!x)return;const n=stats(dd).n,nm=x.title||weekPlanName(dd)||'this session';
       confirmAsk('Delete this session?',nm+' on '+dname(dd)+' '+parse(dd).getDate()+' '+MONTHS[parse(dd).getMonth()]+', '+n+(n===1?' set':' sets')+'. Your plan stays. This removes the logged workout for that day.','Delete session').then(ok=>{if(ok){delete days[dd];if(sessPick===dd)sessPick=null;render()}});return}
