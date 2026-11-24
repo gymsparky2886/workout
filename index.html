@@ -931,7 +931,7 @@ html.theme-anim,html.theme-anim body{transition:background-color .22s ease,color
 @media (prefers-reduced-motion:reduce){html.theme-anim,html.theme-anim body{transition:none}}
 /* fluid desktop scale is applied in applyScale() so 100vw is not circular with html zoom */
 /* Item 18: overlay Remove — covers the tail only, name never moves */
-.food-tail .rm-cover,.prot-tail .rm-cover{position:absolute;inset:0;margin:0;min-height:0;height:100%;border-radius:10px;z-index:2;animation:rmIn .18s ease-out;white-space:nowrap}
+.food-tail .rm-cover,.prot-tail .rm-cover{position:absolute;top:0;bottom:0;right:0;left:auto;min-width:100%;width:max-content;padding:0 14px;box-sizing:border-box;margin:0;min-height:0;height:100%;border-radius:10px;z-index:2;animation:rmIn .18s ease-out;white-space:nowrap;text-align:center}
 .rm-cover.noanim{animation:none!important}
 .arm-out .rm-cover{animation:rmOut .16s ease-in forwards}
 @keyframes rmIn{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
@@ -1557,7 +1557,7 @@ html[data-theme="light"] .cal-layer .scrim{background:rgba(22,27,38,.52)}
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=80, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=81, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Neck','Traps','Upper chest','Lower chest','Front delts','Side delts','Rear delts','Upper back','Lats','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs','Obliques','Hip flexors']],['Legs',['Glutes','Outer hips','Inner thighs','Quads','Hamstrings','Calves','Shins']]];
 const LEGACY={Chest:['Upper chest','Lower chest'],Shoulders:['Front delts','Side delts','Rear delts'],Back:['Upper back','Lats'],Core:['Abs']};
