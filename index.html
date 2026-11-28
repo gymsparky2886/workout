@@ -950,7 +950,10 @@ html.theme-anim,html.theme-anim body{transition:background-color .22s ease,color
 .card.sec:not(.collapsed) .secsum{display:none}
 .sectog .chev{width:10px;height:10px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-135deg);transition:transform .22s cubic-bezier(.2,.8,.2,1);flex:0 0 auto;color:var(--muted);margin-right:2px}
 .card.sec.collapsed .chev{transform:rotate(45deg)}
-.sesscard:not(.sess-collapsed) .sessmore{display:none}
+.sessmore{overflow:hidden;max-height:var(--mh,40px)}
+.sesscard.sec-anim .sessmore{transition:max-height .22s cubic-bezier(.2,.8,.2,1),margin-top .22s cubic-bezier(.2,.8,.2,1),opacity .22s cubic-bezier(.2,.8,.2,1)}
+.sesscard:not(.sess-collapsed) .sessmore{max-height:0;margin-top:0;opacity:0;visibility:hidden}
+.sesscard.sec-anim:not(.sess-collapsed) .sessmore{transition:max-height .22s cubic-bezier(.2,.8,.2,1),margin-top .22s cubic-bezier(.2,.8,.2,1),opacity .22s cubic-bezier(.2,.8,.2,1),visibility 0s linear .22s}
 .combo-list.closing{animation:cOut .18s ease-in forwards}
 @keyframes cOut{to{opacity:0;transform:translateY(-4px)}}
 .set.closing,.edbar.closing,.dnote.closing,.note.closing,.addform.closing,.dayedit.closing,.prow.closing,.signin.closing,.offbar.closing,.pchg.closing,.wrap.closing,.afwarn.closing,.afnote.closing,.wdone.closing,.guide.closing,.startbtn.closing,.mtapl.closing,.hm-det.closing,.exopen.closing{animation:slideClose .18s ease-in forwards}
@@ -1694,6 +1697,9 @@ body::before,.hero2::after{display:none !important;background:none !important}
 @keyframes sheetUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
 .scrim.closing{animation:fOut .18s ease-in forwards}
 .askbox.closing,.musbox.closing,.protbox.closing,.foodbox.closing{animation:sheetDown .18s ease-in forwards}
+/* The confirm box is centred with translate(-50%,-50%), so on phones it must open and close with the centred pop, not the bottom-sheet slide (which overwrote that centring and made it fly in from the right). */
+.askbox:not(.protbox):not(.tagbox){animation:pop .22s cubic-bezier(.2,.8,.2,1)}
+.askbox:not(.protbox):not(.tagbox).closing{animation:popOut .18s ease-in forwards}
 @keyframes sheetDown{to{transform:translateY(40px);opacity:0}}
 @keyframes fIn{from{opacity:0}to{opacity:1}}
 @keyframes fOut{to{opacity:0}}
@@ -1775,6 +1781,14 @@ body::before,.hero2::after{display:none !important;background:none !important}
 .foodbox .qa .field{min-width:0}
 .foodbox .qa .wide{grid-column:1/-1}
 .foodbox .btns .btn.primary{width:100%;min-height:48px}
+/* Log food keeps one fixed height on every tab, like the Plan exercise search sheet, so typing or results arriving never resize it. The search box stays put and only the list scrolls. */
+.askbox.foodbox.fixh{height:min(86vh,720px)}
+.foodbox.fixh .qa{flex:0 1 auto}
+.foodbox.fixh .btns{margin-top:auto !important;padding-top:12px}
+/* On phones and tablets the Log food sheet uses the same frame as the Add exercise sheet: same edges, header size and spacing, so the search box sits in the same place and never moves. */
+@media (max-width:899px){.askbox.foodbox.fixh{padding:10px 18px calc(env(safe-area-inset-bottom,0px) + 16px);gap:8px}.foodbox.fixh .foodtabs{margin:0}.foodbox.fixh .foodq-wrap{margin:0}}
+/* While the on-screen keyboard is up the bottom tab bar steps out of the way; it returns anchored to the bottom when the keyboard closes. */
+@media (max-width:899px){html.kbd .tabbar{display:none}}
 @media (min-width:900px){
   .askbox.foodbox,.askbox.protbox{width:min(420px,calc(100vw - 48px));max-width:420px}
 }
@@ -1916,7 +1930,7 @@ body::before,.hero2::after{display:none !important;background:none !important}
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=94, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=95, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Neck','Traps','Upper chest','Lower chest','Front delts','Side delts','Rear delts','Upper back','Lats','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs','Obliques','Hip flexors']],['Legs',['Glutes','Outer hips','Inner thighs','Quads','Hamstrings','Calves','Shins']]];
 const LEGACY={Chest:['Upper chest','Lower chest'],Shoulders:['Front delts','Side delts','Rear delts'],Back:['Upper back','Lats'],Core:['Abs']};
@@ -2401,6 +2415,7 @@ function foodHtml(){
   h+='</div>';
   return h;
 }
+let foodListAt=0;
 function renderFoodSheet(){
   if(!logOpen||askState)return;
   const r=$('#sheetRoot');
@@ -2408,22 +2423,23 @@ function renderFoodSheet(){
   const saved=(plan.protein.foods||[]);
   const stapleHits=FOOD_STAPLES.filter(s=>!q||s.name.toLowerCase().indexOf(q)>=0);
   const savedHits=saved.filter(s=>!q||(s.name||'').toLowerCase().indexOf(q)>=0);
-  let body='';
+  let body='',searchList='';
   if(foodTab==='search'){
     body+='<div class="foodq-wrap"><svg class="foodq-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input class="foodq inp" id="foodq" placeholder="Search foods" value="'+esc(foodQ||'')+'" autocomplete="off"></div>';
-    body+='<div class="flist">';
-    if(savedHits.length){savedHits.forEach(s=>{body+=foodCardBtn(s,'saved',{id:s.id},q)})}
-    if(stapleHits.length){stapleHits.forEach(s=>{body+=foodCardBtn(s,'staple',{id:s.id},q)})}
-    if(!savedHits.length&&!stapleHits.length&&!q)body+='<p class="help">Search staples or your saved foods.</p>';
+    let lst='';
+    if(savedHits.length){savedHits.forEach(s=>{lst+=foodCardBtn(s,'saved',{id:s.id},q)})}
+    if(stapleHits.length){stapleHits.forEach(s=>{lst+=foodCardBtn(s,'staple',{id:s.id},q)})}
+    if(!savedHits.length&&!stapleHits.length&&!q)lst+='<p class="help">Search staples or your saved foods.</p>';
     if(q){
-      body+='<div class="fonline">Online results</div>';
-      if(foodOnlineState==='off')body+='<p class="help">You\'re offline. Showing saved foods and staples only.</p>';
-      else if(foodOnlineState==='err')body+='<p class="help">Couldn\'t reach the food database. Try again in a moment.</p>';
-      else if(foodOnlineState==='load')body+='<p class="help">Searching…</p>';
-      else if(!foodOnline.length)body+='<p class="help">No packaged foods matched.</p>';
-      else foodOnline.forEach((s,i)=>{body+=foodCardBtn(s,'off',{i:i},q)});
+      lst+='<div class="fonline">Online results</div>';
+      if(foodOnlineState==='off')lst+='<p class="help">You\'re offline. Showing saved foods and staples only.</p>';
+      else if(foodOnlineState==='err')lst+='<p class="help">Couldn\'t reach the food database. Try again in a moment.</p>';
+      else if(foodOnlineState==='load')lst+='<p class="help">Searching…</p>';
+      else if(!foodOnline.length)lst+='<p class="help">No packaged foods matched.</p>';
+      else foodOnline.forEach((s,i)=>{lst+=foodCardBtn(s,'off',{i:i},q)});
     }
-    body+='</div>';
+    body+='<div class="flist">'+lst+'</div>';
+    searchList=lst;
   }else if(foodTab==='mine'){
     if(!saved.length)body+='<p class="help">Save a food from Quick add or Search to see it here.</p>';
     else body+='<div class="flist">'+saved.map(s=>foodCardBtn(s,'saved',{id:s.id},'')).join('')+'</div>';
@@ -2442,8 +2458,23 @@ function renderFoodSheet(){
     body+='<div class="btns" style="margin-top:12px"><button class="btn primary" data-act="foodlog">Log</button></div>';
   }
   const tabs=[['search','Search'],['mine','My foods'],['quick','Quick add']];
-  const h='<div class="grab"></div><div class="ph"><h2 id="ftitle" class="h2d" style="font-size:26px">Log food</h2><button class="link" data-act="foodclose">Close</button></div><div class="foodtabs" role="tablist">'+tabs.map(([id,l])=>'<button type="button" role="tab" data-act="foodtab" data-v="'+id+'" aria-selected="'+(foodTab===id)+'">'+l+'</button>').join('')+'</div>'+body;
-  r.innerHTML='<div class="scrim" data-act="foodclose"></div><section class="askbox foodbox protbox" role="dialog" aria-modal="true" aria-labelledby="ftitle">'+h+'</section>';
+  const h='<div class="grab"></div><div class="ph"><h2 id="ftitle" class="h2d" style="font-size:24px">Log food</h2><button class="link" data-act="foodclose">Close</button></div><div class="foodtabs" role="tablist">'+tabs.map(([id,l])=>'<button type="button" role="tab" data-act="foodtab" data-v="'+id+'" aria-selected="'+(foodTab===id)+'">'+l+'</button>').join('')+'</div>'+body;
+  /* The sheet is built once. After that only the part that changed is swapped, so the sheet never re-animates, never resizes, and the search box keeps focus and the keyboard. */
+  const sig=foodTab+'|'+(foodTab==='quick'?JSON.stringify(logPick||{})+'|'+(foodEdit||''):'');
+  const live=r.querySelector('.foodbox.fixh');
+  if(live){
+    live.querySelectorAll('.foodtabs button').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.v===foodTab)));
+    const fl=live.querySelector('.flist'),inp=live.querySelector('#foodq');
+    if(foodTab==='search'&&live.dataset.tab==='search'&&fl&&inp){
+      const qChanged=live.dataset.q!==q;fl.innerHTML=searchList;if(qChanged)fl.scrollTop=0;live.dataset.q=q;foodListAt=Date.now();
+    }else if(live.dataset.sig!==sig){
+      const t=live.querySelector('.foodtabs');while(t.nextSibling)t.nextSibling.remove();t.insertAdjacentHTML('afterend',body);
+    }
+    live.dataset.tab=foodTab;live.dataset.sig=sig;
+    const q2=$('#foodq');if(q2&&!q2.__ev){q2.__ev=1;q2.addEventListener('input',onFoodQuery)}
+    return;
+  }
+  r.innerHTML='<div class="scrim" data-act="foodclose"></div><section class="askbox foodbox protbox fixh" data-tab="'+foodTab+'" data-q="'+esc(q)+'" data-sig="'+esc(sig)+'" role="dialog" aria-modal="true" aria-labelledby="ftitle">'+h+'</section>';
   const qel=$('#foodq');if(qel){qel.addEventListener('input',onFoodQuery);if(document.activeElement!==qel){/* keep */}}
 }
 function onFoodQuery(){
@@ -2763,6 +2794,11 @@ function fitCardDelta(c){
   if(r.bottom>a.bot)return Math.min(r.bottom-a.bot,r.top-a.top);
   return 0;
 }
+let fitSkip=false;
+function cancelFit(){fitAnim++;fitSkip=true}
+document.addEventListener('wheel',cancelFit,{passive:true});
+document.addEventListener('touchmove',cancelFit,{passive:true});
+document.addEventListener('pointerdown',e=>{if(e.isPrimary&&(e.pointerType==='mouse'||e.pointerType==='pen'))cancelFit()},{passive:true});
 function easeScrollTo(y1,done,dur0){
   const y0=window.scrollY,max=Math.max(0,document.documentElement.scrollHeight-window.innerHeight),y=Math.max(0,Math.min(max,y1));
   if(Math.abs(y-y0)<1){if(done)done();return}
@@ -2786,6 +2822,7 @@ function capFocusPane(c){
   return pane;
 }
 function fitCard(id){
+  if(fitSkip)return;
   const c=document.querySelector('.card[data-card="'+id+'"]');if(!c)return;
   const el=isWide()?(c.closest('.focus')||c):c;
   const dy=fitCardDelta(isWide()?c:el);
@@ -2975,7 +3012,7 @@ function armWeekAnim(){
   w.classList.remove('open');
   void w.offsetWidth;
   w.classList.add('open');
-  setTimeout(()=>{const c=document.querySelector('.card[data-card]');if(c)fitCard(c.getAttribute('data-card'))},240);
+  /* Opening the week row used to wait 240ms then scroll the page to the open exercise card, which shoved the week row itself off the screen. Leave the page where the user put it. */
 }
 let calChevronAnim=false;
 function closeCalendar(then, keepChevron){
@@ -3003,6 +3040,7 @@ function foldWeekToDefault(){
   closeWeek(()=>{wpOpen=false;calOpen=false;datePhase=0;render()});
 }
 function datePillTap(){
+  cancelFit();
   if(calOpen){closeCalendar(null,true);return 'async'}
   if(wpOpen||datePhase){foldWeekToDefault();return 'async'}
   wpOpen=true;wpAnim=true;datePhase=1;return 'render'
@@ -3264,7 +3302,7 @@ function comboRender(inp){
   if(comboSel>=0)inp.setAttribute('aria-activedescendant','co-'+comboSel);else inp.removeAttribute('aria-activedescendant');
 }
 function comboClose(inp){const box=inp&&inp.parentElement;if(!box||!box.classList.contains('combo'))return;const l=box.querySelector('.combo-list');const finish=()=>{box.classList.remove('open');inp.setAttribute('aria-expanded','false');if(l){l.hidden=true;l.innerHTML='';l.classList.remove('closing')}comboSel=-1;comboHint(inp)};if(l&&!l.hidden&&wantAnim()){l.classList.add('closing');setTimeout(finish,190)}else finish()}
-document.addEventListener('focusin',e=>{if(e.target.getAttribute&&e.target.getAttribute('role')==='combobox'){comboSel=-1;comboRender(e.target);if(!isWide()){const el=e.target;setTimeout(()=>{try{el.scrollIntoView({block:'start',behavior:'smooth'})}catch(x){el.scrollIntoView()}},60)}}});
+document.addEventListener('focusin',e=>{if(e.target.getAttribute&&e.target.getAttribute('role')==='combobox'){comboSel=-1;comboRender(e.target);if(!isWide()&&!e.target.closest('.addsheet')){const el=e.target;setTimeout(()=>{try{el.scrollIntoView({block:'start',behavior:'smooth'})}catch(x){el.scrollIntoView()}},60)}}});
 document.addEventListener('focusout',e=>{if(e.target.getAttribute&&e.target.getAttribute('role')==='combobox')setTimeout(()=>{if(document.activeElement!==e.target)comboClose(e.target)},120)});
 document.addEventListener('pointerdown',e=>{if(e.target.closest('.combo-opt'))e.preventDefault()});
 document.addEventListener('keydown',e=>{const t=e.target;if(!t.getAttribute||t.getAttribute('role')!=='combobox')return;const list=t.parentElement.querySelector('.combo-list');const n=list.querySelectorAll('.combo-opt').length;
@@ -3764,7 +3802,7 @@ function act(a,b){
     case 'foodtab':foodTab=b.dataset.v||'search';if(foodTab!=='quick'){if(!foodEdit)logPick=null}renderFoodSheet();return;
     case 'foodprev':foodDay=ymd(addDays(parse(foodDayKey()),-1));render();return;
     case 'foodnext':{const n=ymd(addDays(parse(foodDayKey()),1));if(n<=today()){foodDay=n;render()}return}
-    case 'foodpick':pickFoodSrc(b);return;
+    case 'foodpick':if(Date.now()-foodListAt<200)return;pickFoodSrc(b);return;
     case 'foodlog':logFoodEntry();return;
     case 'foodedit':{const id=b.dataset.id,d=foodDayKey(),e=(days[d]&&days[d].protein||[]).find(x=>x.id===id);if(!e)return;foodEdit=id;logPick={...e,kcalAuto:e.kcalAuto!==false,save:false};logOpen=true;foodTab='quick';render();renderFoodSheet();return}
     case 'mealarm':{const id=b.dataset.id;if(mealArm===id)return;mealArm=id;mealArmAnim=true;render();clearTimeout(mealArmT);mealArmT=setTimeout(()=>{mealArm=null;render()},3000);return}
@@ -3787,7 +3825,7 @@ function act(a,b){
       if(!isWide()&&smoothOK()&&document.startViewTransition){vtBusy=true;const vt=document.startViewTransition(apply);vt.finished.finally(()=>{vtBusy=false})}
       else apply();
       return}
-    case 'focus':{if(folded[d])delete folded[d];peek[d]=true;const y=b.getBoundingClientRect().top,fromRow=b.classList.contains('row');
+    case 'focus':{fitSkip=false;if(folded[d])delete folded[d];peek[d]=true;const y=b.getBoundingClientRect().top,fromRow=b.classList.contains('row');
       const apply=()=>{active[d]=id;editor=null;noteOpen=null;moreOpen=null;render();
         if(!isWide()){const c=document.querySelector('.card[data-card="'+id+'"]');if(c&&fromRow)easeScrollTo(window.scrollY+c.getBoundingClientRect().top-y)}};
       const after=()=>{requestAnimationFrame(()=>fitCard(id))};
@@ -3837,7 +3875,7 @@ function act(a,b){
     case 'sessopen':sessSheet=d;renderSessSheet();return;
     case 'sessclose':animOut('#sheetRoot .scrim, #sheetRoot .musbox',()=>{sessSheet=null;$('#sheetRoot').innerHTML=''});return;
     case 'pickses':{const dd=sessSheet;if(!dd)return;const x=getDay(dd,true),k=b.dataset.s;x.off=false;if(k==='rest'){x.off=true;x.session=null}else{x.session=k;if(!liveDay(dd)){x.plan=clone(plan.sessions[k].items.filter(i=>ex(i.ex)&&!ex(i.ex).archived));x.title=sessName(k)}}touchDay(dd);animOut('#sheetRoot .scrim, #sheetRoot .musbox',()=>{sessSheet=null;$('#sheetRoot').innerHTML='';peek[dd]=!liveDay(dd);render()});return}
-    case 'pick':viewKey=b.dataset.d;editor=null;addOpen=false;noteOpen=null;swapAnim='#view .tgrid, #view .card, #view .startbtn, #view .restcard, #view .guide, #view .barrow, #view .inprogrow, #view .wdone, #view .afwarn, #view .afnote, #view .pchg';break;
+    case 'pick':cancelFit();viewKey=b.dataset.d;editor=null;addOpen=false;noteOpen=null;swapAnim='#view .tgrid, #view .card, #view .startbtn, #view .restcard, #view .guide, #view .barrow, #view .inprogrow, #view .wdone, #view .afwarn, #view .afnote, #view .pchg';break;
     case 'today':viewKey=today();weekOff=0;editor=null;addOpen=false;swapAnim='#view .tgrid, #view .card, #view .startbtn, #view .restcard, #view .guide, #view .barrow, #view .inprogrow, #view .wdone';break;
     case 'wkprev':weekOff--;wkSlide=wantAnim()?'prev':null;break;
     case 'wknext':if(weekOff<0){weekOff++;wkSlide=wantAnim()?'next':null}break;
@@ -3911,7 +3949,7 @@ function act(a,b){
     case 'newsess':{const go=()=>{exOpen=null;exDraft=null;justAdded=null;startEdit();const id='s'+Date.now().toString(36);plan.sessions[id]={name:'',items:[]};plan.order.push(id);editSess=id;savePlan();render();const c=document.querySelector('.dayedit');if(c){c.scrollIntoView({block:'start',behavior:smoothOK()?'smooth':'auto'});const n=$('#dname');n&&n.focus()}};
       if(planEditing&&dayDirty()){ask({title:'Save '+(curSess().name||'this session')+' first?',msg:'You have unsaved changes.',buttons:[{v:'save',label:'Save',style:'primary'},{v:'discard',label:'Discard changes'},{v:'stay',label:'Keep editing'}]}).then(v=>{if(v==='save'){finishEdit();go()}else if(v==='discard'){const sn=editSnap;planEditing=false;editSnap=null;if(sn)restoreSnap(sn);go()}});return}
       if(planEditing)finishEdit();go();return}
-    case 'sesstoggle':{const k=b.dataset.s,c=document.querySelector('.sesscard[data-sess="'+k+'"]'),y=c?c.getBoundingClientRect().top:0;sessOpen[k]=!sessOpen[k];if(c&&wantAnim()&&(c.querySelector('.sess-extra')||c.querySelector('.sessmore')||true)){c.classList.add('sec-anim');c.classList.toggle('sess-collapsed',!sessOpen[k]);const btn=c.querySelector('.sesstap');if(btn)btn.setAttribute('aria-expanded',!!sessOpen[k]);return}render();const c2=document.querySelector('.sesscard[data-sess="'+k+'"]');if(c2)easeScrollTo(window.scrollY+c2.getBoundingClientRect().top-y);return}
+    case 'sesstoggle':{const k=b.dataset.s,c=document.querySelector('.sesscard[data-sess="'+k+'"]'),y=c?c.getBoundingClientRect().top:0;sessOpen[k]=!sessOpen[k];{const m=c&&c.querySelector('.sessmore');if(m)m.style.setProperty('--mh',(m.scrollHeight+2)+'px')}if(c&&wantAnim()&&(c.querySelector('.sess-extra')||c.querySelector('.sessmore')||true)){c.classList.add('sec-anim');c.classList.toggle('sess-collapsed',!sessOpen[k]);const btn=c.querySelector('.sesstap');if(btn)btn.setAttribute('aria-expanded',!!sessOpen[k]);return}render();const c2=document.querySelector('.sesscard[data-sess="'+k+'"]');if(c2)easeScrollTo(window.scrollY+c2.getBoundingClientRect().top-y);return}
     case 'delsess':{if(b&&b.dataset.d){const dd=b.dataset.d,x=days[dd];if(!x||!x.sets[id])return;const n=doneSets(dd,id).length;
       confirmAsk('Delete this session?',exName(id)+' on '+fmtDate(dd)+', '+n+(n===1?' set':' sets')+'. Your plan and other exercises stay.','Delete session').then(ok=>{if(ok)withUndo('Session deleted.',()=>{delete x.sets[id];delete x.rows[id];touchDay(dd,true)})});return}
       const k=editSess,nm=curSess().name||'this session';confirmAsk('Delete '+nm+'?','It stops being suggested. Workouts you already did with it stay in your history.','Delete','danger').then(ok=>{if(!ok)return;const sn=editSnap;planEditing=false;editSnap=null;if(sn)restoreSnap(sn);delete plan.sessions[k];plan.order=plan.order.filter(x=>x!==k);editSess=null;savePlan();render()});return}
@@ -4970,23 +5008,25 @@ function restoreBackup(src,date){
   const b=(bkCloudList||[]).find(x=>x.date===date);if(b){try{go(JSON.parse(b.json))}catch(e){toast('That backup could not be read.')}}
 }
 /* ---------------- drag to reorder ---------------- */
-let drag=null,dragAuto=null;
+let drag=null,dragAuto=null,dragK=1;
 const DRAGSEL='.prow,.dragi,.sesscard';
 function dragItems(list){return [...list.children].filter(e=>e.matches(DRAGSEL)&&!e.classList.contains('closing'))}
 /* after the order is saved, re-number the rows still on screen so a quick second drag, edit or remove hits the right item */
 function renumberRows(list){dragItems(list).filter(x=>x.matches('.prow')).forEach((r,k)=>{r.dataset.row=k;r.querySelectorAll('[data-i]').forEach(n=>n.dataset.i=k);r.querySelectorAll('[data-pi]').forEach(n=>n.dataset.pi=k)})}
-function tyOf(x){const m=(x.style.transform||'').match(/translateY\((-?[\d.]+)px\)/);return m?parseFloat(m[1]):0}
+/* On wide screens the whole page is zoomed (applyScale). A translateY of N px then moves things N x zoom px on screen, while pointer and getBoundingClientRect values are screen px. dragK is that zoom, measured once per drag, so every position below is worked out in screen px and only converted back when it is written as a translate. */
+function tyOf(x){const m=(x.style.transform||'').match(/translateY\((-?[\d.]+)px\)/);return (m?parseFloat(m[1]):0)*dragK}
+function measureK(el){const tr=el.style.transition,tf=el.style.transform;el.style.transition='none';el.style.transform='translateY(0px)';const a=el.getBoundingClientRect().top;el.style.transform='translateY(100px)';const b=el.getBoundingClientRect().top;el.style.transform=tf;el.style.transition=tr;const k=(b-a)/100;return isFinite(k)&&k>.2&&k<5?k:1}
 document.addEventListener('pointerdown',e=>{const h=e.target.closest('.handle');if(!h)return;const el=h.closest(DRAGSEL);if(!el)return;e.preventDefault();
-  const r=el.getBoundingClientRect();drag={el,list:el.parentElement,grab:e.clientY-r.top,ty:0,y:e.clientY,moved:false};el.classList.add('dragging');try{h.setPointerCapture(e.pointerId)}catch(x){}
+  dragK=measureK(el);const r=el.getBoundingClientRect();drag={el,list:el.parentElement,grab:e.clientY-r.top,ty:0,y:e.clientY,moved:false};el.classList.add('dragging');try{h.setPointerCapture(e.pointerId)}catch(x){}
   clearInterval(dragAuto);dragAuto=setInterval(()=>{if(!drag)return;const sp=drag.y<80?-10:drag.y>window.innerHeight-110?10:0;if(sp){window.scrollBy(0,sp);dragStep()}},16)});
 function flipTo(el,list,ref){const sib=dragItems(list).filter(x=>x!==el),before=new Map(sib.map(x=>[x,x.getBoundingClientRect().top-tyOf(x)]));
   if(ref)list.insertBefore(el,ref);else{const its=sib;const last=its[its.length-1];if(last)last.after(el)}
-  if(!smoothOK())return;sib.forEach(x=>{const d=before.get(x)-x.getBoundingClientRect().top+tyOf(x);if(Math.abs(d)>.5){x.style.transition='none';x.style.transform='translateY('+d+'px)';void x.offsetWidth;x.style.transition='transform .22s cubic-bezier(.2,.8,.2,1)';x.style.transform=''}})}
+  if(!smoothOK())return;sib.forEach(x=>{const d=before.get(x)-x.getBoundingClientRect().top+tyOf(x);if(Math.abs(d)>.5){x.style.transition='none';x.style.transform='translateY('+(d/dragK)+'px)';void x.offsetWidth;x.style.transition='transform .22s cubic-bezier(.2,.8,.2,1)';x.style.transform=''}})}
 function dragStep(){if(!drag)return;const {el,list}=drag,y=drag.y,sib=dragItems(list).filter(x=>x!==el);let ref=null;
   for(const x of sib){const b=x.getBoundingClientRect(),top=b.top-tyOf(x);if(y<top+b.height/2){ref=x;break}}
   let cur=el.nextElementSibling;while(cur&&(!cur.matches(DRAGSEL)||cur.classList.contains('closing')))cur=cur.nextElementSibling;
   if(ref!==cur&&!(ref===null&&!cur)){flipTo(el,list,ref);drag.moved=true}
-  el.style.transition='none';const natural=el.getBoundingClientRect().top-drag.ty;drag.ty=y-drag.grab-natural;el.style.transform='translateY('+drag.ty+'px)'}
+  el.style.transition='none';const natural=el.getBoundingClientRect().top-drag.ty*dragK;drag.ty=(y-drag.grab-natural)/dragK;el.style.transform='translateY('+drag.ty+'px)'}
 document.addEventListener('pointermove',e=>{if(!drag)return;e.preventDefault();drag.y=e.clientY;dragStep()},{passive:false});
 /* The new order is written to state and saved the moment you let go. The settle animation afterwards only tidies the screen, it never decides the order. */
 function commitDrag(el,list){
@@ -5016,6 +5056,29 @@ window.addEventListener('pagehide',saveUI);window.addEventListener('beforeunload
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveUI()});
 
 function isCoarseOrNarrow(){try{return !!(window.matchMedia&&(matchMedia('(pointer:coarse)').matches||matchMedia('(hover:none)').matches))||innerWidth<900}catch(e){return innerWidth<900}}
+/* ---------------- on-screen keyboard ----------------
+   The app used to leave the keyboard entirely to the browser. Now it notices when the keyboard is up (a text box has focus and the visible height shrank), hides the bottom tab bar for as long as it is up, and when it goes away it puts the tab bar back at the bottom and nudges the page so no empty band is left behind. If the keyboard grows or the field ends up against the edge while you type, the field is eased back to the middle of the free area instead of jumping. */
+let kbBase=window.innerHeight,kbOpen=false,kbTimer=0;
+function vvH(){return Math.round((window.visualViewport&&visualViewport.height)||innerHeight)}
+function isTextField(el){return !!(el&&el.matches&&el.matches('input,textarea')&&!el.matches('[type=checkbox],[type=radio],[type=range],[type=button],[type=submit],[type=file]'))}
+function kbInSheet(el){return !!el.closest('.askbox,.musbox,.tagbox,.addsheet,.psheet')}
+function kbCenter(el,why){if(!el||kbInSheet(el))return;const h=Math.min(innerHeight,vvH()),r=el.getBoundingClientRect();if(r.top<h*.12||r.bottom>h*.88)try{el.scrollIntoView({block:'center',behavior:smoothOK()?'smooth':'auto'})}catch(x){el.scrollIntoView()}}
+function kbUpdate(){
+  const a=document.activeElement,f=isTextField(a)&&isCoarseOrNarrow()&&innerWidth<900,h=Math.min(innerHeight,vvH());
+  if(!f)kbBase=h;
+  const open=f&&(kbBase-h>120);
+  if(open!==kbOpen){
+    kbOpen=open;document.documentElement.classList.toggle('kbd',open);
+    if(!open){const y=window.scrollY;requestAnimationFrame(()=>{window.scrollTo(window.scrollX,y);const t=document.querySelector('.tabbar');if(t){t.style.transform='translateZ(0)';void t.offsetHeight;t.style.transform=''}});clearTimeout(kbTimer);kbTimer=setTimeout(()=>{if(!kbOpen)window.scrollTo(window.scrollX,Math.min(y,document.documentElement.scrollHeight-innerHeight))},350)}
+  }
+  if(open&&f)kbCenter(a,'viewport');
+}
+window.addEventListener('resize',kbUpdate);
+if(window.visualViewport)visualViewport.addEventListener('resize',kbUpdate);
+document.addEventListener('focusin',()=>{setTimeout(kbUpdate,60);setTimeout(kbUpdate,380)});
+document.addEventListener('focusout',()=>setTimeout(kbUpdate,60));
+document.addEventListener('input',e=>{if(kbOpen&&isTextField(e.target))kbCenter(e.target,'input')},true);
+window.addEventListener('orientationchange',()=>{kbBase=innerHeight;setTimeout(kbUpdate,300)});
 function lockMobileZoom(){
   const on=isCoarseOrNarrow()&&innerWidth<1280;
   document.documentElement.classList.toggle('phone-or-tablet',on);
