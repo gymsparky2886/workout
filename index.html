@@ -100,8 +100,9 @@ html[data-upd="1"] .ubadge{display:block}
 .tbig{font-size:clamp(40px,12vw,64px)}
 @media (min-width:900px){.tbig{font-size:clamp(56px,6vw,84px)}}
 .datebtn{border:0;background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 14px;font-weight:600;font-size:14px;white-space:nowrap;min-height:40px;display:inline-flex;gap:6px;align-items:center}
-.datebtn .chev{color:var(--muted);display:inline-block;width:8px;height:8px;border:0;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transform-origin:50% 50%;transition:transform .25s ease;flex:0 0 auto;margin:0 1px 0 2px;position:relative;top:-1px;font-size:0;line-height:0;box-sizing:border-box}
+.datebtn .chev{color:var(--muted);display:inline-block;width:8px;height:8px;border:0;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transform-origin:50% 50%;transition:transform .22s cubic-bezier(.2,.8,.2,1);flex:0 0 auto;margin:0 1px 0 2px;position:relative;top:-1px;font-size:0;line-height:0;box-sizing:border-box}
 .datebtn .chev.up{transform:rotate(225deg)}
+.datebtn .dlab{display:inline-block;min-width:6.2em;text-align:center;font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:reduce){.datebtn .chev{transition:none}}
 .barrow{display:flex;align-items:center;gap:10px;margin-top:10px}
 .barrow .bar{flex:1;margin:0;height:6px}
@@ -264,7 +265,7 @@ html[data-wkmo="b"] .wd .mo{display:none}
 }
 @media (min-width:900px){
   .cal-layer{align-items:flex-start;justify-content:flex-start;inset:auto;position:absolute;z-index:20}
-  .calbox{border-radius:20px;padding:14px 16px 16px;box-shadow:0 16px 40px rgba(22,27,38,.18),0 0 0 1px var(--line);animation:cIn .2s ease-out;max-width:360px;width:360px;height:auto;max-height:none;margin:8px 0 0}
+  .calbox{border-radius:20px;padding:14px 16px 16px;box-shadow:0 16px 40px rgba(22,27,38,.18),0 0 0 1px var(--line);animation:cIn .22s cubic-bezier(.2,.8,.2,1);max-width:360px;width:360px;height:auto;max-height:none;margin:8px 0 0}
   .cal-layer.mid .calbox{transform:translateY(-8px) scale(.98);opacity:.4}
   .weekpanel{position:relative}
 }
@@ -742,7 +743,7 @@ body.editing #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 .finbtn{min-width:200px}
 .combo .inp{padding-right:44px}
 .combo-arrow{position:absolute;right:4px;top:4px;width:40px;height:calc(100% - 8px);max-height:44px;border:0;background:none;border-radius:10px;display:grid;place-items:center}
-.combo-arrow i{width:8px;height:8px;border-right:2px solid var(--faint);border-bottom:2px solid var(--faint);transform:translateY(-25%) rotate(45deg);transition:transform .2s ease}
+.combo-arrow i{width:8px;height:8px;border-right:2px solid var(--faint);border-bottom:2px solid var(--faint);transform:translateY(-25%) rotate(45deg);transition:transform .22s cubic-bezier(.2,.8,.2,1)}
 .combo.open .combo-arrow i{transform:translateY(25%) rotate(225deg)}
 .lockd .set{opacity:.42}
 .lockd .set .r,.lockd .set .tap{visibility:hidden}
@@ -867,7 +868,7 @@ html.locked,html.locked body{overscroll-behavior:none}
 @keyframes pop{from{opacity:0;transform:translate(-50%,-47%) scale(.96)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 #view.vin{animation:vIn .2s ease-out}
 .enter{animation:cIn .18s ease-out}
-.scrim{animation:fIn .16s ease-out}
+.scrim{animation:fIn .22s cubic-bezier(.2,.8,.2,1)}
 .askbox{animation:pop .18s ease-out}
 .combo-list:not([hidden]){animation:cIn .12s ease-out}
 @keyframes fOut{to{opacity:0}}
@@ -879,12 +880,12 @@ html.locked,html.locked body{overscroll-behavior:none}
 @keyframes chkIn{0%{transform:scale(0) rotate(-20deg);opacity:0}70%{transform:scale(1.25)}100%{transform:none;opacity:1}}
 @keyframes growUp{from{transform:scaleY(0)}to{transform:none}}
 @keyframes tickPop{0%{transform:scale(.6)}70%{transform:scale(1.15)}100%{transform:none}}
-.scrim.closing{animation:fOut .17s ease-in forwards}
-.askbox.closing{animation:popOut .17s ease-in forwards}
-.musbox.closing{animation:sheetDown .17s ease-in forwards}
-@media (min-width:900px){.musbox.closing{animation:popOut .17s ease-in forwards}}
-.editor.closing,.weekpanel.closing,.links.more.closing{animation:slideClose .16s ease-in forwards}
-.slide,.weekpanel.enter{animation:slideOpen .2s cubic-bezier(.2,.8,.2,1) both}
+.scrim.closing{animation:fOut .18s ease-in forwards}
+.askbox.closing{animation:popOut .18s ease-in forwards}
+.musbox.closing{animation:sheetDown .18s ease-in forwards}
+@media (min-width:900px){.musbox.closing{animation:popOut .18s ease-in forwards}}
+.editor.closing,.weekpanel.closing,.links.more.closing{animation:slideClose .18s ease-in forwards}
+.slide,.weekpanel.enter{animation:slideOpen .22s cubic-bezier(.2,.8,.2,1) both}
 .set.done.pop{animation:donePop .35s ease-out}
 .set.done.pop .r svg{animation:chkIn .35s .05s cubic-bezier(.2,.8,.2,1) both}
 .set.done{transition:background-color .25s ease}
@@ -932,9 +933,9 @@ html.theme-anim,html.theme-anim body{transition:background-color .22s ease,color
 @media (prefers-reduced-motion:reduce){html.theme-anim,html.theme-anim body{transition:none}}
 /* fluid desktop scale is applied in applyScale() so 100vw is not circular with html zoom */
 /* Item 18: overlay Remove — covers the tail only, name never moves */
-.food-tail .rm-cover,.prot-tail .rm-cover{position:absolute;top:0;bottom:0;right:0;left:auto;min-width:100%;width:max-content;padding:0 14px;box-sizing:border-box;margin:0;min-height:0;height:100%;border-radius:10px;z-index:2;animation:rmIn .18s ease-out;white-space:nowrap;text-align:center}
+.food-tail .rm-cover,.prot-tail .rm-cover{position:absolute;top:0;bottom:0;right:0;left:auto;min-width:100%;width:max-content;padding:0 14px;box-sizing:border-box;margin:0;min-height:0;height:100%;border-radius:10px;z-index:2;animation:rmIn .22s cubic-bezier(.2,.8,.2,1);white-space:nowrap;text-align:center}
 .rm-cover.noanim{animation:none!important}
-.arm-out .rm-cover{animation:rmOut .16s ease-in forwards}
+.arm-out .rm-cover{animation:rmOut .18s ease-in forwards}
 @keyframes rmIn{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
 @keyframes rmOut{to{opacity:0;transform:translateX(12px)}}
 .rr.protline{position:relative;gap:10px}
@@ -950,9 +951,9 @@ html.theme-anim,html.theme-anim body{transition:background-color .22s ease,color
 .sectog .chev{width:10px;height:10px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-135deg);transition:transform .22s cubic-bezier(.2,.8,.2,1);flex:0 0 auto;color:var(--muted);margin-right:2px}
 .card.sec.collapsed .chev{transform:rotate(45deg)}
 .sesscard:not(.sess-collapsed) .sessmore{display:none}
-.combo-list.closing{animation:cOut .15s ease-in forwards}
+.combo-list.closing{animation:cOut .18s ease-in forwards}
 @keyframes cOut{to{opacity:0;transform:translateY(-4px)}}
-.set.closing,.edbar.closing,.dnote.closing,.note.closing,.addform.closing,.dayedit.closing,.prow.closing,.signin.closing,.offbar.closing,.pchg.closing,.wrap.closing,.afwarn.closing,.afnote.closing,.wdone.closing,.guide.closing,.startbtn.closing,.mtapl.closing,.hm-det.closing,.exopen.closing{animation:slideClose .16s ease-in forwards}
+.set.closing,.edbar.closing,.dnote.closing,.note.closing,.addform.closing,.dayedit.closing,.prow.closing,.signin.closing,.offbar.closing,.pchg.closing,.wrap.closing,.afwarn.closing,.afnote.closing,.wdone.closing,.guide.closing,.startbtn.closing,.mtapl.closing,.hm-det.closing,.exopen.closing{animation:slideClose .18s ease-in forwards}
 #view,main,.setpage,.card,.foodrow,.food-tail,.rr,.set,.afwarn,.afnote,.inprogrow,.barrow,.th,.prot-name,.prot-tail,.sesscard,.tgrid{min-width:0;max-width:100%}
 html,body{overflow-x:clip}
 @media (prefers-reduced-motion:reduce){
@@ -1365,14 +1366,14 @@ html[data-upd="1"] .tbadge{display:none !important}
 .weekwrap{
   display:grid;
   grid-template-rows:0fr;
-  transition:grid-template-rows .32s cubic-bezier(.2,.8,.2,1);
+  transition:grid-template-rows .18s ease-in;
 }
-.weekwrap > .weekpanel{overflow:hidden;min-height:0;opacity:0;transition:opacity .28s ease}
-.weekwrap.open{grid-template-rows:1fr}
-.weekwrap.open > .weekpanel{opacity:1}
+.weekwrap > .weekpanel{overflow:hidden;min-height:0;opacity:0;transition:opacity .18s ease-in}
+.weekwrap.open{grid-template-rows:1fr;transition:grid-template-rows .22s cubic-bezier(.2,.8,.2,1)}
+.weekwrap.open > .weekpanel{opacity:1;transition:opacity .22s cubic-bezier(.2,.8,.2,1)}
 @media (max-width:899px){
   .cal-layer{align-items:flex-start;justify-content:center;padding:8px 16px 0;box-sizing:border-box}
-  .cal-layer .scrim{background:var(--scrim);animation:fIn .2s ease-out}
+  .cal-layer .scrim{background:var(--scrim);animation:fIn .22s cubic-bezier(.2,.8,.2,1)}
   .calbox{
     height:auto !important;
     max-height:calc(100% - 12px);
@@ -1381,7 +1382,7 @@ html[data-upd="1"] .tbadge{display:none !important}
     border-radius:24px;
     padding:0 16px 16px;
     gap:8px;
-    animation:calSheetUp .32s cubic-bezier(.2,.8,.2,1);
+    animation:calSheetUp .22s cubic-bezier(.2,.8,.2,1);
     box-shadow:0 18px 40px rgba(0,0,0,.28);
     margin:0 auto;
   }
@@ -1422,8 +1423,8 @@ html[data-upd="1"] .tbadge{display:none !important}
   .calbox .grab::after{
     content:"";position:absolute;left:-28px;right:-28px;top:-16px;bottom:-16px;
   }
-  .calbox.closing{animation:calSheetDown .22s cubic-bezier(.2,.8,.2,1) forwards}
-  .cal-layer .scrim.closing{animation:calScrimOut .22s ease-in forwards}
+  .calbox.closing{animation:calSheetDown .18s ease-in forwards}
+  .cal-layer .scrim.closing{animation:calScrimOut .18s ease-in forwards}
   .cal-layer.mid .calbox{animation:none;transform:translateY(36%);opacity:1}
   .cal-layer.mid .scrim{animation:none;opacity:.45}
 }
@@ -1436,7 +1437,7 @@ html[data-upd="1"] .tbadge{display:none !important}
 }
 @media (min-width:900px){
   .calbox .grab{display:none !important}
-  .calbox{border-radius:20px;padding:14px 16px 16px;animation:cIn .2s ease-out;overflow:visible;max-height:none}
+  .calbox{border-radius:20px;padding:14px 16px 16px;animation:cIn .22s cubic-bezier(.2,.8,.2,1);overflow:visible;max-height:none}
   .calbox.closing{animation:calPopOut .18s ease-in forwards}
   .cal-clip{overflow:visible;flex:0 0 auto;height:auto}
   .cal-dow,.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));width:100%;margin:0;padding:0;gap:0;box-sizing:border-box}
@@ -1516,7 +1517,7 @@ html[data-theme="light"] .cal-layer .scrim{background:rgba(22,27,38,.52)}
     inset:0;
     z-index:0;
     background:rgba(0,0,0,.72);
-    animation:fIn .2s ease-out;
+    animation:fIn .22s cubic-bezier(.2,.8,.2,1);
   }
   html[data-theme="light"] .cal-layer.cal-pop .scrim{background:rgba(22,27,38,.52)}
   .cal-layer.cal-pop .scrim.closing{animation:calScrimOut .18s ease-in forwards}
@@ -1525,13 +1526,13 @@ html[data-theme="light"] .cal-layer .scrim{background:rgba(22,27,38,.52)}
 
 .histlist{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 .hcard{background:var(--surface);border-radius:16px;overflow:hidden}
-.hcard{transition:box-shadow .32s ease}
+.hcard{transition:box-shadow .22s cubic-bezier(.2,.8,.2,1)}
 .hcard.open{box-shadow:inset 0 0 0 1.5px var(--line)}
 .htop{all:unset;box-sizing:border-box;width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;min-height:56px}
 .htop:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .htop .hl b{display:block;font-weight:600;font-size:15px}
 .hmeta{display:flex;gap:12px;font-size:12px;color:var(--muted);margin-top:2px}
-.hchev{width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .32s cubic-bezier(.2,.8,.2,1);flex:0 0 auto;margin-right:4px}
+.hchev{width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .22s cubic-bezier(.2,.8,.2,1);flex:0 0 auto;margin-right:4px}
 .hcard.open .hchev{transform:rotate(225deg)}
 .hbody{padding:0 14px 12px;will-change:height}
 .hex{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--hair)}
@@ -1540,6 +1541,9 @@ html[data-theme="light"] .cal-layer .scrim{background:rgba(22,27,38,.52)}
 .hx{border:0;background:none;color:var(--faint);font-size:15px;min-width:40px;min-height:40px;border-radius:10px}
 .hxconf{border:0;background:var(--danger);color:var(--danger-ink);font-weight:700;border-radius:8px;padding:0 12px;min-height:34px;animation:fIn .12s ease-out}
 .hdel{color:var(--warn-text)!important;display:block;margin:10px auto 0}
+.hacts{display:flex;justify-content:center;align-items:center;gap:28px;margin-top:10px}.hacts .link{margin:0;white-space:nowrap}
+@media (max-width:389px){.hacts{gap:14px}}
+@media (max-width:339px){.hacts .link{font-size:14px}}
 @media (max-width:359px){.stepper,.edbar{grid-template-columns:44px minmax(0,1fr) 44px;row-gap:4px}.stepper label,.edbar label{grid-column:1/-1}.stepper button,.stepper input,.edbar input,.barcell{height:44px}.barx{height:44px}.stepper label,.edbar label{line-height:18px}.barlink{width:44px;height:66px;padding-top:22px;box-sizing:border-box;line-height:44px}}
 /* ===== v89 flat + glows, food tab, charts ===== */
 :root{
@@ -1685,10 +1689,10 @@ body::before,.hero2::after{display:none !important;background:none !important}
 /* animations: protein-popup feel */
 .enter{animation:cIn .22s cubic-bezier(.2,.8,.2,1)}
 @keyframes cIn{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
-.scrim{animation:fIn .16s ease-out}
+.scrim{animation:fIn .22s cubic-bezier(.2,.8,.2,1)}
 .askbox,.musbox,.protbox,.foodbox{animation:sheetUp .22s cubic-bezier(.2,.8,.2,1)}
 @keyframes sheetUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
-.scrim.closing{animation:fOut .17s ease-in forwards}
+.scrim.closing{animation:fOut .18s ease-in forwards}
 .askbox.closing,.musbox.closing,.protbox.closing,.foodbox.closing{animation:sheetDown .18s ease-in forwards}
 @keyframes sheetDown{to{transform:translateY(40px);opacity:0}}
 @keyframes fIn{from{opacity:0}to{opacity:1}}
@@ -1912,7 +1916,7 @@ body::before,.hero2::after{display:none !important;background:none !important}
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=92, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=93, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Neck','Traps','Upper chest','Lower chest','Front delts','Side delts','Rear delts','Upper back','Lats','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs','Obliques','Hip flexors']],['Legs',['Glutes','Outer hips','Inner thighs','Quads','Hamstrings','Calves','Shins']]];
 const LEGACY={Chest:['Upper chest','Lower chest'],Shoulders:['Front delts','Side delts','Rear delts'],Back:['Upper back','Lats'],Core:['Abs']};
@@ -2375,7 +2379,7 @@ function foodHtml(){
   const left=gk?Math.max(0,gk-kcal):null;
   const dateLab=esc(dname(d)+' '+parse(d).getDate()+' '+MONTHS[parse(d).getMonth()]);
   const canNext=d<today();
-  let h=signinBar()+'<div class="foodhead"><h1 class="big sm">Food</h1><div class="dayswitch"><button class="arrow" type="button" data-act="foodprev" aria-label="Previous day">‹</button><button class="datebtn" type="button" disabled>'+dateLab+'</button><button class="arrow" type="button" data-act="foodnext" aria-label="Next day"'+(canNext?'':' disabled')+'>›</button></div></div>';
+  let h=signinBar()+'<div class="foodhead"><h1 class="big sm">Food</h1><div class="dayswitch"><button class="arrow" type="button" data-act="foodprev" aria-label="Previous day">‹</button><button class="datebtn" type="button" disabled><span class="dlab">'+dateLab+'</span></button><button class="arrow" type="button" data-act="foodnext" aria-label="Next day"'+(canNext?'':' disabled')+'>›</button></div></div>';
   h+='<div class="foodsplit"><div class="food-left">';
   h+='<div class="card macard foodhero"><div class="mbody"><div class="kcalring">'+kcalRingSvg(kcal,gk||0)+'<div class="kcalring-txt"><b>'+fmtComma(kcal)+'</b><small>'+(gk?'/ '+fmtComma(gk)+' kcal':'kcal')+'</small>'+(left!=null?'<em>'+fmtComma(left)+' left</em>':'')+'</div></div><div class="mbars">';
   h+=foodBarRow('p','Protein',p,gp||0,'g')+foodBarRow('c','Carbs',c,gc||0,'g')+foodBarRow('f','Fat',f,gf||0,'g')+foodBarRow('fi','Fiber',fi,gfi||0,'g');
@@ -2759,11 +2763,11 @@ function fitCardDelta(c){
   if(r.bottom>a.bot)return Math.min(r.bottom-a.bot,r.top-a.top);
   return 0;
 }
-function easeScrollTo(y1,done){
+function easeScrollTo(y1,done,dur0){
   const y0=window.scrollY,max=Math.max(0,document.documentElement.scrollHeight-window.innerHeight),y=Math.max(0,Math.min(max,y1));
   if(Math.abs(y-y0)<1){if(done)done();return}
   if(!smoothOK()){window.scrollTo(0,y);if(done)done();return}
-  const t0=performance.now(),dur=360,my=++fitAnim,ease=p=>p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+  const t0=performance.now(),dur=dur0||360,my=++fitAnim,ease=p=>p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
   const step=now=>{
     if(my!==fitAnim)return;
     const p=Math.min(1,(now-t0)/dur);
@@ -2823,9 +2827,9 @@ document.addEventListener('pointerdown',e=>{if(window.innerWidth>=900)return;con
   sdrag={sh,sc,y0:e.clientY,t0:performance.now(),dy:0,h:sh.getBoundingClientRect().height};sh.style.transition='none';sh.style.animation='none';if(sc)sc.style.transition='none';try{zone.setPointerCapture(e.pointerId)}catch(x){}},true);
 document.addEventListener('pointermove',e=>{if(!sdrag)return;const dy=Math.max(0,e.clientY-sdrag.y0);sdrag.dy=dy;sdrag.sh.style.transform='translateY('+dy+'px)';if(sdrag.sc)sdrag.sc.style.opacity=String(Math.max(0,1-dy/sdrag.h));e.preventDefault()},{passive:false});
 function endSheetDrag(){if(!sdrag)return;const {sh,sc,dy,h,t0}=sdrag;sdrag=null;const v=dy/Math.max(1,performance.now()-t0);
-  if(dy>h*0.33||(v>0.6&&dy>40)){sh.style.transition='transform .18s ease-in';sh.style.transform='translateY('+(h+40)+'px)';if(sc){sc.style.transition='opacity .18s';sc.style.opacity='0'}
-    setTimeout(()=>{const a=sc&&sc.dataset.act;if(a){noAnimOnce=true;act(a,sc);noAnimOnce=false}},180)}
-  else{sh.style.transition='transform .22s cubic-bezier(.2,.8,.2,1)';sh.style.transform='';if(sc){sc.style.transition='opacity .22s';sc.style.opacity=''}}}
+  if(dy>h*0.33||(v>0.6&&dy>40)){sh.style.transition='transform .18s ease-in';sh.style.transform='translateY('+(h+40)+'px)';if(sc){sc.style.transition='opacity .18s ease-in';sc.style.opacity='0'}
+    setTimeout(()=>{const a=sc&&sc.dataset.act;if(a){noAnimOnce=true;act(a,sc);noAnimOnce=false}},190)}
+  else{sh.style.transition='transform .22s cubic-bezier(.2,.8,.2,1)';sh.style.transform='';if(sc){sc.style.transition='opacity .22s cubic-bezier(.2,.8,.2,1)';sc.style.opacity=''}}}
 document.addEventListener('pointerup',endSheetDrag);document.addEventListener('pointercancel',endSheetDrag);
 let cdrag=null;
 document.addEventListener('pointerdown',e=>{
@@ -2858,14 +2862,14 @@ function endCalDrag(){
     return;
   }
   if(past){
-    box.style.transition='transform .22s cubic-bezier(.2,.8,.2,1), opacity .22s ease-in';
+    box.style.transition='transform .18s ease-in, opacity .18s ease-in';
     box.style.transform='translateY('+(h+24)+'px)';
-    if(sc){sc.style.transition='opacity .22s ease-in';sc.style.opacity='0'}
-    setTimeout(()=>{noAnimOnce=true;act('calclose');noAnimOnce=false},220);
+    if(sc){sc.style.transition='opacity .18s ease-in';sc.style.opacity='0'}
+    setTimeout(()=>{noAnimOnce=true;act('calclose');noAnimOnce=false},190);
   }else{
-    box.style.transition='transform .28s cubic-bezier(.2,.8,.2,1)';
+    box.style.transition='transform .22s cubic-bezier(.2,.8,.2,1)';
     box.style.transform='';
-    if(sc){sc.style.transition='opacity .28s cubic-bezier(.2,.8,.2,1)';sc.style.opacity=''}
+    if(sc){sc.style.transition='opacity .22s cubic-bezier(.2,.8,.2,1)';sc.style.opacity=''}
   }
 }
 document.addEventListener('pointerup',endCalDrag);
@@ -2971,7 +2975,7 @@ function armWeekAnim(){
   w.classList.remove('open');
   void w.offsetWidth;
   w.classList.add('open');
-  setTimeout(()=>{const c=document.querySelector('.card[data-card]');if(c)fitCard(c.getAttribute('data-card'))},340);
+  setTimeout(()=>{const c=document.querySelector('.card[data-card]');if(c)fitCard(c.getAttribute('data-card'))},240);
 }
 let calChevronAnim=false;
 function closeCalendar(then, keepChevron){
@@ -2992,7 +2996,7 @@ function closeWeek(then){
   const w=document.querySelector('.weekwrap.open');
   if(!wantAnim()||!w){done();return}
   w.classList.remove('open');
-  setTimeout(done,320);
+  setTimeout(done,200);
 }
 function foldWeekToDefault(){
   document.querySelectorAll('.datebtn .chev').forEach(el=>el.classList.remove('up'));
@@ -3024,7 +3028,7 @@ let noAnimOnce=false,skipLayoutAnim=false,justSet=null,justBar=false,justNote=nu
 function wantAnim(){return !!(smoothOK()&&!noAnimOnce&&!skipLayoutAnim)}
 function justShow(key,shown){const was=!!lastOpen[key];lastOpen[key]=!!shown;return !!(uiReady&&shown&&!was&&wantAnim())}
 function enterCls(on){return on?' enter':''}
-function animOut(sel,cb){if(noAnimOnce||skipLayoutAnim){noAnimOnce=false;cb();return}const els=[...document.querySelectorAll(sel)];if(!els.length||!smoothOK()){cb();return}els.forEach(e=>e.classList.add('closing'));setTimeout(cb,smoothOK()?180:0)}
+function animOut(sel,cb){if(noAnimOnce||skipLayoutAnim){noAnimOnce=false;cb();return}const els=[...document.querySelectorAll(sel)];if(!els.length||!smoothOK()){cb();return}els.forEach(e=>e.classList.add('closing'));setTimeout(cb,smoothOK()?190:0)}
 function render(){document.body.classList.remove('editing');setTimeout(()=>{renderProt();renderMus();updAdd();if(logOpen)renderFoodSheet();if(qhOpen)renderHistSheet();if(swapOpen)renderSwapSheet();if(newExOpen)renderNewExSheet();armWkClock()},0);
   const now=today();if(viewKey>now)viewKey=now;
   document.querySelectorAll('.tabbar button').forEach(b=>{if(b.dataset.view===view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
@@ -3049,7 +3053,7 @@ function todayHtml(){
   const dateLab=esc(dname(d)+' '+parse(d).getDate()+' '+MONTHS[parse(d).getMonth()]);
   const dateExp=!!(wpOpen||calOpen);
   const chevCls=(wpOpen||calOpen||datePhase?' up':'');
-  const dateBtn='<button class="datebtn'+(wide?' datehit':'')+'" data-act="calopen" aria-expanded="'+dateExp+'">'+dotHtml()+dateLab+' <span class="chev'+chevCls+'" aria-hidden="true"></span></button>';
+  const dateBtn='<button class="datebtn'+(wide?' datehit':'')+'" data-act="calopen" aria-expanded="'+dateExp+'">'+dotHtml()+'<span class="dlab">'+dateLab+'</span> <span class="chev'+chevCls+'" aria-hidden="true"></span></button>';
   const meta='<div class="h2meta">'+dateBtn+pillH+'</div>';
   h+='<div class="hero2"><div class="h2l">'+(wide?'<div class="th"><h1 class="big tbig">'+esc(title)+'</h1></div>'+meta:'<div class="th"><h1 class="big tbig">'+esc(title)+'</h1>'+meta+'</div>')+'</div>';
   h+='<div class="weekwrap'+(wpOpen&&!wpAnim?' open':'')+'"><div class="weekpanel">'+weekStrip()+'</div></div>';
@@ -3258,7 +3262,7 @@ function comboRender(inp){
   list.innerHTML=msg+(opts.length?opts.map((o,i)=>'<div class="combo-opt'+(o.create?' create':'')+'" role="option" id="co-'+i+'" aria-selected="'+(i===comboSel)+'" data-act="combopick" data-v="'+esc(o.v)+'">'+(o.create?'+ Create “'+esc(o.v)+'”':'<span><b>'+esc(o.v)+'</b><small>'+esc(o.sub)+'</small></span><span class="tag">'+esc(o.tag)+'</span>')+'</div>').join(''):(hi?'':'<div class="combo-empty">Nothing to add. Type a new name to create one.</div>'));
   if(comboSel>=0)inp.setAttribute('aria-activedescendant','co-'+comboSel);else inp.removeAttribute('aria-activedescendant');
 }
-function comboClose(inp){const box=inp&&inp.parentElement;if(!box||!box.classList.contains('combo'))return;const l=box.querySelector('.combo-list');const finish=()=>{box.classList.remove('open');inp.setAttribute('aria-expanded','false');if(l){l.hidden=true;l.innerHTML='';l.classList.remove('closing')}comboSel=-1;comboHint(inp)};if(l&&!l.hidden&&wantAnim()){l.classList.add('closing');setTimeout(finish,160)}else finish()}
+function comboClose(inp){const box=inp&&inp.parentElement;if(!box||!box.classList.contains('combo'))return;const l=box.querySelector('.combo-list');const finish=()=>{box.classList.remove('open');inp.setAttribute('aria-expanded','false');if(l){l.hidden=true;l.innerHTML='';l.classList.remove('closing')}comboSel=-1;comboHint(inp)};if(l&&!l.hidden&&wantAnim()){l.classList.add('closing');setTimeout(finish,190)}else finish()}
 document.addEventListener('focusin',e=>{if(e.target.getAttribute&&e.target.getAttribute('role')==='combobox'){comboSel=-1;comboRender(e.target);if(!isWide()){const el=e.target;setTimeout(()=>{try{el.scrollIntoView({block:'start',behavior:'smooth'})}catch(x){el.scrollIntoView()}},60)}}});
 document.addEventListener('focusout',e=>{if(e.target.getAttribute&&e.target.getAttribute('role')==='combobox')setTimeout(()=>{if(document.activeElement!==e.target)comboClose(e.target)},120)});
 document.addEventListener('pointerdown',e=>{if(e.target.closest('.combo-opt'))e.preventDefault()});
@@ -3467,7 +3471,7 @@ function histCard(k){const x=days[k],nm=weekPlanName(k)||x.title||'Workout',st=h
     histExIds(k).forEach(id=>{const t=exType(id),ds=doneSets(k,id),armed=histArm===k+'|'+id;
       h+='<div class="hex"><span><b>'+esc(exName(id))+'</b><small>'+esc(listTxt(t,ds))+'</small></span>'+(armed?'<button class="hxconf" data-act="hxdel" data-d="'+k+'" data-ex="'+id+'">Remove</button>':'<button class="hx" data-act="hxarm" data-d="'+k+'" data-ex="'+id+'" aria-label="Remove '+esc(exName(id))+' from this workout">✕</button>')+'</div>'});
     if(x.note)h+='<p class="sessnote">📝 '+esc(x.note)+'</p>';
-    h+='<button class="link hdel" data-act="histdel" data-d="'+k+'">Delete this workout</button></div>'}
+    h+='<div class="hacts"><button class="link" data-act="openday" data-d="'+k+'">Open in Today ›</button><button class="link hdel" data-act="histdel" data-d="'+k+'">Delete this workout</button></div></div>'}
   return h+'</div>'}
 function histStats(k){return histExIds(k).reduce((a,id)=>a+doneSets(k,id).length,0)}
 let histOpen=new Set(),histArm=null,histArmT=null;
@@ -3810,7 +3814,7 @@ function act(a,b){
     case 'hidesignin':animOut('.signin',()=>{LS.set('hideSignin',true);lastOpen['signin']=false;render()});return;
     case 'edcancel':animOut('.editor',()=>{editor=null;render()});return;
     case 'addset':{if(locked(d)){nudgeStart();return}const x=snap(d);x.rows[id]=+b.dataset.rows+1;justSet=d+'|'+id+'|'+(x.rows[id]-1);touchDay(d);break}
-    case 'dropset':{if(locked(d)){nudgeStart();return}const apply=()=>{const x=snap(d),n=+b.dataset.rows-1;x.rows[id]=n;x.sets[id]=(x.sets[id]||[]).slice(0,n);if(editor&&editor.i>=n)editor=null;touchDay(d);render()};const card=document.querySelector('.card[data-card="'+id+'"]')||b.closest('.card');const last=card&&[...card.querySelectorAll('.set,.editor.setedit')].pop();if(last&&wantAnim()){last.classList.add('closing');setTimeout(apply,170);return}apply();return}
+    case 'dropset':{if(locked(d)){nudgeStart();return}const apply=()=>{const x=snap(d),n=+b.dataset.rows-1;x.rows[id]=n;x.sets[id]=(x.sets[id]||[]).slice(0,n);if(editor&&editor.i>=n)editor=null;touchDay(d);render()};const card=document.querySelector('.card[data-card="'+id+'"]')||b.closest('.card');const last=card&&[...card.querySelectorAll('.set,.editor.setedit')].pop();if(last&&wantAnim()){last.classList.add('closing');setTimeout(apply,190);return}apply();return}
     case 'skip':{const nDone=doneSets(d,id).length,nm=exName(id);
       const doSkip=()=>withUndo('Skipped '+nm+'.',()=>{const x=snap(d),inPlan=(x.plan||[]).some(i=>i.ex===id),k=x.extra.findIndex(e=>e.ex===id);delete x.sets[id];delete x.rows[id];
         if(!inPlan&&k>-1)x.extra.splice(k,1);else if(!x.skip.includes(id))x.skip.push(id);delete active[d];if(editor&&editor.ex===id)editor=null;touchDay(d,true)});
@@ -3891,10 +3895,10 @@ function act(a,b){
       const nm=($('#pname').value||'').trim(),gg=r1(g),x=getDay(viewKey,true),nid=newId();x.protein.push({id:nid,name:nm||'Other',g:gg});justProt=nid;touchDay(viewKey);
       if(nm&&$('#psave').checked&&!plan.protein.foods.some(f=>f.name.toLowerCase()===nm.toLowerCase())){plan.protein.foods.push({id:newId(),name:nm,g:gg});savePlan()}
       break}
-    case 'protarm':{protArm=b.dataset.id;protArmAnim=true;clearTimeout(protArmT);protArmT=setTimeout(()=>{const el=document.querySelector('.protline .rm-cover');const done=()=>{protArm=null;protArmAnim=false;if(protOpen)renderProt()};if(el&&wantAnim()){el.closest('.protline').classList.add('arm-out');setTimeout(done,160)}else done()},3000);protKeepInputs=true;renderProt();protArmAnim=false;return}
+    case 'protarm':{protArm=b.dataset.id;protArmAnim=true;clearTimeout(protArmT);protArmT=setTimeout(()=>{const el=document.querySelector('.protline .rm-cover');const done=()=>{protArm=null;protArmAnim=false;if(protOpen)renderProt()};if(el&&wantAnim()){el.closest('.protline').classList.add('arm-out');setTimeout(done,190)}else done()},3000);protKeepInputs=true;renderProt();protArmAnim=false;return}
     case 'protdel':{clearTimeout(protArmT);protArm=null;const x=getDay(viewKey,true),k=x.protein.findIndex(e=>e.id===b.dataset.id);if(k>-1)x.protein.splice(k,1);touchDay(viewKey,true);protKeepInputs=true;render();return}
     case 'foodadd':{const n=($('#nfName').value||'').trim(),g=num($('#nfG').value);if(!n||!(g>0)){toast('Type a food name and its grams of protein.');return}plan.protein.foods.push({id:newId(),name:n,g:r1(g)});savePlan();break}
-    case 'foodarm':{foodArm=b.dataset.f;foodArmAnim=true;clearTimeout(foodArmT);foodArmT=setTimeout(()=>{const el=document.querySelector('.foodrow.armed');const done=()=>{foodArm=null;foodArmAnim=false;if(view==='settings')render()};if(el&&wantAnim()){el.classList.add('arm-out');setTimeout(done,160)}else done()},3000);render();foodArmAnim=false;return}
+    case 'foodarm':{foodArm=b.dataset.f;foodArmAnim=true;clearTimeout(foodArmT);foodArmT=setTimeout(()=>{const el=document.querySelector('.foodrow.armed');const done=()=>{foodArm=null;foodArmAnim=false;if(view==='settings')render()};if(el&&wantAnim()){el.classList.add('arm-out');setTimeout(done,190)}else done()},3000);render();foodArmAnim=false;return}
     case 'fooddel':{clearTimeout(foodArmT);foodArm=null;foodArmAnim=false;plan.protein.foods=plan.protein.foods.filter(f=>f.id!==b.dataset.f);savePlan();break}
     case 'deload':{const t0=today();plan.deload[id]={from:t0,until:ymd(addDays(parse(t0),6))};savePlan();break}
     case 'enddeload':delete plan.deload[id];savePlan();break;
@@ -3945,19 +3949,19 @@ function act(a,b){
       if(w.items.some(i=>i.ex===nid)){toast(exName(nid)+' is already in '+(w.name||'this session')+'.');return}
       w.items.push({ex:nid,sets:Math.max(1,Math.round(num($('#pSets').value)||3)),reps:Math.max(1,Math.round(num($('#pReps').value)||10))});
       justAdded=nid;savePlan();animOut('#addRoot .scrim, .addsheet',()=>{addSheet=false;renderAddSheet();render();const r=document.querySelector('.prow.new');if(r)r.scrollIntoView({block:'center',behavior:smoothOK()?'smooth':'auto'})});return}
-    case 'rm':{const row=b.closest('.prow');const go=()=>{curSess().items.splice(+b.dataset.i,1);savePlan();render()};if(row&&wantAnim()){row.classList.add('closing');setTimeout(go,170);return}go();return}
+    case 'rm':{const row=b.closest('.prow');const go=()=>{curSess().items.splice(+b.dataset.i,1);savePlan();render()};if(row&&wantAnim()){row.classList.add('closing');setTimeout(go,190);return}go();return}
     case 'archive':if(exDraft&&exDraft.id===id&&draftDirty()){const o=findEx(exDraft.name.trim());applyDraft(!!(o&&o!==id)||!exDraft.name.trim())}exDraft=null;Object.values(plan.sessions).forEach(w=>{w.items=w.items.filter(i=>i.ex!==id)});plan.library[id].archived=true;if(exOpen===id)exOpen=null;savePlan();snapSyncLib();break;
     case 'restore':plan.library[id].archived=false;savePlan();break;
     case 'psearch':psOpen=true;lastSearchView=true;renderPS();return;
     case 'pscancel':animOut('#sheetRoot .scrim, .psheet',()=>{psOpen=false;psQ='';$('#sheetRoot').innerHTML=''});return;
     case 'psel':progEx=id;lastEx=id;fromSearch=true;psQ='';animOut('#sheetRoot .scrim, .psheet',()=>{psOpen=false;$('#sheetRoot').innerHTML='';swapAnim='.pbar ~ *';render();window.scrollTo(0,0)});return;
     case 'pseg':{const v=b.dataset.v;if(v===progSeg)return;if(v==='sess'){progSeg='sess';if(isWide()&&!sessPick){const ks=sessDayKeys();sessPick=ks[0]||null}swapAnim='.pseg ~ *';break}if(v==='ov'){if(!SPECIALS.includes(progEx))lastEx=progEx;progEx=lastOv}else{if(SPECIALS.includes(progEx))lastOv=progEx;progEx=lastEx&&plan.library[lastEx]?lastEx:null}progSeg=v;swapAnim='.pseg ~ *';break}
-    case 'histtog':{const k=b.dataset.d,card=()=>document.querySelector('.hcard[data-h="'+k+'"]'),c=card(),y=c?c.getBoundingClientRect().top:0,EASE='cubic-bezier(.2,.8,.2,1)',MS=320;histArm=null;
+    case 'histtog':{const k=b.dataset.d,card=()=>document.querySelector('.hcard[data-h="'+k+'"]'),c=card(),y=c?c.getBoundingClientRect().top:0,EASE='cubic-bezier(.2,.8,.2,1)',MS=220,MC=180;histArm=null;
       if(histOpen.has(k)){const body=c&&c.querySelector('.hbody');if(!wantAnim()||!body){histOpen.delete(k);render();return}
         c.classList.remove('open');body.style.overflow='hidden';body.style.height=body.offsetHeight+'px';body.style.opacity='1';void body.offsetHeight;
-        body.style.transition='height '+MS+'ms '+EASE+',opacity '+(MS-80)+'ms ease,padding '+MS+'ms '+EASE;body.style.height='0px';body.style.opacity='0';body.style.paddingBottom='0px';
-        setTimeout(()=>{histOpen.delete(k);render();const c2=card();if(c2)easeScrollTo(window.scrollY+c2.getBoundingClientRect().top-y)},MS+10);return}
-      histOpen.add(k);render();const c2=card();if(c2)easeScrollTo(window.scrollY+c2.getBoundingClientRect().top-y);
+        body.style.transition='height '+MC+'ms ease-in,opacity '+(MC-60)+'ms ease-in,padding '+MC+'ms ease-in';body.style.height='0px';body.style.opacity='0';body.style.paddingBottom='0px';
+        setTimeout(()=>{histOpen.delete(k);render();const c2=card();if(c2)easeScrollTo(window.scrollY+c2.getBoundingClientRect().top-y,null,MC)},MC+10);return}
+      histOpen.add(k);render();const c2=card();if(c2)easeScrollTo(window.scrollY+c2.getBoundingClientRect().top-y,null,MS);
       if(c2&&wantAnim()){const body=c2.querySelector('.hbody'),ch=c2.querySelector('.hchev');if(body){const hgt=body.scrollHeight,pb=getComputedStyle(body).paddingBottom;
         body.style.animation='none';body.style.overflow='hidden';body.style.height='0px';body.style.opacity='0';body.style.paddingBottom='0px';if(ch){ch.style.transition='none';ch.style.transform='rotate(45deg)'}
         void body.offsetHeight;body.style.transition='height '+MS+'ms '+EASE+',opacity '+(MS-60)+'ms ease '+60+'ms,padding '+MS+'ms '+EASE;body.style.height=hgt+'px';body.style.opacity='1';body.style.paddingBottom=pb;
@@ -3976,7 +3980,7 @@ function act(a,b){
     case 'cmpclose':animOut('#sheetRoot .scrim, #sheetRoot .musbox',()=>{cmpOpen=null;$('#sheetRoot').innerHTML=''});return;
     case 'pex':fromSearch=false;progEx=id;if(SPECIALS.includes(id))lastOv=id;swapAnim='.pills ~ *';render();{const pl=$('.pills');if(pl){const t=pl.getBoundingClientRect().top;if(t<0)window.scrollTo(0,window.scrollY+t-12)}}return;
     case 'yearpick':{const nxt=yearSel===b.dataset.d?null:b.dataset.d,w=$('#hmw'),sl=w?w.scrollLeft:null,apply=()=>{yearSel=nxt;if(!nxt)lastOpen['hmdet']=false;render();const w2=$('#hmw');if(w2&&sl!=null)w2.scrollLeft=sl};if(!nxt&&yearSel&&wantAnim()){animOut('.hm-det',apply);return}apply();return}
-    case 'openday':{const k=b.dataset.d,t=parse(today()),mon=addDays(t,-((t.getDay()+6)%7)),km=addDays(parse(k),-((parse(k).getDay()+6)%7));weekOff=Math.round((km-mon)/(7*864e5));viewKey=k;setView('today');window.scrollTo(0,0);break}
+    case 'openday':{const k=b.dataset.d,n=Math.round((parse(today())-parse(k))/864e5);weekOff=n>0?-Math.floor(n/7):0;viewKey=k;setView('today');window.scrollTo(0,0);break}
     case 'wrapdismiss':animOut('.wrap',()=>{LS.set('wrapSeen',b.dataset.m);lastOpen['wrap']=false;render()});return;
     case 'sharewk':shareWorkout(b.dataset.d);return;
     case 'theme':LS.set('theme',b.dataset.v);applyTheme(themePref());break;
