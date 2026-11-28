@@ -1916,7 +1916,7 @@ body::before,.hero2::after{display:none !important;background:none !important}
 (function(){
 'use strict';
 try{history.scrollRestoration='manual'}catch(e){}
-const APP_VERSION=93, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+const APP_VERSION=94, KG_LB=2.20462, SDK='https://www.gstatic.com/firebasejs/10.14.1/';
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], ORDER=[1,2,3,4,5,6,0];
 const MGROUPS=[['Upper body',['Neck','Traps','Upper chest','Lower chest','Front delts','Side delts','Rear delts','Upper back','Lats','Lower back']],['Arms',['Biceps','Triceps','Forearms']],['Core',['Abs','Obliques','Hip flexors']],['Legs',['Glutes','Outer hips','Inner thighs','Quads','Hamstrings','Calves','Shins']]];
 const LEGACY={Chest:['Upper chest','Lower chest'],Shoulders:['Front delts','Side delts','Rear delts'],Back:['Upper back','Lats'],Core:['Abs']};
@@ -3029,6 +3029,7 @@ function wantAnim(){return !!(smoothOK()&&!noAnimOnce&&!skipLayoutAnim)}
 function justShow(key,shown){const was=!!lastOpen[key];lastOpen[key]=!!shown;return !!(uiReady&&shown&&!was&&wantAnim())}
 function enterCls(on){return on?' enter':''}
 function animOut(sel,cb){if(noAnimOnce||skipLayoutAnim){noAnimOnce=false;cb();return}const els=[...document.querySelectorAll(sel)];if(!els.length||!smoothOK()){cb();return}els.forEach(e=>e.classList.add('closing'));setTimeout(cb,smoothOK()?190:0)}
+const actBusy={};
 function render(){document.body.classList.remove('editing');setTimeout(()=>{renderProt();renderMus();updAdd();if(logOpen)renderFoodSheet();if(qhOpen)renderHistSheet();if(swapOpen)renderSwapSheet();if(newExOpen)renderNewExSheet();armWkClock()},0);
   const now=today();if(viewKey>now)viewKey=now;
   document.querySelectorAll('.tabbar button').forEach(b=>{if(b.dataset.view===view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
@@ -3808,13 +3809,13 @@ function act(a,b){
       const before=days[editor.d]?clone(days[editor.d]):null,ed=editor;
       if(!valid(exType(ed.ex),(days[ed.d]&&days[ed.d].sets[ed.ex]||[])[ed.i]))reopenIf(ed.d);const s=setRow(ed.d,ed.ex,ed.i);const bar=t==='weight'?(barDraft!=null?num(barDraft):exBar(ed.ex)):null;if(t==='weight'&&barDraft!=null){plan.library[ed.ex].bar=num(barDraft)>0?num(barDraft):null;savePlan();barDraft=null}s.w=w!=null?(t==='pin'?Math.round(w):fromU(w)+(bar||0)):null;if(bar&&w!=null)s.b=bar;else delete s.b;s.r=r!=null?Math.round(r):null;s.t=tt!=null?Math.round(tt):null;s.done=true;
       stamp(ed.d);active[ed.d]=ed.ex;bumpSession(ed.d);touchDay(ed.d);buzz();justDone=ed.d+'|'+ed.ex+'|'+ed.i;animOut('.editor',()=>{editor=null;barDraft=null;render()});return}
-    case 'edundo':{const ed=editor;animOut('.editor',()=>{const s=setRow(ed.d,ed.ex,ed.i);s.done=false;s.w=null;s.r=null;s.t=null;s.tag=null;delete s.b;touchDay(ed.d);editor=null;render()});return}
+    case 'edundo':{const ed=editor;if(!ed||actBusy.edundo)return;actBusy.edundo=1;const s=setRow(ed.d,ed.ex,ed.i);s.done=false;s.w=null;s.r=null;s.t=null;s.tag=null;delete s.b;touchDay(ed.d);saveNow();animOut('.editor',()=>{delete actBusy.edundo;editor=null;render()});return}
     case 'undo':{const f=undoFn;hideToast();if(f)f();return}
     case 'finish':{delete peek[d];const x=getDay(d,true);x.finished=true;x.reopened=false;x.t1=Date.now();if(!x.t0)x.t0=x.started||x.t1;finishSession();touchDay(d);editor=null;moreOpen=null;backupOnFinish();lastOpen['wdone']=false;render();window.scrollTo({top:0,behavior:smoothOK()?'smooth':'auto'});return}
     case 'hidesignin':animOut('.signin',()=>{LS.set('hideSignin',true);lastOpen['signin']=false;render()});return;
     case 'edcancel':animOut('.editor',()=>{editor=null;render()});return;
     case 'addset':{if(locked(d)){nudgeStart();return}const x=snap(d);x.rows[id]=+b.dataset.rows+1;justSet=d+'|'+id+'|'+(x.rows[id]-1);touchDay(d);break}
-    case 'dropset':{if(locked(d)){nudgeStart();return}const apply=()=>{const x=snap(d),n=+b.dataset.rows-1;x.rows[id]=n;x.sets[id]=(x.sets[id]||[]).slice(0,n);if(editor&&editor.i>=n)editor=null;touchDay(d);render()};const card=document.querySelector('.card[data-card="'+id+'"]')||b.closest('.card');const last=card&&[...card.querySelectorAll('.set,.editor.setedit')].pop();if(last&&wantAnim()){last.classList.add('closing');setTimeout(apply,190);return}apply();return}
+    case 'dropset':{if(locked(d)){nudgeStart();return}const apply=()=>{const x=snap(d),n=+b.dataset.rows-1;x.rows[id]=n;x.sets[id]=(x.sets[id]||[]).slice(0,n);if(editor&&editor.i>=n)editor=null;touchDay(d);saveNow()};const card=document.querySelector('.card[data-card="'+id+'"]')||b.closest('.card');const last=card&&[...card.querySelectorAll('.set,.editor.setedit')].pop();if(last&&last.classList.contains('closing'))return;apply();if(last&&wantAnim()){last.classList.add('closing');setTimeout(render,190);return}render();return}
     case 'skip':{const nDone=doneSets(d,id).length,nm=exName(id);
       const doSkip=()=>withUndo('Skipped '+nm+'.',()=>{const x=snap(d),inPlan=(x.plan||[]).some(i=>i.ex===id),k=x.extra.findIndex(e=>e.ex===id);delete x.sets[id];delete x.rows[id];
         if(!inPlan&&k>-1)x.extra.splice(k,1);else if(!x.skip.includes(id))x.skip.push(id);delete active[d];if(editor&&editor.ex===id)editor=null;touchDay(d,true)});
@@ -3865,7 +3866,7 @@ function act(a,b){
     case 'reorderdone':reorderOpen=false;swapAnim='#view .acc, #view .tgrid';break;
     case 'guideskip':animOut('.guide',()=>{LS.set('guide','done');lastOpen['guide']=false;render()});return;
     case 'gosettings':setView('settings');window.scrollTo(0,0);break;
-    case 'cancelwk':{if(hasDone(d)||!canFinish(d))return;confirmAsk('Cancel this workout?','Nothing has been logged, so it will be as if you never started.','Cancel workout').then(ok=>{if(!ok)return;const go=()=>{const x=getDay(d,true);x.started=null;x.finished=false;x.plan=null;x.title=null;x.session=null;x.planAck=null;x.t0=null;x.t1=null;editor=null;moreOpen=null;delete peek[d];delete active[d];finishSession();afClear();touchDay(d);saveNow();lastOpen['startbtn']=false;render()};animOut('.inprogrow,.inprog,.tgrid .card,[data-act=cancelwk]',go)});return}
+    case 'cancelwk':{if(hasDone(d)||!canFinish(d))return;confirmAsk('Cancel this workout?','Nothing has been logged, so it will be as if you never started.','Cancel workout').then(ok=>{if(!ok||actBusy.cancelwk)return;actBusy.cancelwk=1;const x=getDay(d,true);x.started=null;x.finished=false;x.plan=null;x.title=null;x.session=null;x.planAck=null;x.t0=null;x.t1=null;editor=null;moreOpen=null;delete peek[d];delete active[d];finishSession();afClear();touchDay(d);saveNow();animOut('.inprogrow,.inprog,.tgrid .card,[data-act=cancelwk]',()=>{delete actBusy.cancelwk;lastOpen['startbtn']=false;render()})});return}
     case 'setsec':{const k=b.dataset.sec;if(setOpen.has(k))setOpen.delete(k);else setOpen.add(k);const card=b.closest('.card.sec')||document.querySelector('.card.sec[data-secid="'+k+'"]');if(card&&wantAnim()){card.classList.add('sec-anim');card.classList.toggle('collapsed',!setOpen.has(k));b.setAttribute('aria-expanded',setOpen.has(k));return}render();return}
     case 'baradd':{if(!editor)return;barDraft='';justBar=true;keepEditorInputs(()=>render(),()=>0);const f=$('#ed-bar');if(f&&isFine())f.focus();return}
     case 'barclear':{if(!editor)return;const bar0=num(barDraft!=null?barDraft:exBar(editor.ex))||0;const go=()=>{barDraft=null;keepEditorInputs(()=>{if(plan.library[editor.ex]){plan.library[editor.ex].bar=null;savePlan()}render()},()=>toU(bar0))};animOut('.edbar',go);return}
@@ -3873,10 +3874,10 @@ function act(a,b){
     case 'afdismiss':{animOut('.afwarn',()=>{const x=days[d];if(x&&x.started)afSet({date:d,started:x.started,bannerHidden:true});lastOpen['afwarn']=false;render()});return}
     case 'afkeepfin':{animOut('.afnote',()=>{const a=afGet();if(a.kind==='done'){a.dismissed=true;LS.set('af',a)}lastOpen['afnote']=false;render()});return}
     case 'toastx':{const a=afGet();if(a.kind==='cleared'&&!a.dismissed){a.dismissed=true;LS.set('af',a)}hideToast();return}
-    case 'startwk':{const go=()=>{wpOpen=false;calOpen=false;calMid=false;datePhase=0;delete folded[d];peek[d]=true;delete active[d];const x=getDay(d,true);const sk=sessFor(d);x.plan=clone(weekItems(d));x.title=sessName(sk);x.session=sk;x.planAck=null;x.started=Date.now();x.t0=x.started;x.t1=null;x.finished=false;touchDay(d);bumpSession(d);afClear();lastOpen['startbtn']=false;lastOpen['guide']=false;render()};const sel=['#startbtn','.startbtn','.guide','.starthint','.sessbtns'];if(!isWide())sel.push('.weekpanel');animOut(sel.join(','),go);return}
-    case 'resumewk':{animOut('.wdone,.afnote',()=>{const x=getDay(d,true);x.finished=false;x.started=x.started||Date.now();x.t1=Date.now();touchDay(d);bumpSession(d);afClear();lastOpen['wdone']=false;lastOpen['afnote']=false;render()});return}
-    case 'plannew':{animOut('.pchg',()=>{const x=getDay(d,true);const sk=sessOfDay(d);x.session=sk;x.plan=sk?clone(plan.sessions[sk].items.filter(i=>ex(i.ex)&&!ex(i.ex).archived)):[];x.title=sessName(sk);x.planAck=null;touchDay(d);lastOpen['pchg']=false;render()});return}
-    case 'plankeep':{animOut('.pchg',()=>{const x=getDay(d,true);x.planAck=planSig(d);touchDay(d);lastOpen['pchg']=false;render()});return}
+    case 'startwk':{if(actBusy.startwk)return;actBusy.startwk=1;wpOpen=false;calOpen=false;calMid=false;datePhase=0;delete folded[d];peek[d]=true;delete active[d];const x=getDay(d,true);const sk=sessFor(d);x.plan=clone(weekItems(d));x.title=sessName(sk);x.session=sk;x.planAck=null;x.started=Date.now();x.t0=x.started;x.t1=null;x.finished=false;touchDay(d);bumpSession(d);afClear();saveNow();const go=()=>{delete actBusy.startwk;lastOpen['startbtn']=false;lastOpen['guide']=false;render()};const sel=['#startbtn','.startbtn','.guide','.starthint','.sessbtns'];if(!isWide())sel.push('.weekpanel');animOut(sel.join(','),go);return}
+    case 'resumewk':{if(actBusy.resumewk)return;actBusy.resumewk=1;const x=getDay(d,true);x.finished=false;x.started=x.started||Date.now();x.t1=Date.now();touchDay(d);bumpSession(d);afClear();saveNow();animOut('.wdone,.afnote',()=>{delete actBusy.resumewk;lastOpen['wdone']=false;lastOpen['afnote']=false;render()});return}
+    case 'plannew':{if(actBusy.plannew)return;actBusy.plannew=1;const x=getDay(d,true);const sk=sessOfDay(d);x.session=sk;x.plan=sk?clone(plan.sessions[sk].items.filter(i=>ex(i.ex)&&!ex(i.ex).archived)):[];x.title=sessName(sk);x.planAck=null;touchDay(d);saveNow();animOut('.pchg',()=>{delete actBusy.plannew;lastOpen['pchg']=false;render()});return}
+    case 'plankeep':{if(actBusy.plankeep)return;actBusy.plankeep=1;const x=getDay(d,true);x.planAck=planSig(d);touchDay(d);saveNow();animOut('.pchg',()=>{delete actBusy.plankeep;lastOpen['pchg']=false;render()});return}
     case 'unskipall':{const x=snap(d);x.skip=[];touchDay(d);break}
     case 'combotoggle':{const inp=b.parentElement.querySelector('input');if(!inp)return;if(b.parentElement.classList.contains('open'))comboClose(inp);else{comboSel=-1;comboRender(inp)}return}
     case 'excancel':closeEx(id);return;
@@ -3949,7 +3950,7 @@ function act(a,b){
       if(w.items.some(i=>i.ex===nid)){toast(exName(nid)+' is already in '+(w.name||'this session')+'.');return}
       w.items.push({ex:nid,sets:Math.max(1,Math.round(num($('#pSets').value)||3)),reps:Math.max(1,Math.round(num($('#pReps').value)||10))});
       justAdded=nid;savePlan();animOut('#addRoot .scrim, .addsheet',()=>{addSheet=false;renderAddSheet();render();const r=document.querySelector('.prow.new');if(r)r.scrollIntoView({block:'center',behavior:smoothOK()?'smooth':'auto'})});return}
-    case 'rm':{const row=b.closest('.prow');const go=()=>{curSess().items.splice(+b.dataset.i,1);savePlan();render()};if(row&&wantAnim()){row.classList.add('closing');setTimeout(go,190);return}go();return}
+    case 'rm':{const row=b.closest('.prow');if(row&&row.classList.contains('closing'))return;const it=curSess().items,n=+b.dataset.i;if(!(n>=0&&n<it.length))return;it.splice(n,1);savePlan();saveNow();if(row&&wantAnim()){const list=row.parentElement;row.classList.add('closing');row.dataset.row=-1;row.querySelectorAll('[data-i]').forEach(x=>x.dataset.i=-1);row.querySelectorAll('[data-pi]').forEach(x=>x.dataset.pi=-1);renumberRows(list);setTimeout(()=>{if(row.isConnected)render()},190);return}render();return}
     case 'archive':if(exDraft&&exDraft.id===id&&draftDirty()){const o=findEx(exDraft.name.trim());applyDraft(!!(o&&o!==id)||!exDraft.name.trim())}exDraft=null;Object.values(plan.sessions).forEach(w=>{w.items=w.items.filter(i=>i.ex!==id)});plan.library[id].archived=true;if(exOpen===id)exOpen=null;savePlan();snapSyncLib();break;
     case 'restore':plan.library[id].archived=false;savePlan();break;
     case 'psearch':psOpen=true;lastSearchView=true;renderPS();return;
@@ -4971,7 +4972,9 @@ function restoreBackup(src,date){
 /* ---------------- drag to reorder ---------------- */
 let drag=null,dragAuto=null;
 const DRAGSEL='.prow,.dragi,.sesscard';
-function dragItems(list){return [...list.children].filter(e=>e.matches(DRAGSEL))}
+function dragItems(list){return [...list.children].filter(e=>e.matches(DRAGSEL)&&!e.classList.contains('closing'))}
+/* after the order is saved, re-number the rows still on screen so a quick second drag, edit or remove hits the right item */
+function renumberRows(list){dragItems(list).filter(x=>x.matches('.prow')).forEach((r,k)=>{r.dataset.row=k;r.querySelectorAll('[data-i]').forEach(n=>n.dataset.i=k);r.querySelectorAll('[data-pi]').forEach(n=>n.dataset.pi=k)})}
 function tyOf(x){const m=(x.style.transform||'').match(/translateY\((-?[\d.]+)px\)/);return m?parseFloat(m[1]):0}
 document.addEventListener('pointerdown',e=>{const h=e.target.closest('.handle');if(!h)return;const el=h.closest(DRAGSEL);if(!el)return;e.preventDefault();
   const r=el.getBoundingClientRect();drag={el,list:el.parentElement,grab:e.clientY-r.top,ty:0,y:e.clientY,moved:false};el.classList.add('dragging');try{h.setPointerCapture(e.pointerId)}catch(x){}
@@ -4981,20 +4984,26 @@ function flipTo(el,list,ref){const sib=dragItems(list).filter(x=>x!==el),before=
   if(!smoothOK())return;sib.forEach(x=>{const d=before.get(x)-x.getBoundingClientRect().top+tyOf(x);if(Math.abs(d)>.5){x.style.transition='none';x.style.transform='translateY('+d+'px)';void x.offsetWidth;x.style.transition='transform .22s cubic-bezier(.2,.8,.2,1)';x.style.transform=''}})}
 function dragStep(){if(!drag)return;const {el,list}=drag,y=drag.y,sib=dragItems(list).filter(x=>x!==el);let ref=null;
   for(const x of sib){const b=x.getBoundingClientRect(),top=b.top-tyOf(x);if(y<top+b.height/2){ref=x;break}}
-  let cur=el.nextElementSibling;while(cur&&!cur.matches(DRAGSEL))cur=cur.nextElementSibling;
+  let cur=el.nextElementSibling;while(cur&&(!cur.matches(DRAGSEL)||cur.classList.contains('closing')))cur=cur.nextElementSibling;
   if(ref!==cur&&!(ref===null&&!cur)){flipTo(el,list,ref);drag.moved=true}
   el.style.transition='none';const natural=el.getBoundingClientRect().top-drag.ty;drag.ty=y-drag.grab-natural;el.style.transform='translateY('+drag.ty+'px)'}
 document.addEventListener('pointermove',e=>{if(!drag)return;e.preventDefault();drag.y=e.clientY;dragStep()},{passive:false});
-function endDrag(){if(!drag)return;clearInterval(dragAuto);const {el,list}=drag;drag=null;
-  const fin=()=>{el.classList.remove('dragging');el.style.transition='';el.style.transform='';dragItems(list).forEach(x=>{x.style.transition='';x.style.transform=''});
-    if(el.matches('.sesscard')){const ord=dragItems(list).map(x=>x.dataset.sess);if(ord.join()!==sessList().join()){plan.order=ord;savePlan()}render();return}
-    if(el.matches('.dragi')){const ord=dragItems(list).map(x=>x.dataset.ex);const curOrd=visibleItems(viewKey).map(i=>i.ex);if(ord.join()!==curOrd.join()){const x=snap(viewKey);x.order=ord;touchDay(viewKey)}render();return}
-    const order=dragItems(list).map(r=>+r.dataset.row),w=curSess(),old=w.items;if(order.some((v,i)=>v!==i)){w.items=order.map(i=>old[i]).concat(old.filter((_,i)=>!order.includes(i)));savePlan()}render()};
+/* The new order is written to state and saved the moment you let go. The settle animation afterwards only tidies the screen, it never decides the order. */
+function commitDrag(el,list){
+  if(el.matches('.sesscard')){const ord=dragItems(list).map(x=>x.dataset.sess);if(ord.length&&ord.join()!==sessList().join()){plan.order=ord;savePlan();saveNow()}return}
+  if(el.matches('.dragi')){const ord=dragItems(list).map(x=>x.dataset.ex);const curOrd=visibleItems(viewKey).map(i=>i.ex);if(ord.length&&ord.join()!==curOrd.join()){const x=snap(viewKey);x.order=ord;touchDay(viewKey);saveNow()}return}
+  const order=dragItems(list).map(r=>+r.dataset.row),w=curSess(),old=w.items;
+  if(order.length&&order.some((v,i)=>v!==i)){w.items=order.map(i=>old[i]).concat(old.filter((_,i)=>!order.includes(i)));savePlan();saveNow()}
+  renumberRows(list)}
+function endDrag(){if(!drag)return;clearInterval(dragAuto);const {el,list}=drag;drag=null;commitDrag(el,list);
+  const fin=()=>{el.classList.remove('dragging');el.style.transition='';el.style.transform='';dragItems(list).forEach(x=>{x.style.transition='';x.style.transform=''});if(drag)return;render()};
   if(smoothOK()){el.style.transition='transform .2s cubic-bezier(.2,.8,.2,1)';el.style.transform='';setTimeout(fin,210)}else fin()}
 document.addEventListener('pointerup',endDrag);document.addEventListener('pointercancel',endDrag);
 document.addEventListener('keydown',e=>{const h=e.target.closest&&e.target.closest('.handle');if(!h||(e.key!=='ArrowUp'&&e.key!=='ArrowDown'))return;e.preventDefault();
-  const i=+h.dataset.i,j=e.key==='ArrowUp'?i-1:i+1,it=curSess().items;if(j<0||j>=it.length)return;[it[i],it[j]]=[it[j],it[i]];savePlan();render();const n=document.querySelector('.handle[data-i="'+j+'"]');n&&n.focus()});
-
+  const el=h.closest(DRAGSEL);if(!el||drag)return;const list=el.parentElement,its=dragItems(list),i=its.indexOf(el),j=e.key==='ArrowUp'?i-1:i+1;if(i<0||j<0||j>=its.length)return;
+  if(j<i)list.insertBefore(el,its[j]);else its[j].after(el);commitDrag(el,list);render();
+  const q=el.matches('.sesscard')?'.sesscard[data-sess="'+el.dataset.sess+'"]':el.matches('.dragi')?'.dragi[data-ex="'+el.dataset.ex+'"]':'.prow[data-row="'+j+'"]';
+  const n=document.querySelector(q+' .handle');n&&n.focus()});
 /* ---------------- start ---------------- */
 {const rawPlan=LS.get('plan');plan=normPlan(rawPlan);if(rawPlan&&!rawPlan.sessions&&sessList().length)LS.set('plan',plan),setTimeout(()=>savePlan(),0)}
 Object.entries(LS.get('days')||{}).forEach(([k,v])=>{days[k]=normDay(v)});
